@@ -83,7 +83,7 @@ Equivalent mutant (negative control): reject moves with dE = 0 instead of accept
 
 ## 6. Interface for code under test
 
-Minimum (black box): `sample(L, T, h, n_sweeps, seed) -> arrays of energy and magnetization per sweep`. Optional (white box): lattice access, a single-update function, a replaceable random number generator. Many student codes are scripts with global variables; `docs/plan_audit_and_corpus_study.md` covers the wrapper problem. A trusted reference sampler (small, slow, clearly written) ships with physverify and is the object the calibration runs on.
+Minimum (black box): `sample(L, T, h, n_sweeps, seed) -> arrays of energy and magnetization per sweep`. Optional (white box): lattice access, a single-update function, a replaceable random number generator. Many student codes are scripts with global variables. A trusted reference sampler (small, slow, clearly written) ships with physverify and is the object the calibration runs on.
 
 ## 7. Milestones and done criteria
 

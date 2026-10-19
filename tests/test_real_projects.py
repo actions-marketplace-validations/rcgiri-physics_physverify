@@ -71,7 +71,7 @@ def test_projectile_v2_reproduces_the_linear_patch_solution_and_whole_trajectory
     assert trajectory.ok, trajectory.message
 
 
-# Stage A audit (docs/plan_audit_and_corpus_study.md, results/own_work/).
+# Audit of the author's own projects.
 from physverify.adapters import lorenz, projectile_v1, three_body  # noqa: E402
 
 lorenz_missing = not lorenz.source_path().is_file()

@@ -2,8 +2,7 @@
 
     PYTHONPATH=src python scripts/audit_projects.py [--jsonl FILE] [projectile|projectile_v1|pendulum|lorenz|three_body ...]
 
-With --jsonl, one JSON record per check is also written to FILE (the format of
-results/own_work/results.jsonl). The three-body Verlet checks and the solve_ivp
+With --jsonl, one JSON record per check is also written to FILE. The three-body Verlet checks and the solve_ivp
 check need SciPy; without it only physics.py is tested.
 """
 
