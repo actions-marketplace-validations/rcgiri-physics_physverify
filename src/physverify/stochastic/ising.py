@@ -147,19 +147,16 @@ BUGS = {
 
 
 def variant_checks(sampler) -> list:
-    """The checks for one sampler, with run lengths suited to its speed."""
+    """The checks that apply to one sampler, with run lengths suited to its speed."""
     if sampler.algorithm == "wolff":  # one cluster update per 'sweep', looped in Python per chain
-        return [
-            K.bookkeeping(sampler),
-            K.scripted_rng(sampler),
-            K.reproducibility(sampler),
-            K.exact_distribution(sampler, n_chains=128, n_sweeps=600),
-            K.moments(sampler, n_chains=128, n_sweeps=800),
-            K.acceptance(sampler),
-            K.symmetry(sampler, n_chains=128),
-            K.equilibration(sampler, n_chains=256),
-            K.error_bars(sampler, n_chains=64, n_sweeps=600),
-        ]
+        return K.ising_checks(
+            sampler,
+            exact_distribution={"n_chains": 128, "n_sweeps": 600},
+            moments={"n_chains": 128, "n_sweeps": 800},
+            symmetry={"n_chains": 128},
+            equilibration={"n_chains": 256},
+            error_bars={"n_chains": 64, "n_sweeps": 600},
+        )
     return K.ising_checks(sampler)
 
 

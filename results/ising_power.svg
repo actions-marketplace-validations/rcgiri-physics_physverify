@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 560 300" font-family="sans-serif" font-size="11">
+<rect width="560" height="300" fill="white"/>
+<line x1="46" x2="390" y1="264.0" y2="264.0" stroke="#ddd"/>
+<text x="40" y="268.0" text-anchor="end">0</text>
+<line x1="46" x2="390" y1="139.0" y2="139.0" stroke="#ddd"/>
+<text x="40" y="143.0" text-anchor="end">0.5</text>
+<line x1="46" x2="390" y1="14.0" y2="14.0" stroke="#ddd"/>
+<text x="40" y="18.0" text-anchor="end">1</text>
+<text x="46.0" y="280" text-anchor="middle">10</text>
+<text x="151.2" y="280" text-anchor="middle">25</text>
+<text x="230.8" y="280" text-anchor="middle">50</text>
+<text x="310.4" y="280" text-anchor="middle">100</text>
+<text x="390.0" y="280" text-anchor="middle">200</text>
+<text x="218.0" y="296" text-anchor="middle">sweeps per chain (16 chains per run)</text>
+<text x="12" y="139.0" transform="rotate(-90 12 139.0)" text-anchor="middle">P(flagged)</text>
+<polyline points="46.0,264.0 151.2,264.0 230.8,264.0 310.4,264.0 390.0,264.0" fill="none" stroke="#6b6b70" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="398" y="26" fill="#6b6b70">(no bug)</text>
+<polyline points="46.0,264.0 151.2,264.0 230.8,264.0 310.4,259.0 390.0,264.0" fill="none" stroke="#9a6700" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="398" y="41" fill="#9a6700">reject_zero_de</text>
+<polyline points="46.0,14.0 151.2,14.0 230.8,14.0 310.4,14.0 390.0,14.0" fill="none" stroke="#2f5bd3" stroke-width="2"/>
+<text x="398" y="56" fill="#2f5bd3">exp_de_times_t</text>
+<polyline points="46.0,14.0 151.2,14.0 230.8,14.0 310.4,14.0 390.0,14.0" fill="none" stroke="#1a7f37" stroke-width="2"/>
+<text x="398" y="71" fill="#1a7f37">acceptance_table_off_by_one</text>
+<polyline points="46.0,264.0 151.2,14.0 230.8,14.0 310.4,14.0 390.0,14.0" fill="none" stroke="#b42318" stroke-width="2"/>
+<text x="398" y="86" fill="#b42318">same_random_number</text>
+<polyline points="46.0,109.0 151.2,109.0 230.8,84.0 310.4,89.0 390.0,74.0" fill="none" stroke="#8250df" stroke-width="2"/>
+<text x="398" y="101" fill="#8250df">sweep_skips_last_row</text>
+<polyline points="46.0,14.0 151.2,14.0 230.8,14.0 310.4,14.0 390.0,14.0" fill="none" stroke="#0a7ea4" stroke-width="2"/>
+<text x="398" y="116" fill="#0a7ea4">heatbath_missing_2</text>
+<polyline points="46.0,14.0 151.2,14.0 230.8,14.0 310.4,14.0 390.0,14.0" fill="none" stroke="#bf3989" stroke-width="2"/>
+<text x="398" y="131" fill="#bf3989">synchronous_update</text>
+</svg>

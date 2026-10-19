@@ -39,7 +39,7 @@ physverify run examples/verify_damped_oscillator.py --html report.html   # self-
 pytest examples/verify_damped_oscillator.py                         # each check is a pytest test (plugin installed with the package)
 ```
 
-Without installing, use `python -m physverify` for `physverify` and `pytest -p physverify.pytest_plugin`. Change the damping in `examples/damped_oscillator.py` by 10% and every family flags it.
+Without installing, use `python -m physverify` for `physverify` and `pytest -p physverify.pytest_plugin` for pytest. Once the package is installed, plain `pytest` is enough; adding `-p physverify.pytest_plugin` as well makes pytest stop with "Plugin already registered". Change the damping in `examples/damped_oscillator.py` by 10% and every family flags it.
 
 For an AI coding assistant there is a Claude Code hook (`physverify hook`, runs the checks after each edit and reports failures back) and a minimal MCP server (`physverify mcp`); see [docs/agent.md](docs/agent.md).
 
@@ -106,6 +106,25 @@ How to read this:
 - **Order studies on discontinuous solutions are weak.** Sod's L1 order is only known to lie between about 0.5 and 1. That band is too wide to catch a change from 0.63 to 0.43. The exact conservation check is the stronger test there.
 - **A built-in blind spot, shown on purpose.** A manufactured solution built from the code's own right-hand side hides a wrong right-hand side. `tests/test_mms.py` demonstrates this.
 
+## Stochastic codes: the 2D Ising model
+
+Monte Carlo codes have no step size and give random output, so they need a different kind of check. `physverify.stochastic` implements [docs/plan_ising.md](docs/plan_ising.md); [docs/ising.md](docs/ising.md) describes the interface and the checks.
+
+- **Exact references.** These are complete enumeration (L up to 5), Kaufman's finite-torus partition function, and Onsager's infinite-lattice energy. The three routes were cross-checked against each other first: log Z agrees to about 1e-15, and the energies agree to 1e-11 away from T_c.
+- **Checks.** Three are exact:
+  - `bookkeeping`: tracked energy against the lattice;
+  - `scripted_rng`: the code's sweeps against a trusted reference replaying the same random numbers;
+  - `reproducibility`.
+
+  Six are statistical, each with a false-alarm rate of 0.001: exact energy and \|m\| distributions, moments, the acceptance rule, symmetry, equilibration and reported error bars.
+- **Seeded bugs.** There are 20 bugs plus one equivalent mutant over four algorithms: Metropolis, heat bath, checkerboard and Wolff. The predictions were committed before any bug was run. All 20 bugs are flagged, and none of the 4 bug-free samplers fails. 74 predicted detections happened, 1 did not, and 11 happened unpredicted. See [results/ising_matrix.md](results/ising_matrix.md) and [results/ising_scorecard.md](results/ising_scorecard.md).
+  - **Equivalent mutant.** It rejects moves with dE = 0, which keeps the correct distribution. The dynamics checks catch it and the distribution check does not, as intended. These two checks were extended to h = 0 after a unit test showed they could not see it in a field, so that detection is not blind.
+- **Calibration** ([results/ising_calibration.md](results/ising_calibration.md)). This uses 1000 bug-free replicate runs.
+  - At check level, the FAIL rate at alpha = 0.05 is 1.8% to 3.2%.
+  - Single comparisons are rejected 4.4% to 6.0% of the time at a nominal 5%. At T_c the rate is 5.95%, slightly above nominal, so error bars there are a little small.
+  - Power curves show most bugs flagged from 10 sweeps per chain on. `sweep_skips_last_row` is the exception, at 60% to 75%.
+- **Limits.** All of this is on small lattices (L = 4, one comparison at L = 8). The optional scaling check is not built, and a full matrix run takes about half an hour.
+
 ## Results on two real projects
 
 Run read-only against `projectile-simulation` and `double-pendulum-simulation` (siblings of this folder; nothing is written into them, and `git status` is clean in both afterwards).
@@ -146,6 +165,7 @@ src/physverify/
   cli.py            the physverify command
   pytest_plugin.py  verify_*.py files as pytest tests
   agent.py          Claude Code hook and MCP server
+  stochastic/       2D Ising: exact references, samplers with seeded bugs, statistical checks, calibration
   problems/         seeded-bug solvers: projectile, pendulum, kepler, heat1d, sod
   adapters/         read-only adapters for the two real projects
   matrix.py         the detection tables and bug catalogue
@@ -159,7 +179,7 @@ tests/              about 140 tests, including the seeded-bug regression
 
 - Try it on someone else's real solver. Nobody but the author has used it yet.
 - A limit check for Sod (shock speed from the Rankine-Hugoniot conditions), and an exactness check for more PDE schemes.
-- 2D problems. The 2D Ising model is stochastic, so order-of-convergence and exactness checks do not apply; it needs statistical checks, which are not built.
+- Larger Ising lattices and the optional scaling check (Binder-cumulant crossing); other stochastic models.
 
 ## Licence
 
