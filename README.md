@@ -39,6 +39,8 @@ pytest examples/verify_damped_oscillator.py                         # each check
 
 Without installing, use `python -m physverify` for `physverify` and `pytest -p physverify.pytest_plugin`. Change the damping in `examples/damped_oscillator.py` by 10% and every family flags it.
 
+For an AI coding assistant there is a Claude Code hook (`physverify hook`, runs the checks after each edit and reports failures back) and a minimal MCP server (`physverify mcp`); see [docs/agent.md](docs/agent.md).
+
 The benchmark and the test suite:
 
 ```bash

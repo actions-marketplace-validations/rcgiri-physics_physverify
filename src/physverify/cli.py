@@ -3,6 +3,8 @@
     physverify run SPEC.py [SPEC.py ...] [--json FILE|-] [--html FILE] [--quiet]
     physverify matrix [OUT.md]
     physverify compare [OUT.md]
+    physverify hook        (Claude Code PostToolUse hook; see docs/agent.md)
+    physverify mcp         (MCP server on stdio; see docs/agent.md)
 
 `run` exits 0 when every check passes (PASS or EXACT), 1 when any does not,
 and 2 when a spec cannot be loaded. A spec is a Python file defining
@@ -54,6 +56,18 @@ def _cmd_compare(args) -> int:
     return compare.main([args.out] if args.out else [])
 
 
+def _cmd_hook(args) -> int:
+    from .agent import hook_main
+
+    return hook_main()
+
+
+def _cmd_mcp(args) -> int:
+    from .agent import mcp_main
+
+    return mcp_main()
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="physverify", description="Verification checks for physics simulation code.")
     parser.add_argument("--version", action="version", version=f"physverify {__version__}")
@@ -73,6 +87,12 @@ def build_parser() -> argparse.ArgumentParser:
     c = sub.add_parser("compare", help="compare the families with plain tests on the seeded bugs")
     c.add_argument("out", nargs="?", help="also write the table to this Markdown file")
     c.set_defaults(func=_cmd_compare)
+
+    h = sub.add_parser("hook", help="Claude Code PostToolUse hook: reads the event on stdin, exits 2 on a failed check")
+    h.set_defaults(func=_cmd_hook)
+
+    s = sub.add_parser("mcp", help="run a minimal MCP server on stdio with a run_checks tool")
+    s.set_defaults(func=_cmd_mcp)
     return parser
 
 
