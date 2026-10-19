@@ -20,15 +20,32 @@ Pass/fail rests on the observed order of convergence (`physverify.order.check_or
 
 ## Try it
 
-Only NumPy is needed (pytest to run the tests). No install step:
+Only NumPy is needed (pytest to run the tests). Install from the folder, or run from source with `PYTHONPATH=src`:
 
 ```bash
-PYTHONPATH=src python examples/check_my_solver.py   # check a small solver, then try the 10% bug described inside
-PYTHONPATH=src python -m physverify.matrix results/detection_matrix.md   # the seeded-bug table below
-python -m pytest -q                                  # 86 tests, about 45 s
+pip install -e .
 ```
 
-To check your own ODE code you provide two things: an independent reference right-hand side, and an `integrate(source, y0, t_end, n_steps)` function that advances your code with an additive source term `source(t)`. `examples/check_my_solver.py` is the shortest working example. Codes with no source hook can still be wrapped; see `src/physverify/adapters/projectile_v2.py` for one that has no time argument either.
+Write a spec file that defines `checks()`; [examples/verify_damped_oscillator.py](examples/verify_damped_oscillator.py) checks the solver in [examples/damped_oscillator.py](examples/damped_oscillator.py). You provide an independent reference right-hand side and an `integrate(source, y0, t_end, n_steps)` function that advances your code with an additive source term `source(t)`. Codes with no source hook can still be wrapped; see `src/physverify/adapters/projectile_v2.py` for one that has no time argument either.
+
+Then any of:
+
+```bash
+physverify run examples/verify_damped_oscillator.py                 # text; exit code 1 if any check fails
+physverify run examples/verify_damped_oscillator.py --json -        # JSON on stdout
+physverify run examples/verify_damped_oscillator.py --html report.html   # self-contained page with convergence plots
+pytest examples/verify_damped_oscillator.py                         # each check is a pytest test (plugin installed with the package)
+```
+
+Without installing, use `python -m physverify` for `physverify` and `pytest -p physverify.pytest_plugin`. Change the damping in `examples/damped_oscillator.py` by 10% and every family flags it.
+
+The benchmark and the test suite:
+
+```bash
+physverify matrix results/detection_matrix.md   # the seeded-bug tables below
+physverify compare results/comparison.md        # the same bugs against plain unit tests
+python -m pytest -q                             # about 1.5 minutes
+```
 
 ## Seeded-bug benchmark
 
