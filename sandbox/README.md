@@ -18,4 +18,6 @@ The repository is cloned on the host with hooks, symlinks and LFS turned off and
     python -I sandbox/sandbox.py deps  D01
     python -I sandbox/sandbox.py run   D01 path/to/adapter_script.py
 
+The adapter script's folder is mounted read-only at `/work`, so shared helpers next to it can be imported.
+
 `probe.py` checks the limits from inside; every line should print `OK`. In Git Bash, set `MSYS_NO_PATHCONV=1` so container paths are not rewritten.

@@ -9,7 +9,7 @@ Folders (under %LOCALAPPDATA%/physverify-corpus or $PHYSVERIFY_CORPUS):
     repos/<id>   the clone, mounted read-only at /repo
     deps/<id>    extra packages, mounted read-only at /deps during run
     out/<id>     the only writable mount, at /out
-The script given to `run` is mounted read-only at /work/<name>; it is ours (an adapter), never the repo's.
+The folder holding the script given to `run` is mounted read-only at /work; it is ours (adapters), never the repo's.
 """
 
 import os
@@ -78,6 +78,11 @@ def deps(repo_id):
                   timeout=TIME_LIMIT)
 
 
+def head(repo):
+    out = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, text=True)
+    return out.stdout.strip() or "unknown"
+
+
 def run(repo_id, script, extra):
     script = Path(script).resolve()
     repo = CORPUS / "repos" / repo_id
@@ -86,8 +91,8 @@ def run(repo_id, script, extra):
     name = f"pv-run-{repo_id}"
     args = ["run", *LOCKDOWN, "--network=none", "--name", name,
             "-v", f"{repo}:/repo:ro", "-v", f"{folder('deps', repo_id)}:/deps:ro",
-            "-v", f"{script}:/work/{script.name}:ro", "-v", f"{folder('out', repo_id)}:/out:rw",
-            "-e", "PHYSVERIFY_REPO=/repo", IMAGE, "python", f"/work/{script.name}", *extra]
+            "-v", f"{script.parent}:/work:ro", "-v", f"{folder('out', repo_id)}:/out:rw",
+            "-e", "PHYSVERIFY_REPO=/repo", "-e", f"PHYSVERIFY_REPO_COMMIT={head(repo)}", IMAGE, "python", f"/work/{script.name}", *extra]
     try:
         return docker(args, timeout=TIME_LIMIT)
     except subprocess.TimeoutExpired:
