@@ -101,14 +101,13 @@ def test_projectile_v1_euler_is_first_order(mode):
 
 @pytest.mark.skipif(three_body_missing, reason="three-body-simulation not found")
 def test_three_body_rhs_and_verlet_pass(three_body_results):
-    known = {"calculate_energy is the conserved quantity", "run_verlet_simulation final state at t_end"}
-    bad = [(k, r.message) for k, r in three_body_results.items() if k[1] not in known and not r.ok]
+    bad = [(k, r.message) for k, r in three_body_results.items() if not r.ok]
     assert not bad, bad
 
 
 @pytest.mark.skipif(three_body_missing, reason="three-body-simulation not found")
-@pytest.mark.xfail(reason="finding TB-1, 2026-10-19: run_verlet_simulation stops one step before t_end", strict=False)
 def test_three_body_driver_reaches_t_end(three_body_results):
+    """Regression test for finding TB-1 (2026-10-19), fixed in three-body-simulation 73faf33."""
     key = ("reference", "run_verlet_simulation final state at t_end")
     if key not in three_body_results:
         pytest.skip("needs SciPy")
@@ -116,7 +115,7 @@ def test_three_body_driver_reaches_t_end(three_body_results):
 
 
 @pytest.mark.skipif(three_body_missing, reason="three-body-simulation not found")
-@pytest.mark.xfail(reason="finding TB-2, 2026-10-19: calculate_energy does not soften the potential", strict=False)
 def test_three_body_energy_function_matches_softened_dynamics(three_body_results):
+    """Regression test for finding TB-2 (2026-10-19), fixed in three-body-simulation b83d173."""
     result = three_body_results[("invariant", "calculate_energy is the conserved quantity")]
     assert result.ok, result.message
