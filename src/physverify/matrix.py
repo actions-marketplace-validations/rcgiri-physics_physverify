@@ -13,9 +13,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from .checks import FAMILIES, Check, Result, run_check
-from .problems import heat1d, pendulum, projectile
+from .problems import heat1d, kepler, pendulum, projectile, sod
 
-PROBLEMS = {m.NAME: m for m in (projectile, pendulum, heat1d)}
+PROBLEMS = {m.NAME: m for m in (projectile, pendulum, kepler, heat1d, sod)}
 
 
 @dataclass

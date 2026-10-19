@@ -2,7 +2,7 @@
 
 Checks that a physics simulation solves the right equations at the right accuracy, not only that it runs.
 
-Status: version 0.0.1, an early prototype. It handles ODE systems and one PDE example. It has not been used by anyone else yet.
+Status: version 0.0.1, an early prototype. It handles ODE systems and two 1D PDE examples (heat equation, Sod shock tube). It has not been used by anyone else yet.
 
 ## What it does
 
@@ -49,7 +49,7 @@ python -m pytest -q                             # about 1.5 minutes
 
 ## Seeded-bug benchmark
 
-25 bugs are injected one at a time into three small solvers: a projectile with drag, a double pendulum and the 1D heat equation. Every check is run on each bug. The results are in four files:
+37 bugs are injected one at a time into five small solvers: a projectile with drag, a double pendulum, the Kepler problem, the 1D heat equation and Sod's shock tube (1D Euler equations). Every check is run on each bug. The results are in four files:
 
 - [results/detection_matrix.md](results/detection_matrix.md): the full table.
 - [results/bug_catalogue.md](results/bug_catalogue.md): for each bug, the change, the expected symptom, the predicted checks and the observed checks.
@@ -58,12 +58,12 @@ python -m pytest -q                             # about 1.5 minutes
 
 | | Count |
 |---|---|
-| Bugs seeded | 25 |
-| Flagged by at least one check | 25 |
-| Missed by every check | 0 |
-| False alarms on the 3 bug-free baselines | 0 |
-| Flagged by `mms` / `reference` / `invariant` / `limit` / `patch` | 20 / 18 / 12 / 7 / 21 |
-| Flagged by one family alone | `limit` 2, `patch` 3, all others 0 |
+| Bugs seeded | 37 |
+| Flagged by at least one check | 35 |
+| Missed by every check | 2, both in the Sod solver (see below) |
+| False alarms on the 5 bug-free baselines | 0 |
+| Flagged by `mms` / `reference` / `invariant` / `limit` / `patch` | 27 / 26 / 22 / 14 / 27 |
+| Flagged by one family alone | `invariant` 2, `limit` 2, `patch` 3, all others 0 |
 
 **Reproducing it.** The checks are deterministic. `tests/test_seeded_bugs.py` reruns every check and requires that `detection_matrix.md` and `bug_catalogue.md` match the committed files exactly. Two commands regenerate the tables:
 
@@ -72,21 +72,16 @@ PYTHONPATH=src python -m physverify.matrix results/detection_matrix.md
 PYTHONPATH=src python -m physverify.compare results/comparison.md
 ```
 
-**Against ordinary tests.** [results/comparison.md](results/comparison.md) runs the same 25 bugs through four strategies. "Plain tests" means one run per case, compared with a reference or a known value within 0.1% (1% for the heat solver).
+**Against ordinary tests.** [results/comparison.md](results/comparison.md) runs the same 37 bugs through four strategies. "Plain tests" means one run per case, compared with a reference or a known value within a tolerance: 0.1% for the ODE problems, 1% for the heat solver, and 5% in L1 for Sod.
 
 | Strategy | Bugs caught | False alarms | Runtime on the author's laptop |
 |---|---|---|---|
-| plain tests | 20 of 25 | 0 of 3 | 18 s |
-| `reference` only | 18 of 25 | 0 of 3 | 24 s |
-| `mms` only | 20 of 25 | 0 of 3 | 17 s |
-| all five families | 25 of 25 | 0 of 3 | 45 s |
+| plain tests | 27 of 37 | 0 of 5 | 26 s |
+| `reference` only | 26 of 37 | 0 of 5 | 42 s |
+| `mms` only | 27 of 37 | 0 of 5 | 23 s |
+| all five families | 35 of 37 | 0 of 5 | 76 s |
 
-The plain tests missed five bugs:
-- `quad_drag_abs_vx` and `rk4_stage4_time`, which only show on forced or backward-moving runs.
-- `landing_no_interp`, a 0.1% range error.
-- `extra_time_step` and `source_time_shift` in the heat solver.
-
-A tighter tolerance would catch more of them. The difficulty is choosing it: the order studies need no tolerance on the error itself, only on the order.
+The plain tests missed ten bugs. Most only show on forced or backward-moving runs, are small (a 0.1% range error, gravitational softening), or keep the scheme's order. A tighter tolerance would catch more of them. The difficulty is choosing it: the order studies need no tolerance on the error itself, only on the order.
 
 How to read this:
 
@@ -100,6 +95,11 @@ How to read this:
   - `heat1d/source_time_shift`
   - `projectile/euler_extra_step`
 - **Not independent evidence.** The heat patch test was added after `extra_time_step` was the one miss in the first version of the table. The ODE patch test and the other two order-preserving bugs were added together, after the heat result. So these three detections are not independent evidence. They show that the mechanism works as designed. [docs/patch.md](docs/patch.md) states exactly what the patch check assumes and proves.
+- **Sod: two predictions were wrong, and two bugs are missed.** The predictions and symptoms were written before the checks were run, and the catalogue records where they turned out wrong:
+  - `nonconservative_momentum` was predicted to fail the Sod reference check. Its observed order fell from 0.63 to 0.43, still inside the wide band a discontinuous solution needs, so only the conservation check flags it.
+  - `wave_speed_without_sound` (Rusanov dissipation without the sound speed) was predicted to oscillate. It stayed stable and was slightly more accurate, so nothing flags it.
+  - `reflective_boundary` cannot show before a wave reaches a boundary, and none does by the measurement time. It is listed as a blind spot on purpose.
+- **Order studies on discontinuous solutions are weak.** Sod's L1 order is only known to lie between about 0.5 and 1. That band is too wide to catch a change from 0.63 to 0.43. The exact conservation check is the stronger test there.
 - **A built-in blind spot, shown on purpose.** A manufactured solution built from the code's own right-hand side hides a wrong right-hand side. `tests/test_mms.py` demonstrates this.
 
 ## Results on two real projects
@@ -111,7 +111,7 @@ Run read-only against `projectile-simulation` and `double-pendulum-simulation` (
 
 ## Known limits
 
-- ODE systems get the full treatment. The one PDE example (`heat1d`) uses hand-derived forcing; a symbolic or automatic route for PDEs is not written yet.
+- ODE systems get the full treatment. The PDE examples (`heat1d`, `sod`) are 1D. `physverify.symbolic` derives PDE source terms with SymPy (optional), and the tests use it to check the hand-derived heat sources; it does not yet run a whole PDE order study for you.
 - The `patch` test needs a manufactured solution the scheme reproduces exactly. Finding one is easy for a three-point stencil with forward Euler and can be hard or impossible for other schemes. The "time-only" and "grid-only" studies isolate one kind of error only to leading order: the time-stepping error is itself smoothed by the discrete Laplacian, a cross term of order dt * dx^2 (visible as about 0.1% differences between grids in `tests/test_reference_problems.py`).
 - The error floor in `check_order` is 1e-12, or 1e-13 times the solution's size if that is larger (`physverify.order.effective_floor`). Round-off grows with the number of steps too, so very long runs may need a larger floor.
 - MMS needs a way to add a source term. Codes without one need a small adapter, and an adapter can itself be wrong.
@@ -145,7 +145,9 @@ tests/            86 tests, including the seeded-bug regression
 
 ## Next steps (not done)
 
-PDE manufactured solutions with symbolic derivatives, a pytest plugin, an HTML report, an MCP or Claude Code hook so an AI assistant can run the checks after writing simulation code, and more benchmark problems (Kepler, Sod shock tube, 2D Ising).
+- Try it on someone else's real solver. Nobody but the author has used it yet.
+- A limit check for Sod (shock speed from the Rankine-Hugoniot conditions), and an exactness check for more PDE schemes.
+- 2D problems. The 2D Ising model is stochastic, so order-of-convergence and exactness checks do not apply; it needs statistical checks, which are not built.
 
 ## Licence
 

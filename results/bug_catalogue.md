@@ -144,6 +144,55 @@ Predictions and symptoms were written from reasoning before the checks were run.
 - Predicted to be flagged by: mms, patch, reference
 - Flagged by: invariant, mms, patch, reference
 
+## kepler / inverse_r_force
+
+- Change: force magnitude GM/r instead of GM/r^2
+- Expected symptom: wrong orbit; energy drifts, angular momentum is still conserved (the force is still central)
+- Predicted to be flagged by: invariant, limit, mms, patch, reference
+- Flagged by: invariant, limit, mms, patch, reference
+
+## kepler / y_force_sign
+
+- Change: the y component of the force has the wrong sign
+- Expected symptom: force no longer central: energy and angular momentum both drift
+- Predicted to be flagged by: invariant, limit, mms, patch, reference
+- Flagged by: invariant, limit, mms, patch, reference
+
+## kepler / gm_one_percent
+
+- Change: GM is 1% too large in the force (for example a unit-conversion constant)
+- Expected symptom: error plateaus; the energy computed with the true GM drifts; the orbit does not close
+- Predicted to be flagged by: invariant, limit, mms, patch, reference
+- Flagged by: invariant, limit, mms, patch, reference
+
+## kepler / softening_left_on
+
+- Change: gravitational softening r^2 + eps^2 with eps = 0.001 left on
+- Expected symptom: a small plateau (relative size about eps^2 / r^2 = 1e-6); visible only once the truncation error is smaller than that
+- Predicted to be flagged by: mms, patch, reference
+- Flagged by: invariant, limit, mms, patch, reference
+
+## kepler / euler_instead_of_rk4
+
+- Change: stepper silently falls back to forward Euler while claiming RK4
+- Expected symptom: order 1 instead of 4. Euler is consistent, so the linear patch solution is still exact
+- Predicted to be flagged by: invariant, mms, reference
+- Flagged by: invariant, limit, mms, reference
+
+## kepler / rk4_weights
+
+- Change: RK4 final combination uses weights 1,1,1,1 instead of 1,2,2,1 (inconsistent scheme)
+- Expected symptom: weights sum to 2/3, so the step is too short: the error does not shrink
+- Predicted to be flagged by: invariant, mms, patch, reference
+- Flagged by: invariant, limit, mms, patch, reference
+
+## kepler / rk4_full_step_stage2
+
+- Change: RK4 stage 2 uses a full step instead of a half step
+- Expected symptom: order drops (to 2 here); the linear patch solution is not reproduced
+- Predicted to be flagged by: mms, patch, reference
+- Flagged by: invariant, limit, mms, patch, reference
+
 ## heat1d / dx_off_by_one
 
 - Change: grid spacing taken as 1/N instead of 1/(N-1) for N nodes
@@ -178,3 +227,38 @@ Predictions and symptoms were written from reasoning before the checks were run.
 - Expected symptom: an O(dt) error like FTCS's own, so the order studies pass; the exact patch solution is lost
 - Predicted to be flagged by: patch
 - Flagged by: patch
+
+## sod / gamma_wrong
+
+- Change: the flux computes pressure with gamma = 5/3 while the initial data use 1.4
+- Expected symptom: wrong wave speeds and plateaus in Sod's problem; the smooth wave has uniform pressure, so it may not see it
+- Predicted to be flagged by: reference
+- Flagged by: invariant, reference
+
+## sod / nonconservative_momentum
+
+- Change: velocity is updated in primitive form (u_t + u u_x + p_x / rho = 0) instead of conserving momentum
+- Expected symptom: momentum not conserved. Predicted before running: the Sod reference check too, through a wrong shock speed. Observed: its order falls from 0.63 to 0.43, still inside the wide band a discontinuous solution needs, so only the conservation check flags it
+- Predicted to be flagged by: invariant
+- Flagged by: invariant
+
+## sod / wave_speed_without_sound
+
+- Change: the Rusanov dissipation uses |u| instead of |u| + c
+- Expected symptom: predicted before running: oscillations at the discontinuities, flagged by the Sod reference check. Observed: the scheme stayed stable and was slightly more accurate (less dissipation), and it is still in conservation form, so no check flags it. A blind spot: the bug is a stability risk, not a wrong answer on this problem
+- Predicted to be flagged by: nothing (blind spot)
+- Flagged by: nothing
+
+## sod / last_step_not_clipped
+
+- Change: the last time step is not shortened to end exactly at t_end
+- Expected symptom: an O(dt) time error, the same order as the scheme's own, so the order studies pass; the conservation check uses the intended time and sees the extra momentum
+- Predicted to be flagged by: invariant
+- Flagged by: invariant
+
+## sod / reflective_boundary
+
+- Change: the boundary cells reflect (velocity negated) instead of letting waves out
+- Expected symptom: nothing until a wave reaches a boundary, which does not happen before t_end: a documented blind spot of every check here
+- Predicted to be flagged by: nothing (blind spot)
+- Flagged by: nothing

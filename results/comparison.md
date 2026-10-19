@@ -1,9 +1,9 @@
 | Strategy | Bugs caught | Missed | False alarms on baselines | Runtime (s) |
 |---|---|---|---|---|
-| plain tests | 20 of 25 | 5 | 0 of 3 | 18.3 |
-| reference only | 18 of 25 | 7 | 0 of 3 | 23.6 |
-| convergence only | 20 of 25 | 5 | 0 of 3 | 16.5 |
-| full suite | 25 of 25 | 0 | 0 of 3 | 45.2 |
+| plain tests | 27 of 37 | 10 | 0 of 5 | 26.3 |
+| reference only | 26 of 37 | 11 | 0 of 5 | 41.5 |
+| convergence only | 27 of 37 | 10 | 0 of 5 | 22.5 |
+| full suite | 35 of 37 | 2 | 0 of 5 | 75.5 |
 
 | Problem | Bug | plain tests | reference only | convergence only | full suite |
 |---|---|---|---|---|---|
@@ -27,10 +27,22 @@
 | pendulum | euler_instead_of_rk4 | caught | caught | caught | caught |
 | pendulum | rk4_weights | caught | caught | caught | caught |
 | pendulum | rk4_full_step_stage2 | caught | caught | caught | caught |
+| kepler | inverse_r_force | caught | caught | caught | caught |
+| kepler | y_force_sign | caught | caught | caught | caught |
+| kepler | gm_one_percent | caught | caught | caught | caught |
+| kepler | softening_left_on | **missed** | caught | caught | caught |
+| kepler | euler_instead_of_rk4 | caught | caught | caught | caught |
+| kepler | rk4_weights | caught | caught | caught | caught |
+| kepler | rk4_full_step_stage2 | caught | caught | caught | caught |
 | heat1d | dx_off_by_one | caught | caught | caught | caught |
 | heat1d | alpha_ignored | caught | caught | caught | caught |
 | heat1d | extra_time_step | **missed** | **missed** | **missed** | caught |
 | heat1d | unstable_dt | caught | caught | caught | caught |
 | heat1d | source_time_shift | **missed** | **missed** | **missed** | caught |
+| sod | gamma_wrong | caught | caught | **missed** | caught |
+| sod | nonconservative_momentum | **missed** | **missed** | **missed** | caught |
+| sod | wave_speed_without_sound | **missed** | **missed** | **missed** | **missed** |
+| sod | last_step_not_clipped | **missed** | **missed** | **missed** | caught |
+| sod | reflective_boundary | **missed** | **missed** | **missed** | **missed** |
 
 Runtimes depend on the machine; the other columns do not (the checks are deterministic).

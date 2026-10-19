@@ -360,6 +360,78 @@
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.0258 and shrinks at about order 0.96
 - limit [small-oscillation frequencies] PASS: frequencies match the closed form (relative error 5.8e-13)
 
+### kepler / (baseline)
+- mms [rk4] PASS: observed order 4.00 (expected 4)
+- reference [rk4] PASS: observed order 4.04 (expected 4)
+- mms [rk4 (whole trajectory)] PASS: observed order 4.00 (expected 4)
+- invariant [rk4] PASS: observed order 4.12 (expected 4)
+- patch [rk4] EXACT: reproduced to round-off (largest error 1.1e-14), as designed
+- invariant [rk4 angular momentum] PASS: observed order 5.03 (expected 4)
+- limit [orbit closes after one period] PASS: observed order 4.14 (expected 4)
+
+### kepler / inverse_r_force
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.073 at the finest level)
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.735 at the finest level)
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.073 at the finest level)
+- invariant [rk4] FAIL: error does not decrease with resolution (about 0.279 at the finest level)
+- patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.165 and shrinks at about order -0.00
+- invariant [rk4 angular momentum] PASS: observed order 5.01 (expected 4)
+- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 1.78 at the finest level)
+
+### kepler / y_force_sign
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.612 at the finest level)
+- reference [rk4] FAIL: error does not decrease with resolution (about 2.6 at the finest level)
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.612 at the finest level)
+- invariant [rk4] FAIL: error does not decrease with resolution (about 4.09 at the finest level)
+- patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.577 and shrinks at about order 0.00
+- invariant [rk4 angular momentum] FAIL: error does not decrease with resolution (about 0.524 at the finest level)
+- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 16.9 at the finest level)
+
+### kepler / gm_one_percent
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.00909 at the finest level)
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.0322 at the finest level)
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.00909 at the finest level)
+- invariant [rk4] FAIL: error does not decrease with resolution (about 0.00952 at the finest level)
+- patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.00552 and shrinks at about order 0.00
+- invariant [rk4 angular momentum] PASS: observed order 5.03 (expected 4)
+- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 0.942 at the finest level)
+
+### kepler / softening_left_on
+- mms [rk4] FAIL: error does not decrease with resolution (about 1.16e-06 at the finest level)
+- reference [rk4] FAIL: error does not decrease with resolution (about 1.37e-05 at the finest level)
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 1.16e-06 at the finest level)
+- invariant [rk4] FAIL: error does not decrease with resolution (about 3.44e-06 at the finest level)
+- patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 4.99e-07 and shrinks at about order 0.00
+- invariant [rk4 angular momentum] PASS: observed order 5.03 (expected 4)
+- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 0.000331 at the finest level)
+
+### kepler / euler_instead_of_rk4
+- mms [rk4] FAIL: observed order 0.99 is below the expected 4
+- reference [rk4] FAIL: observed order 0.95 is below the expected 4
+- mms [rk4 (whole trajectory)] FAIL: observed order 0.99 is below the expected 4
+- invariant [rk4] FAIL: observed order 0.97 is below the expected 4
+- patch [rk4] EXACT: reproduced to round-off (largest error 1.1e-14), as designed
+- invariant [rk4 angular momentum] FAIL: observed order 0.99 is below the expected 4
+- limit [orbit closes after one period] FAIL: observed order 0.49 is below the expected 4
+
+### kepler / rk4_weights
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.326 at the finest level)
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.418 at the finest level)
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.326 at the finest level)
+- invariant [rk4] FAIL: observed order 1.00 is below the expected 4
+- patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.147 and shrinks at about order -0.00
+- invariant [rk4 angular momentum] FAIL: observed order 1.00 is below the expected 4
+- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 2.19 at the finest level)
+
+### kepler / rk4_full_step_stage2
+- mms [rk4] FAIL: observed order 0.99 is below the expected 4
+- reference [rk4] FAIL: observed order 0.99 is below the expected 4
+- mms [rk4 (whole trajectory)] FAIL: observed order 0.99 is below the expected 4
+- invariant [rk4] FAIL: observed order 1.00 is below the expected 4
+- patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.00337 and shrinks at about order 1.00
+- invariant [rk4 angular momentum] FAIL: observed order 1.00 is below the expected 4
+- limit [orbit closes after one period] FAIL: observed order 0.62 is below the expected 4
+
 ### heat1d / (baseline)
 - mms [FTCS coupled dt ~ dx^2] PASS: observed order 2.00 (expected 2)
 - mms [FTCS time-only refinement] PASS: observed order 1.00 (expected 1)
@@ -401,3 +473,33 @@
 - mms [FTCS space-only refinement] PASS: observed order 2.00 (expected 2)
 - reference [FTCS eigenmode decay] PASS: observed order 1.99 (expected 2)
 - patch [FTCS cubic in x, linear in t] FAIL: expected an exact solution to round-off, but the error reaches 0.00111 and shrinks at about order 1.00
+
+### sod / (baseline)
+- reference [Sod shock tube, density L1] PASS: observed order 0.63 (expected 0.5)
+- reference [smooth density wave, periodic] PASS: observed order 0.98 (expected 1)
+- invariant [discrete conservation of mass, momentum, energy] EXACT: reproduced to round-off (largest error 4.4e-16), as designed
+
+### sod / gamma_wrong
+- reference [Sod shock tube, density L1] FAIL: error does not decrease with resolution (about 0.0605 at the finest level)
+- reference [smooth density wave, periodic] PASS: observed order 0.98 (expected 1)
+- invariant [discrete conservation of mass, momentum, energy] FAIL: expected an exact solution to round-off, but the error reaches 0.03 and shrinks at about order -0.00
+
+### sod / nonconservative_momentum
+- reference [Sod shock tube, density L1] PASS: observed order 0.43 (expected 0.5)
+- reference [smooth density wave, periodic] PASS: observed order 0.98 (expected 1)
+- invariant [discrete conservation of mass, momentum, energy] FAIL: expected an exact solution to round-off, but the error reaches 0.0113 and shrinks at about order 0.80
+
+### sod / wave_speed_without_sound
+- reference [Sod shock tube, density L1] PASS: observed order 0.59 (expected 0.5)
+- reference [smooth density wave, periodic] PASS: observed order 0.99 (expected 1)
+- invariant [discrete conservation of mass, momentum, energy] EXACT: reproduced to round-off (largest error 4.4e-16), as designed
+
+### sod / last_step_not_clipped
+- reference [Sod shock tube, density L1] PASS: observed order 0.63 (expected 0.5)
+- reference [smooth density wave, periodic] PASS: observed order 0.98 (expected 1)
+- invariant [discrete conservation of mass, momentum, energy] FAIL: expected an exact solution to round-off, but the error reaches 0.00208 and shrinks at about order 1.33
+
+### sod / reflective_boundary
+- reference [Sod shock tube, density L1] PASS: observed order 0.63 (expected 0.5)
+- reference [smooth density wave, periodic] PASS: observed order 0.98 (expected 1)
+- invariant [discrete conservation of mass, momentum, energy] EXACT: reproduced to round-off (largest error 4.4e-16), as designed

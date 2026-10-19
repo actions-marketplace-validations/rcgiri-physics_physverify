@@ -22,14 +22,28 @@
 | pendulum | euler_instead_of_rk4 | FLAGGED | FLAGGED | FLAGGED | no | no | invariant, mms, reference |
 | pendulum | rk4_weights | FLAGGED | FLAGGED | FLAGGED | no | FLAGGED | invariant, mms, patch, reference |
 | pendulum | rk4_full_step_stage2 | FLAGGED | FLAGGED | FLAGGED | no | FLAGGED | mms, patch, reference |
+| kepler | (none) | ok | ok | ok | ok | ok | baseline (all should pass) |
+| kepler | inverse_r_force | FLAGGED | FLAGGED | FLAGGED | FLAGGED | FLAGGED | invariant, limit, mms, patch, reference |
+| kepler | y_force_sign | FLAGGED | FLAGGED | FLAGGED | FLAGGED | FLAGGED | invariant, limit, mms, patch, reference |
+| kepler | gm_one_percent | FLAGGED | FLAGGED | FLAGGED | FLAGGED | FLAGGED | invariant, limit, mms, patch, reference |
+| kepler | softening_left_on | FLAGGED | FLAGGED | FLAGGED | FLAGGED | FLAGGED | mms, patch, reference |
+| kepler | euler_instead_of_rk4 | FLAGGED | FLAGGED | FLAGGED | FLAGGED | no | invariant, mms, reference |
+| kepler | rk4_weights | FLAGGED | FLAGGED | FLAGGED | FLAGGED | FLAGGED | invariant, mms, patch, reference |
+| kepler | rk4_full_step_stage2 | FLAGGED | FLAGGED | FLAGGED | FLAGGED | FLAGGED | mms, patch, reference |
 | heat1d | (none) | ok | ok | n/a | n/a | ok | baseline (all should pass) |
 | heat1d | dx_off_by_one | FLAGGED | FLAGGED | n/a | n/a | FLAGGED | mms, patch, reference |
 | heat1d | alpha_ignored | FLAGGED | FLAGGED | n/a | n/a | FLAGGED | mms, patch, reference |
 | heat1d | extra_time_step | no | no | n/a | n/a | FLAGGED | patch |
 | heat1d | unstable_dt | FLAGGED | FLAGGED | n/a | n/a | FLAGGED | mms, patch, reference |
 | heat1d | source_time_shift | no | no | n/a | n/a | FLAGGED | patch |
+| sod | (none) | n/a | ok | ok | n/a | n/a | baseline (all should pass) |
+| sod | gamma_wrong | n/a | FLAGGED | FLAGGED | n/a | n/a | reference |
+| sod | nonconservative_momentum | n/a | no | FLAGGED | n/a | n/a | invariant |
+| sod | wave_speed_without_sound | n/a | no | no | n/a | n/a | none (blind spot) |
+| sod | last_step_not_clipped | n/a | no | FLAGGED | n/a | n/a | invariant |
+| sod | reflective_boundary | n/a | no | no | n/a | n/a | none (blind spot) |
 
-Bugs seeded: 25. Flagged by at least one check: 25. Missed by all: 0.
-Bug-free baselines with a false alarm: 0 of 3.
-Bugs flagged per family: mms 20, reference 18, invariant 12, limit 7, patch 21.
-Bugs flagged by that family alone: mms 0, reference 0, invariant 0, limit 2, patch 3.
+Bugs seeded: 37. Flagged by at least one check: 35. Missed by all: 2 (sod/wave_speed_without_sound, sod/reflective_boundary).
+Bug-free baselines with a false alarm: 0 of 5.
+Bugs flagged per family: mms 27, reference 26, invariant 22, limit 14, patch 27.
+Bugs flagged by that family alone: mms 0, reference 0, invariant 2, limit 2, patch 3.

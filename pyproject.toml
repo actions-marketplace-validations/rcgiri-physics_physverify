@@ -12,7 +12,8 @@ license = { text = "MIT" }
 dependencies = ["numpy>=1.24"]
 
 [project.optional-dependencies]
-dev = ["pytest>=8"]
+symbolic = ["sympy>=1.12"]
+dev = ["pytest>=8", "hypothesis>=6", "sympy>=1.12"]
 
 [project.scripts]
 physverify = "physverify.cli:main"
