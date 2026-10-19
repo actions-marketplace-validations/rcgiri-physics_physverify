@@ -37,14 +37,14 @@ After each edit to a `.py` file, the hook runs the specs.
 - **All checks pass:** it prints nothing and exits 0.
 - **A check fails, or a spec cannot be loaded:** it prints a short summary on stderr and exits 2. Claude Code shows that summary to the assistant, which can then fix the code.
 
-Example output for a 10% error in the damping term:
+Real output for a 10% error in the damping term of the example solver:
 
 ```
 physverify: 4 of 4 checks did not pass.
-- FAIL [mms] midpoint damped oscillator: error does not decrease with resolution (about 0.0149 at the finest level)
-- FAIL [reference] midpoint damped oscillator: error does not decrease with resolution (...)
-- FAIL [mms] midpoint damped oscillator (whole trajectory): ...
-- FAIL [patch] midpoint damped oscillator: expected an exact solution to round-off, but the error reaches ...
+- FAIL [mms] midpoint damped oscillator: error does not decrease with resolution (about 0.0114 at the finest level)
+- FAIL [reference] midpoint damped oscillator: error does not decrease with resolution (about 0.028 at the finest level)
+- FAIL [mms] midpoint damped oscillator (whole trajectory): error does not decrease with resolution (about 0.0207 at the finest level)
+- FAIL [patch] midpoint damped oscillator: expected an exact solution to round-off, but the error reaches 0.0152 and shrinks at about order 0.01
 Run `physverify run <spec> --html report.html` for convergence plots.
 ```
 
@@ -73,4 +73,4 @@ The server is written with the standard library only. It implements `initialize`
 - **Hook:** it feeds the hook a PostToolUse event for a solver with a seeded 10% damping error and checks that the failure is reported with exit code 2.
 - **MCP:** it runs the MCP server as a subprocess and calls `run_checks` on the same bug.
 
-These tests simulate the assistant's side. As of 2026-10-19, the hook has not been run inside a live Claude Code session.
+These tests simulate the assistant's side. The installed `physverify hook` command was also run by hand on a PostToolUse event, which produced the output above. As of 2026-10-19, it has not been run inside a live Claude Code session.

@@ -2,7 +2,7 @@
 
 Checks that a physics simulation solves the right equations at the right accuracy, not only that it runs.
 
-Status: version 0.0.1, an early prototype. It handles ODE systems and two 1D PDE examples (heat equation, Sod shock tube). It has not been used by anyone else yet.
+Status: version 0.1.0, an early prototype. It handles ODE systems and two 1D PDE examples (heat equation, Sod shock tube). It has not been used by anyone else yet.
 
 ## What it does
 
@@ -23,8 +23,10 @@ Pass/fail rests on the observed order of convergence (`physverify.order.check_or
 Only NumPy is needed (pytest to run the tests). Install from the folder, or run from source with `PYTHONPATH=src`:
 
 ```bash
-pip install -e .
+pip install -e .            # add [symbolic] for the SymPy helpers, [dev] for the test dependencies
 ```
+
+It is not on PyPI yet. A wheel built from this folder installs and runs on a clean Python 3.14 environment.
 
 Write a spec file that defines `checks()`; [examples/verify_damped_oscillator.py](examples/verify_damped_oscillator.py) checks the solver in [examples/damped_oscillator.py](examples/damped_oscillator.py). You provide an independent reference right-hand side and an `integrate(source, y0, t_end, n_steps)` function that advances your code with an additive source term `source(t)`. Codes with no source hook can still be wrapped; see `src/physverify/adapters/projectile_v2.py` for one that has no time argument either.
 
@@ -135,14 +137,22 @@ For `patch`, no prior work was found. The name comes from finite-element patch t
 
 ```
 src/physverify/
-  order.py        observed order and PASS/FAIL logic
-  mms.py          manufactured solutions (complex-step derivative, no SymPy needed)
-  studies.py      reference, invariant and bundled ODE checks
-  steppers.py     Euler, midpoint, RK4
-  problems/       seeded-bug solvers: projectile, pendulum, heat1d
-  adapters/       read-only adapters for the two real projects
-  matrix.py       builds the detection table
-tests/            86 tests, including the seeded-bug regression
+  order.py          observed order, exactness, PASS/FAIL logic, scale-aware noise floor
+  mms.py            manufactured solutions (complex-step derivative), final-state and whole-trajectory studies
+  studies.py        reference, invariant, patch and plain-test checks; ode_checks bundle
+  steppers.py       Euler, midpoint, RK4
+  symbolic.py       SymPy-derived manufactured sources (optional)
+  report.py         run checks; text, JSON and HTML output
+  cli.py            the physverify command
+  pytest_plugin.py  verify_*.py files as pytest tests
+  agent.py          Claude Code hook and MCP server
+  problems/         seeded-bug solvers: projectile, pendulum, kepler, heat1d, sod
+  adapters/         read-only adapters for the two real projects
+  matrix.py         the detection tables and bug catalogue
+  compare.py        the families against plain tests
+docs/               patch.md (what the exactness checks assume and prove), agent.md
+examples/           a solver and its spec
+tests/              about 140 tests, including the seeded-bug regression
 ```
 
 ## Next steps (not done)
