@@ -69,10 +69,14 @@ def test_pytest_plugin_collects_checks_and_reports_failures(example_dir, pyteste
     monkeypatch.setenv("PYTHONPATH", src)
     for name in ("damped_oscillator.py", "verify_damped_oscillator.py"):
         shutil.copy(example_dir / name, pytester.path / name)
-    result = pytester.runpytest_subprocess("-p", "physverify.pytest_plugin", "-q")
+    # Block the entry-point copy of the plugin by name, then load it explicitly. Without the block,
+    # pytest stops with "Plugin already registered" whenever physverify's metadata is visible
+    # (an installed package, or a stale src/physverify.egg-info); with it, this runs either way.
+    plugin_args = ("-p", "no:physverify", "-p", "physverify.pytest_plugin", "-q")
+    result = pytester.runpytest_subprocess(*plugin_args)
     result.assert_outcomes(passed=4)
 
     break_solver(pytester.path)
-    result = pytester.runpytest_subprocess("-p", "physverify.pytest_plugin", "-q")
+    result = pytester.runpytest_subprocess(*plugin_args)
     result.assert_outcomes(failed=4)
     result.stdout.fnmatch_lines(["*FAIL: error does not decrease*"])

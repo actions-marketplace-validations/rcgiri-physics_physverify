@@ -2,7 +2,9 @@
 
 A `verify_*.py` file defines `checks()`, returning a list of physverify.Check
 (the same spec format as `physverify run`). With physverify installed, plain
-`pytest` collects them; without installing, use `pytest -p physverify.pytest_plugin`.
+`pytest` collects them; do not also pass `-p physverify.pytest_plugin`, because
+pytest then stops with "Plugin already registered". Without installing, use
+`pytest -p physverify.pytest_plugin`.
 Files named verify_*.py that do not define checks() are skipped. Turn the
 plugin off with `-p no:physverify`.
 """

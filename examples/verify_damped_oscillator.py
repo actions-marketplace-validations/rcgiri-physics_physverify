@@ -1,7 +1,8 @@
 """A physverify spec: the checks for examples/damped_oscillator.py.
 
     physverify run examples/verify_damped_oscillator.py --html report.html
-    pytest -p physverify.pytest_plugin examples/verify_damped_oscillator.py
+    pytest examples/verify_damped_oscillator.py                            (physverify installed)
+    pytest -p physverify.pytest_plugin examples/verify_damped_oscillator.py   (not installed; do not use -p when installed)
 
 The reference right-hand side below is written independently of the solver.
 """
