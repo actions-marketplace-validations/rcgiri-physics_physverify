@@ -11,7 +11,7 @@
 - **Scale-aware noise floor.**
 - **Command line.** `physverify run` gives text, JSON (`--json`) and a self-contained HTML report (`--html`). The command also has `matrix` and `compare`.
 - **pytest plugin.** Checks in `verify_*.py` files become tests.
-- **Claude Code hook (`physverify hook`) and a minimal MCP server (`physverify mcp`).** See [docs/agent.md](docs/agent.md).
+- **Claude Code hook (`physverify hook`) and a minimal MCP server (`physverify mcp`).** The server answers both the older `initialize` handshake and the 2026-07-28 per-request protocol (`server/discover`). See [docs/agent.md](docs/agent.md).
 - **SymPy-derived manufactured sources** (`physverify.symbolic`, optional extra `symbolic`).
 - **Hypothesis property tests.**
 

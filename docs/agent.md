@@ -65,7 +65,13 @@ The server speaks MCP over stdio and offers one tool, `run_checks`:
 
 It returns the JSON report: status, message, observed and expected order, step sizes and errors for each check. Failures are summarised at the top.
 
-The server is written with the standard library only. It implements `initialize`, `ping`, `tools/list` and `tools/call`, which is enough for a tool server, but not the whole MCP specification. Anything the code under test prints is sent to stderr, so that it cannot corrupt the protocol stream.
+The server is written with the standard library only. It serves both protocol eras on the same process:
+- the older handshake (`initialize`, protocol versions 2025-11-25 and earlier);
+- the 2026-07-28 revision, which has no handshake: each request carries its protocol version in `_meta`, and `server/discover` reports what the server supports. A client that supports both eras probes with `server/discover` and takes this path; a client that supports only one era works with that era.
+
+In both it implements `ping`, `tools/list` and `tools/call`, which is enough for a tool server, but not the whole MCP specification. Anything the code under test prints is sent to stderr, so that it cannot corrupt the protocol stream.
+
+Safety: `run_checks` and the hook run the project's `verify_*.py` files, which is arbitrary Python. Use them only on projects you would trust to run their own tests, and do not expose the server over a network.
 
 ## What has been tested
 
@@ -74,3 +80,5 @@ The server is written with the standard library only. It implements `initialize`
 - **MCP:** it runs the MCP server as a subprocess and calls `run_checks` on the same bug.
 
 These tests simulate the assistant's side. The installed `physverify hook` command was also run by hand on a PostToolUse event, which produced the output above. As of 2026-10-19, it has not been run inside a live Claude Code session.
+
+For the MCP server, the tests also cover the 2026-07-28 path: `server/discover`, tool list and tool call without a handshake, an unsupported version, and a request missing the required `_meta` fields. The replies for that era were also validated, once and outside the test suite, against the official JSON schema for that revision. The older handshake is tested only in simulation, not against the schemas of the older revisions. The server has not been run with a real MCP client.

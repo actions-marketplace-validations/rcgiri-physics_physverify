@@ -13,8 +13,13 @@ MCP server (`physverify mcp`)
     Model Context Protocol over stdio (newline-delimited JSON-RPC 2.0), with one
     tool, `run_checks`, that takes spec paths and returns the JSON report. It is
     written with the standard library only, so it has no extra dependency; it
-    implements the parts of the protocol a tool server needs (initialize,
-    tools/list, tools/call, ping), not the whole specification.
+    implements the parts of the protocol a tool server needs, not the whole
+    specification. It serves both protocol eras on the same process:
+      - legacy (2025-11-25 and earlier): the client opens with `initialize`;
+      - modern (2026-07-28): no handshake, every request carries its protocol
+        version in `_meta`, and `server/discover` reports what the server supports.
+    A request that carries the modern `_meta` version is served the modern way; an
+    `initialize` request selects legacy behaviour.
 
 Specs are found in this order: `[tool.physverify] specs = [...]` in the nearest
 pyproject.toml, otherwise every verify_*.py under the project folder (skipping
@@ -120,7 +125,22 @@ def hook_main(stdin=None, stderr=None) -> int:
 
 # --- MCP server ---
 
-PROTOCOL_VERSION = "2025-06-18"
+MODERN_VERSION = "2026-07-28"
+LEGACY_VERSIONS = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")  # newest first
+
+META_VERSION = "io.modelcontextprotocol/protocolVersion"
+META_CAPABILITIES = "io.modelcontextprotocol/clientCapabilities"
+META_SERVER_INFO = "io.modelcontextprotocol/serverInfo"
+
+INVALID_PARAMS = -32602
+METHOD_NOT_FOUND = -32601
+UNSUPPORTED_PROTOCOL_VERSION = -32022
+
+CACHE_HINTS = {"ttlMs": 300_000, "cacheScope": "public"}  # the tool list does not change while the server runs
+INSTRUCTIONS = (
+    "Run physverify checks on physics simulation code after writing or editing it. "
+    "The tool executes the project's verify_*.py spec files (Python), so use it only on projects you trust."
+)
 
 TOOLS = [
     {
@@ -143,6 +163,26 @@ TOOLS = [
 ]
 
 
+def _error(msg_id, code: int, message: str, data=None) -> dict:
+    error = {"code": code, "message": message}
+    if data is not None:
+        error["data"] = data
+    return {"jsonrpc": "2.0", "id": msg_id, "error": error}
+
+
+def _run_checks_tool(arguments: dict) -> dict:
+    """The tools/call result body (content and isError), identical in both protocol eras."""
+    specs = [Path(s) for s in arguments.get("specs") or []]
+    if not specs:
+        specs = find_specs(Path(arguments.get("project") or "."))
+    if not specs:
+        return {"content": [{"type": "text", "text": "No spec files found (verify_*.py defining checks())."}], "isError": True}
+    report = run_specs(specs)
+    failed = bool(report["summary"]["not_ok"] or report["load_errors"])
+    text = (failure_summary(report) + "\n\n" if failed else "") + json.dumps(report, indent=2)
+    return {"content": [{"type": "text", "text": text}], "isError": False}
+
+
 def handle(message: dict):
     """Answer one JSON-RPC message; returns the response dict, or None for a notification."""
     from . import __version__
@@ -151,38 +191,56 @@ def handle(message: dict):
     msg_id = message.get("id")
     if msg_id is None:
         return None  # notifications (initialized, cancelled, ...) need no answer
+    params = message.get("params") or {}
+    meta = params.get("_meta") if isinstance(params.get("_meta"), dict) else {}
+    server_info = {"name": "physverify", "version": __version__}
 
     def ok(result):
         return {"jsonrpc": "2.0", "id": msg_id, "result": result}
 
+    # Legacy era: the handshake. `initialize` always selects legacy behaviour.
     if method == "initialize":
-        requested = (message.get("params") or {}).get("protocolVersion") or PROTOCOL_VERSION
-        return ok(
-            {
-                "protocolVersion": requested,
-                "capabilities": {"tools": {}},
-                "serverInfo": {"name": "physverify", "version": __version__},
-            }
-        )
+        requested = params.get("protocolVersion")
+        version = requested if requested in LEGACY_VERSIONS else LEGACY_VERSIONS[0]
+        return ok({"protocolVersion": version, "capabilities": {"tools": {}}, "serverInfo": server_info})
+
+    # Modern era: no handshake; the request itself says which version it speaks.
+    # `server/discover` exists only in this era, so it is always treated as modern.
+    if META_VERSION in meta or method == "server/discover":
+        requested = meta.get(META_VERSION)
+        if requested is None or META_CAPABILITIES not in meta:
+            return _error(msg_id, INVALID_PARAMS, f"missing required _meta field: {META_VERSION!r} and {META_CAPABILITIES!r} are required on every request")
+        if requested != MODERN_VERSION:
+            return _error(msg_id, UNSUPPORTED_PROTOCOL_VERSION, "Unsupported protocol version", {"supported": [MODERN_VERSION], "requested": requested})
+
+        def modern(result, cacheable=False):
+            body = {"resultType": "complete", **result, "_meta": {META_SERVER_INFO: server_info}}
+            if cacheable:
+                body.update(CACHE_HINTS)
+            return ok(body)
+
+        if method == "server/discover":
+            return modern({"supportedVersions": [MODERN_VERSION], "capabilities": {"tools": {}}, "instructions": INSTRUCTIONS}, cacheable=True)
+        if method == "ping":
+            return modern({})
+        if method == "tools/list":
+            return modern({"tools": TOOLS}, cacheable=True)
+        if method == "tools/call":
+            if params.get("name") != "run_checks":
+                return _error(msg_id, INVALID_PARAMS, f"unknown tool {params.get('name')!r}")
+            return modern(_run_checks_tool(params.get("arguments") or {}))
+        return _error(msg_id, METHOD_NOT_FOUND, f"method not found: {method}")
+
+    # Legacy era, after the handshake: results carry no resultType or cache hints.
     if method == "ping":
         return ok({})
     if method == "tools/list":
         return ok({"tools": TOOLS})
     if method == "tools/call":
-        params = message.get("params") or {}
         if params.get("name") != "run_checks":
-            return {"jsonrpc": "2.0", "id": msg_id, "error": {"code": -32602, "message": f"unknown tool {params.get('name')!r}"}}
-        args = params.get("arguments") or {}
-        specs = [Path(s) for s in args.get("specs") or []]
-        if not specs:
-            specs = find_specs(Path(args.get("project") or "."))
-        if not specs:
-            return ok({"content": [{"type": "text", "text": "No spec files found (verify_*.py defining checks())."}], "isError": True})
-        report = run_specs(specs)
-        failed = bool(report["summary"]["not_ok"] or report["load_errors"])
-        text = (failure_summary(report) + "\n\n" if failed else "") + json.dumps(report, indent=2)
-        return ok({"content": [{"type": "text", "text": text}], "isError": False})
-    return {"jsonrpc": "2.0", "id": msg_id, "error": {"code": -32601, "message": f"method not found: {method}"}}
+            return _error(msg_id, INVALID_PARAMS, f"unknown tool {params.get('name')!r}")
+        return ok(_run_checks_tool(params.get("arguments") or {}))
+    return _error(msg_id, METHOD_NOT_FOUND, f"method not found: {method}")
 
 
 def mcp_main(stdin=None, stdout=None) -> int:

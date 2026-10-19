@@ -108,3 +108,89 @@ def test_mcp_server_over_stdio_in_a_subprocess(project):
     responses = [json.loads(l) for l in proc.stdout.splitlines()]
     assert [r["id"] for r in responses] == [1, 2], proc.stderr
     assert "did not pass" in responses[1]["result"]["content"][0]["text"]
+
+
+# --- modern era (MCP 2026-07-28): no handshake, the version travels in every request's _meta ---
+
+MODERN_META = {
+    "io.modelcontextprotocol/protocolVersion": "2026-07-28",
+    "io.modelcontextprotocol/clientInfo": {"name": "test-client", "version": "0"},
+    "io.modelcontextprotocol/clientCapabilities": {},
+}
+
+
+def modern(method, params=None, msg_id=1, meta=None):
+    return {"jsonrpc": "2.0", "id": msg_id, "method": method, "params": {**(params or {}), "_meta": MODERN_META if meta is None else meta}}
+
+
+def test_mcp_discover_reports_the_modern_version_with_cache_hints():
+    result = handle(modern("server/discover"))["result"]
+    assert result["resultType"] == "complete"
+    assert result["supportedVersions"] == ["2026-07-28"]
+    assert result["capabilities"] == {"tools": {}}
+    assert result["_meta"]["io.modelcontextprotocol/serverInfo"]["name"] == "physverify"
+    assert result["ttlMs"] >= 0 and result["cacheScope"] == "public"
+    assert result["instructions"]
+
+
+def test_mcp_modern_list_and_call_work_without_a_handshake(project):
+    listed = handle(modern("tools/list"))["result"]
+    assert listed["resultType"] == "complete" and [t["name"] for t in listed["tools"]] == ["run_checks"]
+    assert listed["ttlMs"] >= 0 and listed["cacheScope"] == "public"
+
+    seed_bug(project)
+    called = handle(modern("tools/call", {"name": "run_checks", "arguments": {"project": str(project)}}, msg_id=2))["result"]
+    assert called["resultType"] == "complete" and called["isError"] is False
+    assert "ttlMs" not in called  # a tool call is never cached
+    assert called["content"][0]["text"].startswith("physverify: 4 of 4 checks did not pass")
+    assert handle(modern("ping"))["result"]["resultType"] == "complete"
+
+
+def test_mcp_modern_unknown_tool_and_method_are_json_rpc_errors():
+    assert handle(modern("tools/call", {"name": "nope"}))["error"]["code"] == -32602
+    assert handle(modern("resources/list"))["error"]["code"] == -32601
+
+
+def test_mcp_modern_rejects_an_unsupported_version_and_lists_the_supported_ones():
+    meta = {**MODERN_META, "io.modelcontextprotocol/protocolVersion": "2999-01-01"}
+    error = handle(modern("tools/list", meta=meta))["error"]
+    assert error["code"] == -32022
+    assert error["data"] == {"supported": ["2026-07-28"], "requested": "2999-01-01"}
+
+
+def test_mcp_modern_rejects_requests_missing_required_meta():
+    no_caps = {"io.modelcontextprotocol/protocolVersion": "2026-07-28"}
+    assert handle(modern("tools/list", meta=no_caps))["error"]["code"] == -32602
+    assert handle({"jsonrpc": "2.0", "id": 1, "method": "server/discover"})["error"]["code"] == -32602
+
+
+def test_mcp_legacy_handshake_still_negotiates_and_results_stay_legacy_shaped():
+    def init(version):
+        message = {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": version}}
+        return handle(message)["result"]["protocolVersion"]
+
+    assert init("2025-06-18") == "2025-06-18"
+    assert init("2024-11-05") == "2024-11-05"
+    assert init("1900-01-01") == "2025-11-25"  # unknown: answer with the newest legacy version served
+    listed = handle({"jsonrpc": "2.0", "id": 2, "method": "tools/list", "params": {"_meta": {"progressToken": 7}}})["result"]
+    assert "resultType" not in listed and "ttlMs" not in listed
+
+
+def test_mcp_server_over_stdio_in_modern_mode_with_no_initialize(project):
+    """A modern client: probe with server/discover, then call the tool, never sending initialize."""
+    seed_bug(project)
+    lines = [
+        modern("server/discover", msg_id=1),
+        modern("tools/call", {"name": "run_checks", "arguments": {"specs": [str(project / "verify_damped_oscillator.py")]}}, msg_id=2),
+    ]
+    proc = subprocess.run(
+        [sys.executable, "-m", "physverify", "mcp"],
+        input="\n".join(json.dumps(m) for m in lines) + "\n",
+        capture_output=True, text=True, timeout=120,
+        env={**__import__("os").environ, "PYTHONPATH": str(ROOT / "src")},
+    )
+    responses = [json.loads(l) for l in proc.stdout.splitlines()]
+    assert [r["id"] for r in responses] == [1, 2], proc.stderr
+    assert responses[0]["result"]["supportedVersions"] == ["2026-07-28"]
+    assert responses[1]["result"]["resultType"] == "complete"
+    assert "did not pass" in responses[1]["result"]["content"][0]["text"]
