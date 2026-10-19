@@ -10,7 +10,7 @@ black box
         the code's error bar for the mean of one chain's series (optional)
 
 white box (optional; checks that need a method the code lacks are skipped)
-    init(L, n_chains, start, rng) -> state      state.spins (n_chains, L, L), state.E, state.M
+    init(L, n_chains, start, rng, h=0.0) -> state   state.spins (n_chains, L, L), state.E, state.M
     sweep(state, T, h, rng)                      one sweep, updating state.E and state.M incrementally
     step(state, sites, u, T, h)                  one single-site update per chain at the given
                                                  sites (flat index) with the given uniforms
@@ -116,7 +116,8 @@ class IsingSampler:
                 right[:, :, -1] = 0.0
             bonds = (s * (right + np.roll(s, -1, axis=1))).sum(axis=(1, 2))
         M = s.sum(axis=(1, 2))
-        return -self.J * bonds - h * M, M
+        field = 2 * h if "field_counted_twice" in self.bugs else h
+        return -self.J * bonds - field * M, M
 
     # --- set-up ---
 

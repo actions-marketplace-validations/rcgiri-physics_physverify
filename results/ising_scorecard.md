@@ -143,6 +143,15 @@ detection of `reject_zero_de` below is therefore not a blind result.
 - Predicted but not flagged: -
 - Flagged but not predicted: -
 
+## field_counted_twice (metropolis)
+
+- Change: measured energy uses -h * (sum of the 4 neighbours) / 2 per site, i.e. -2 h M (dynamics right)
+- Expected symptom: invisible at h = 0; in a field <e> and <e^2> are wrong while m is right (found in a real thesis code)
+- Predicted: bookkeeping, moments
+- Flagged: bookkeeping, moments
+- Predicted but not flagged: -
+- Flagged but not predicted: -
+
 ## spins_zero_one (metropolis)
 
 - Change: spins stored as {0, 1} and used in the +-1 formulas

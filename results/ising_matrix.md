@@ -19,6 +19,7 @@
 | metropolis | no_burn_in | ok | ok | ok | ok | FAIL | ok | ok | FAIL (p) | ok |
 | metropolis | naive_error_bars | ok | ok | ok | ok | ok | ok | ok | ok | FAIL (p) |
 | metropolis | field_sign_wrong | FAIL (p) | FAIL (p) | ok | ok | FAIL (p) | FAIL (p) | ok | ok | ok |
+| metropolis | field_counted_twice | FAIL (p) | ok | ok | ok | FAIL (p) | ok | ok | ok | ok |
 | metropolis | spins_zero_one | FAIL (p) | FAIL (p) | ok | FAIL (p) | FAIL (p) | inconcl. (p) | FAIL (p) | ok | ok |
 | metropolis | reject_zero_de | ok | FAIL (p) | ok | ok | inconcl. | FAIL (p) | ok | ok | ok |
 | heatbath | heatbath_missing_2 | ok | FAIL (p) | ok | FAIL (p) | FAIL (p) | FAIL (p) | FAIL (p) | inconcl. | ok |
@@ -28,7 +29,7 @@
 
 (p) marks a check predicted, before running, to flag the bug. ok = PASS or EXACT; inconcl. = INCONCLUSIVE; n/a = the check does not apply to the algorithm (scripted_rng and acceptance need single-site updates).
 
-Seeded bugs: 20, plus 1 equivalent mutant (negative control). Flagged by at least one check: 20 of 20.
+Seeded bugs: 21, plus 1 equivalent mutant (negative control). Flagged by at least one check: 21 of 21.
 Bug-free baselines with a FAIL: 0 of 4; statistical INCONCLUSIVE on baselines: 0.
-Predictions: 74 predicted detections happened, 1 predicted detections did not, 11 detections were not predicted (details in the scorecard).
+Predictions: 76 predicted detections happened, 1 predicted detections did not, 11 detections were not predicted (details in the scorecard).
 Each statistical check has a false-alarm rate of at most 0.001 (Bonferroni within the check); with 6 statistical checks per sampler the rate per sampler is at most 0.006.

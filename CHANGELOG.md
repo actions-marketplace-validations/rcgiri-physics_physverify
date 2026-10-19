@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+
+Additions that came from testing other people's repositories in the sandbox (`sandbox/`). Each one is a pattern a real code had, or a mistake the first adapter made, and has a test in `tests/test_corpus_lessons.py`.
+
+- **`studies.time_grid_check`.** Checks that a fixed-step run ends at `t_end` after exactly n steps. A `while t <= t_end` loop takes one extra step when t lands on `t_end` exactly (h = 0.5) and the right number otherwise (h = 0.1). An order study that compares at the time nearest `t_end` hid this.
+- **`studies.backward_mms_study`.** An MMS order study run from `t_end` back to 0 with a time-dependent forcing. A code that evaluates its stages at t + h/2 while stepping backwards passes on autonomous problems but is first order here.
+- **Pre-asymptotic hint in `check_order`.** When the fitted order is too low but the pairwise orders are still rising and the last one reaches the expected order, the message says to repeat with finer steps. The status is still FAIL.
+- **`physverify.constants`.** Finds literals close to, but not equal to, a physical constant: π as 3.14, `g = 9`, G in au³/(M☉ yr²) given as 39.4769 (Gaussian) next to an orbital speed of 2π, which assumes 4π². It reports notes, not failures. Short literals are only noted when the name they are assigned to suggests the constant.
+- **`loaders.load_definitions_from_path`.** Loads only the imports, functions, classes and named constants of a script whose top level parses argv or runs a simulation. It can also lift functions defined inside notebook cells (marimo).
+- **Ising seeded bug `field_counted_twice`.** The measured energy uses -h × (sum of the 4 neighbours) / 2 per site, so the field term is -2hM. This was found in a real code. Predicted to be caught by `bookkeeping` and `moments`.
+- Fixed: the `init` signature in the sampler docstring now includes `h`, as the checks call it.
+
 ## 0.1.0 (2026-10-19)
 
 First release on PyPI.

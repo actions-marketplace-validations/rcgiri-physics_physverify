@@ -121,6 +121,11 @@ def check_order(
     p = fit_order(h_f, e_f)
     if p < expected - tol_low:
         msg = f"observed order {p:.2f} is below the expected {expected:g}"
+        pairs = pairwise_orders(h_f, e_f)
+        if len(pairs) >= 2 and np.all(np.diff(pairs) > 0) and pairs[-1] >= expected - tol_low:
+            msg += (f"; the pairwise orders ({', '.join(f'{q:.2f}' for q in pairs)}) are still rising and the last one"
+                    " reaches it, so the steps may be too coarse (pre-asymptotic): repeat with finer steps before"
+                    " calling this a bug")
         status = FAIL
     elif p > expected + tol_high:
         msg = f"observed order {p:.2f} is above the expected {expected:g}; check the expected order"

@@ -2,7 +2,7 @@
 
     python -I sandbox/sandbox.py build
     python -I sandbox/sandbox.py fetch  <id> <git-url> <commit>   # clone on the host, no hooks, no checkout of LFS
-    python -I sandbox/sandbox.py deps   <id>                      # optional: wheels-only install, network on
+    python -I sandbox/sandbox.py deps   <id> [package ...]        # optional: wheels-only install, network on
     python -I sandbox/sandbox.py run    <id> <script> [args ...]  # network off, repo read-only
 
 Folders (under %LOCALAPPDATA%/physverify-corpus or $PHYSVERIFY_CORPUS):
@@ -65,16 +65,19 @@ def fetch(repo_id, url, commit):
     return 0
 
 
-def deps(repo_id):
-    """Install the repo's requirements.txt into deps/<id>, wheels only, so no setup.py runs."""
+def deps(repo_id, packages=()):
+    """Install the repo's requirements.txt, or the named packages, into deps/<id>, wheels only, so no setup.py runs."""
     req = CORPUS / "repos" / repo_id / "requirements.txt"
-    if not req.exists():
-        print("no requirements.txt; nothing to install")
+    if packages:
+        mounts, what = [], list(packages)
+    elif req.exists():
+        mounts, what = ["-v", f"{req}:/req.txt:ro"], ["-r", "/req.txt"]
+    else:
+        print("no requirements.txt and no packages named; nothing to install")
         return 0
     name = f"pv-deps-{repo_id}"
-    return docker(["run", *LOCKDOWN, "--name", name,
-                   "-v", f"{req}:/req.txt:ro", "-v", f"{folder('deps', repo_id)}:/deps:rw",
-                   IMAGE, "pip", "install", "--no-cache-dir", "--only-binary=:all:", "--target=/deps", "-r", "/req.txt"],
+    return docker(["run", *LOCKDOWN, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
+                   IMAGE, "pip", "install", "--no-cache-dir", "--only-binary=:all:", "--target=/deps", *what],
                   timeout=TIME_LIMIT)
 
 
@@ -109,8 +112,8 @@ def main(argv):
         return build()
     if cmd == "fetch" and len(rest) == 3:
         return fetch(*rest)
-    if cmd == "deps" and len(rest) == 1:
-        return deps(*rest)
+    if cmd == "deps" and len(rest) >= 1:
+        return deps(rest[0], rest[1:])
     if cmd == "run" and len(rest) >= 2:
         return run(rest[0], rest[1], rest[2:])
     sys.exit(__doc__)

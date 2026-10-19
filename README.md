@@ -30,7 +30,7 @@ To test it, 37 bugs were added one at a time to five small solvers (projectile, 
 - **0 false alarms** on the bug-free versions.
 - The 2 missed bugs are explained in the [technical details](https://github.com/rcgiri-physics/physverify/blob/main/docs/technical.md).
 
-For the Monte Carlo checks, all 20 seeded bugs were caught with no false alarms.
+For the Monte Carlo checks, all 21 seeded bugs were caught with no false alarms.
 
 The bugs and the checks were written by the same person, so these numbers show the tool works as designed. They are not a promise about bugs in other people's code.
 

@@ -112,6 +112,11 @@ BUGS = {
         _f("bookkeeping", "scripted_rng", "moments", "acceptance"),
         "invisible at h = 0; in a field m has the wrong sign",
     ),
+    "field_counted_twice": IsingBug(
+        "metropolis", "measured energy uses -h * (sum of the 4 neighbours) / 2 per site, i.e. -2 h M (dynamics right)",
+        _f("bookkeeping", "moments"),
+        "invisible at h = 0; in a field <e> and <e^2> are wrong while m is right (found in a real thesis code)",
+    ),
     "spins_zero_one": IsingBug(
         "metropolis", "spins stored as {0, 1} and used in the +-1 formulas",
         _f("bookkeeping", "scripted_rng", "exact_distribution", "moments", "acceptance", "symmetry"),

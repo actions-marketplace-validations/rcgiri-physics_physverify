@@ -144,3 +144,43 @@ def ode_checks(
         p_y0, p_slope = patch
         checks.append(Check("patch", label, lambda: patch_study(integrate, rhs_ref, p_y0, p_slope, t_end, ns)))
     return checks
+
+
+def time_grid_check(times_of_run: Callable, t_start: float, t_stop: float, ns, *, tol: float = 1e-9) -> Result:
+    """The run stops at t_stop after exactly n steps, for step sizes that divide the interval.
+
+    `times_of_run(n)` runs the code with step (t_stop - t_start) / n and returns
+    the times it reports. A loop such as `while t <= t_end: t += h` takes one step
+    too many whenever t lands exactly on t_end in floating point (h = 0.5, 0.25)
+    and the right number otherwise (h = 0.1), so include step sizes that are
+    exact in binary. An order study that compares at the time nearest t_stop
+    cannot see this; this check can.
+    """
+    bad = []
+    for n in ns:
+        t = np.asarray(times_of_run(n), dtype=float)
+        h = abs(t_stop - t_start) / n
+        if len(t) != n + 1 or abs(t[-1] - t_stop) > tol * max(1.0, abs(t_stop)):
+            bad.append(f"h={h:g}: {len(t) - 1} steps ending at t={t[-1]:.6g} (expected {n} ending at {t_stop:g})")
+    if bad:
+        return Result(FAIL, "; ".join(bad))
+    return Result(PASS, f"ends at t={t_stop:g} with the expected number of steps for every h tested")
+
+
+def backward_mms_study(integrate_back: Callable, mms: ManufacturedODE, t_end: float, ns, expected_order, **kw) -> OrderResult:
+    """MMS order study integrating from t_end back to 0.
+
+    `integrate_back(source, y_end, t_end, n)` integrates y' = f(t, y) + source(t)
+    from t_end down to 0 in n steps and returns y(0). Use a manufactured solution
+    whose forcing depends on t: a code that evaluates its stages at t + h/2 while
+    stepping backwards still passes on autonomous problems but drops to first
+    order here.
+    """
+    y_end = mms.value(t_end)
+    y_0 = mms.value(0.0)
+    kw.setdefault("scale", float(np.max(np.abs(y_0))))
+    hs, errs = [], []
+    for n in ns:
+        hs.append(t_end / n)
+        errs.append(max_abs_error(integrate_back(mms.forcing, y_end, t_end, n), y_0))
+    return check_order(hs, errs, expected_order, **kw)

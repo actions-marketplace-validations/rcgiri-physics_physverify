@@ -87,7 +87,7 @@ The calibration in [results/ising_calibration.md](../results/ising_calibration.m
 
 ## Seeded bugs
 
-The benchmark has the 20 bugs of the plan plus the equivalent mutant. The predictions were committed before any bug was run. The outcomes are in:
+The benchmark has the 20 bugs of the plan plus the equivalent mutant, with predictions committed before any bug was run, and one bug added later (`field_counted_twice`, found in a real code; its prediction was written before its run). The outcomes are in:
 - [results/ising_matrix.md](../results/ising_matrix.md): the table;
 - [results/ising_scorecard.md](../results/ising_scorecard.md): predicted against flagged, bug by bug;
 - [results/ising_details.md](../results/ising_details.md): every message.
