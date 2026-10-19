@@ -37,7 +37,11 @@ def load_module_from_path(name: str, path, stubs=()):
         spec = importlib.util.spec_from_file_location(name, path)
         module = importlib.util.module_from_spec(spec)
         sys.modules[name] = module
-        spec.loader.exec_module(module)
+        try:
+            spec.loader.exec_module(module)
+        except BaseException:
+            sys.modules.pop(name, None)  # do not leave a half-initialised module behind
+            raise
     finally:
         sys.dont_write_bytecode = old_flag
         for stub in added:

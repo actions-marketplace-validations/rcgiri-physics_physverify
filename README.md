@@ -69,6 +69,18 @@ Run read-only against `projectile-simulation` and `double-pendulum-simulation` (
 - MMS needs a way to add a source term. Codes without one need a small adapter, and an adapter can itself be wrong.
 - No claim is made that this finds bugs outside the cases shown here.
 
+## Related work
+
+Each part of physverify has earlier work behind it. Searched on 2026-10-19; I did not find a package that combines all five check families with a seeded-bug benchmark, but that is a search result, not proof that none exists.
+
+- Salari and Knupp, [Code Verification by the Method of Manufactured Solutions](https://www.osti.gov/biblio/759450) (Sandia report SAND2000-1444, 2000). Describes MMS and a blind-test protocol for finding which coding mistakes it can and cannot expose. The seeded-bug benchmark here follows the same idea on a much smaller scale.
+- Wu and Mitchell, [Mutant Accuracy Testing for Assessing the Implementation of Numerical Algorithms](https://www.cs.toronto.edu/~rwu/papers/wu2019mutation.pdf) (NSV at CAV, 2019). Tests numerical implementations, correct and with artificially introduced bugs, in MATLAB, by comparing a code's error with that of mutated versions of itself. Its oracle differs from the ones here, and it notes that convergence-rate checks depend on heuristic thresholds, which is the weakness `patch` is meant to address.
+- [MASA](https://github.com/manufactured-solutions/MASA). A C++ library of manufactured solutions for PDE codes. It supplies solutions; it does not run a user's solver and report PASS/FAIL.
+- [ExactPack](https://github.com/lanl/ExactPack) (Los Alamos). A Python package for code verification built on exact solutions of benchmark problems. It complements MMS, and its problems could serve as `reference` cases.
+- [materials-simulation-skills](https://github.com/HeshamFS/materials-simulation-skills). Agent skills for simulation work, including a `benchmark-and-mms-planner` skill. From its skill description it is a planning aid, not a runner of checks on user code (only the description was read). It is the nearest thing found to the planned assistant hook.
+
+For `patch`, no prior work was found. The name comes from finite-element patch tests, which also require a scheme to reproduce a simple field exactly, but I found no published test that uses a manufactured solution inside the scheme's discrete solution space to catch errors of the same order as the truncation error. I did not read the finite-element patch-test or "nearby problems" literature, so similar ideas may exist under other names.
+
 ## Layout
 
 ```
