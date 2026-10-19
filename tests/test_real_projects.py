@@ -69,3 +69,54 @@ def test_projectile_v2_reproduces_the_linear_patch_solution_and_whole_trajectory
     assert projectile_results[("patch", f"{mode}/{method}")].status == "EXACT"
     trajectory = projectile_results[("mms", f"{mode}/{method} (whole trajectory)")]
     assert trajectory.ok, trajectory.message
+
+
+# Stage A audit (docs/plan_audit_and_corpus_study.md, results/own_work/).
+from physverify.adapters import lorenz, projectile_v1, three_body  # noqa: E402
+
+lorenz_missing = not lorenz.source_path().is_file()
+three_body_missing = not three_body.source_path().is_file()
+projectile_v1_missing = not projectile_v1.source_path().is_file()
+
+
+@pytest.fixture(scope="module")
+def three_body_results():
+    return {(c.family, c.label): run_check(c) for c in three_body.checks()}
+
+
+@pytest.mark.skipif(lorenz_missing, reason="lorenz-attractor-simulation not found")
+def test_lorenz_passes_every_check():
+    results = [(c.label, run_check(c)) for c in lorenz.checks()]
+    assert len(results) == 7
+    assert all(r.ok for _, r in results), [(label, r.message) for label, r in results if not r.ok]
+
+
+@pytest.mark.skipif(projectile_v1_missing, reason="projectile-simulation not found")
+@pytest.mark.parametrize("mode", ["vacuum", "linear", "quadratic"])
+def test_projectile_v1_euler_is_first_order(mode):
+    check = next(c for c in projectile_v1.checks() if c.label.startswith(f"v1 {mode}/"))
+    result = run_check(check)
+    assert result.ok, result.message
+
+
+@pytest.mark.skipif(three_body_missing, reason="three-body-simulation not found")
+def test_three_body_rhs_and_verlet_pass(three_body_results):
+    known = {"calculate_energy is the conserved quantity", "run_verlet_simulation final state at t_end"}
+    bad = [(k, r.message) for k, r in three_body_results.items() if k[1] not in known and not r.ok]
+    assert not bad, bad
+
+
+@pytest.mark.skipif(three_body_missing, reason="three-body-simulation not found")
+@pytest.mark.xfail(reason="finding TB-1, 2026-10-19: run_verlet_simulation stops one step before t_end", strict=False)
+def test_three_body_driver_reaches_t_end(three_body_results):
+    key = ("reference", "run_verlet_simulation final state at t_end")
+    if key not in three_body_results:
+        pytest.skip("needs SciPy")
+    assert three_body_results[key].ok, three_body_results[key].message
+
+
+@pytest.mark.skipif(three_body_missing, reason="three-body-simulation not found")
+@pytest.mark.xfail(reason="finding TB-2, 2026-10-19: calculate_energy does not soften the potential", strict=False)
+def test_three_body_energy_function_matches_softened_dynamics(three_body_results):
+    result = three_body_results[("invariant", "calculate_energy is the conserved quantity")]
+    assert result.ok, result.message
