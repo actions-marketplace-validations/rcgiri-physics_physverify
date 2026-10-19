@@ -8,10 +8,10 @@ Scope: 4 Python physics projects. This is not "all my computational physics work
 
 | Project (commit) | Testable | Checks run | Results | Findings by label | Detail |
 |---|---|---|---|---|---|
-| projectile-simulation (`66e3251`) | yes: v2 fully, v1 positions only | 27 (v2) + 4 (v1) | v2: all pass. v1: positions order 1 as designed; range error does not converge smoothly | 1 confirmed bug (v2 range, already fixed and committed); 1 limitation (v1 range); 1 ambiguous spec (drag coefficient in README) | [projectile.md](projectile.md) |
-| double-pendulum-simulation (`405870b`) | yes | 6 + 2 scripted studies | all pass | 1 confirmed (README Lyapunov value is a short-window estimate) | [double_pendulum.md](double_pendulum.md) |
-| lorenz-attractor-simulation (`93ac915`) | yes | 7 + 1 scripted study | all pass | 1 confirmed, minor (Lyapunov script uses SciPy's default rtol = 1e-3) | [lorenz.md](lorenz.md) |
-| three-body-simulation (`2262a15`) | yes | 14 | 12 pass, 2 fail | 1 confirmed bug (Verlet driver stops one step early); 1 ambiguous spec (energy not softened) | [three_body.md](three_body.md) |
+| [projectile-simulation](https://github.com/rcgiri-physics/projectile-simulation) (`66e3251`) | yes: v2 fully, v1 positions only | 27 (v2) + 4 (v1) | v2: all pass. v1: positions order 1 as designed; range error does not converge smoothly | 1 confirmed bug (v2 range, already fixed and committed); 1 limitation (v1 range); 1 ambiguous spec (drag coefficient in README) | [projectile.md](projectile.md) |
+| [double-pendulum-simulation](https://github.com/rcgiri-physics/double-pendulum-simulation) (`405870b`) | yes | 6 + 2 scripted studies | all pass | 1 confirmed (README Lyapunov value is a short-window estimate) | [double_pendulum.md](double_pendulum.md) |
+| [lorenz-attractor-simulation](https://github.com/rcgiri-physics/lorenz-attractor-simulation) (`93ac915`) | yes | 7 + 1 scripted study | all pass | 1 confirmed, minor (Lyapunov script uses SciPy's default rtol = 1e-3) | [lorenz.md](lorenz.md) |
+| [three-body-simulation](https://github.com/rcgiri-physics/three-body-simulation) (`2262a15`) | yes | 14 | 12 pass, 2 fail | 1 confirmed bug (Verlet driver stops one step early); 1 ambiguous spec (energy not softened) | [three_body.md](three_body.md) |
 | discharge_tube | no | 0 | not testable: physics is inside two HTML/JS pages, tied to the animation loop, uses `Math.random` (12 calls) | none | - |
 
 Labels: 1 confirmed bug, 2 ambiguous specification, 3 adapter or tool error, 4 documented limitation, 5 inconclusive.

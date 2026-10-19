@@ -66,6 +66,7 @@ pytest my_spec.py                              # each check becomes a pytest tes
 
 ## More
 
+- [results/own_work/SUMMARY.md](results/own_work/SUMMARY.md): results on four of the author's own public physics projects (two real bugs found and fixed).
 - [docs/technical.md](docs/technical.md): full details, benchmark tables, limits and related work.
 - [docs/patch.md](docs/patch.md): what the exact "patch" checks assume.
 - [docs/ising.md](docs/ising.md): checks for Monte Carlo codes.
