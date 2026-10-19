@@ -15,7 +15,7 @@ import numpy as np
 from ..checks import Check
 from ..mms import ManufacturedODE
 from ..order import check_order
-from ..studies import ode_checks
+from ..studies import close_result, ode_checks, smoke_check
 from ._common import STEPPER_BUGS, BugInfo, families, make_integrate, rk4_with_bugs
 
 NAME = "projectile"
@@ -25,31 +25,43 @@ MODES = ("vacuum", "linear", "quadratic")
 BUGS = {
     "gravity_sign": BugInfo(
         "gravity accelerates the projectile upward",
-        families("mms", "reference", "invariant", "limit"),
+        families("mms", "reference", "invariant", "limit", "patch"),
+        "error does not shrink; energy not conserved; range wrong or never lands",
     ),
     "linear_drag_missing_mass": BugInfo(
         "linear drag coefficient is b instead of b/m",
-        families("mms", "reference"),
+        families("mms", "reference", "patch"),
+        "error plateaus in linear-drag mode only",
     ),
     "quad_drag_factor_half": BugInfo(
         "quadratic drag is missing the factor 1/2",
-        families("mms", "reference"),
+        families("mms", "reference", "patch"),
+        "error plateaus in quadratic-drag mode only",
     ),
     "quad_drag_speed_from_vx": BugInfo(
         "speed in the quadratic drag uses |vx| instead of |v|",
-        families("mms", "reference"),
+        families("mms", "reference", "patch"),
+        "error plateaus in quadratic-drag mode wherever vy is not zero",
     ),
     "quad_drag_abs_vx": BugInfo(
         "x drag uses |vx| instead of vx, which is wrong only when the projectile moves backwards",
-        families("mms"),
+        families("mms", "patch"),
+        "error plateaus only on runs where vx < 0; a forward launch never shows it",
     ),
     "landing_no_interp": BugInfo(
         "range is read from the last step before landing, with no interpolation",
         families("limit"),
+        "range converges at order 1, not 2; the integrator itself is fine",
     ),
     "angle_not_converted": BugInfo(
         "launch angle in degrees is passed to sin/cos unconverted",
         families("limit"),
+        "range wrong by a fixed amount; only the launch set-up is affected",
+    ),
+    "euler_extra_step": BugInfo(
+        "the Euler integrator takes one step more than asked for",
+        families("patch"),
+        "an O(h) error, the same order as Euler's own, so every order study passes",
     ),
     **STEPPER_BUGS,
 }
@@ -130,6 +142,11 @@ MMS_T_END = 1.0
 NS_RK4 = (10, 20, 40, 80, 160)
 NS_EULER = (40, 80, 160, 320, 640)
 Y0_FREE = np.array([0.0, 0.0, 10.0, 12.0])  # moves forwards the whole time, lands after ~2.4 s
+# Linear patch solution. It starts at the origin and has x = t, as the ProjectileV2 adapter
+# needs; vx stays negative and vy changes over the run, so the drag terms are all exercised.
+PATCH = (np.array([0.0, 0.0, -1.0, 2.0]), np.array([1.0, 3.0, 0.5, -1.0]))
+SMOKE_N = 40  # a typical single-resolution test
+SMOKE_RTOL = 1e-3
 
 
 def range_seeded(v0, angle_deg, dt, bugs, mode="vacuum"):
@@ -186,6 +203,7 @@ def checks(bugs=frozenset()) -> list[Check]:
             if method == "euler" and any(b in bugs for b in ("rk4_weights", "rk4_full_step_stage2")):
                 continue
             integrate = make_integrate(rhs_seeded(mode, bugs), bugs, method)
+            trajectory = make_integrate(rhs_seeded(mode, bugs), bugs, method, trajectory=True) if method == "rk4" else None
             out += ode_checks(
                 f"{mode}/{method}",
                 integrate,
@@ -196,6 +214,27 @@ def checks(bugs=frozenset()) -> list[Check]:
                 ns=ns,
                 order=order,
                 quantity=energy_vacuum if mode == "vacuum" else None,
+                patch=PATCH,
+                integrate_trajectory=trajectory,
             )
     out.append(range_check(lambda v0, a, dt: range_seeded(v0, a, dt, bugs)))
+    return out
+
+
+def smoke_checks(bugs=frozenset()) -> list[Check]:
+    """What plain unit tests would look like: one run per mode, one range, each within 0.1%."""
+    out = []
+    for mode in MODES:
+        for method in ("rk4", "euler"):
+            if method == "euler" and any(b in bugs for b in ("euler_instead_of_rk4", "rk4_weights", "rk4_full_step_stage2")):
+                continue
+            n = SMOKE_N if method == "rk4" else 16 * SMOKE_N  # Euler needs many more steps for 0.1%
+            integrate = make_integrate(rhs_seeded(mode, bugs), bugs, method)
+            out.append(smoke_check(f"{mode}/{method}", integrate, rhs_reference(mode), Y0_FREE, MMS_T_END, n, rtol=SMOKE_RTOL))
+
+    def run_range():
+        v0, angle = 30.0, 40.0
+        return close_result(range_seeded(v0, angle, 0.01, bugs), range_vacuum_exact(v0, angle), SMOKE_RTOL)
+
+    out.append(Check("smoke", "vacuum range, dt = 0.01", run_range))
     return out

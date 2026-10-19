@@ -25,6 +25,7 @@ import numpy as np
 
 from ..checks import Check
 from ..order import check_exact, check_order
+from ..studies import close_result
 from ._common import BugInfo, families
 
 NAME = "heat1d"
@@ -40,19 +41,28 @@ BUGS = {
     "dx_off_by_one": BugInfo(
         "grid spacing taken as 1/N instead of 1/(N-1) for N nodes",
         families("mms", "reference", "patch"),
+        "the grid is stretched by N/(N-1); error plateaus",
     ),
     "alpha_ignored": BugInfo(
         "diffusivity left out of the diffusion term (alpha = 1 used)",
         families("mms", "reference", "patch"),
+        "solution decays at the wrong rate; error plateaus",
     ),
     "extra_time_step": BugInfo(
-        "one more time step than needed: an O(dt) error that is the same order as FTCS's own, "
-        "so no convergence-order check can tell it from truncation error",
+        "one more time step than needed",
         families("patch"),
+        "an O(dt) error, the same order as FTCS's own, so no convergence-order check can tell it "
+        "from truncation error",
     ),
     "unstable_dt": BugInfo(
         "time step uses r = 0.6, beyond the FTCS stability limit of 0.5",
-        families("mms", "reference"),
+        families("mms", "reference", "patch"),
+        "the finest grids blow up (non-finite or huge errors); the patch check's coupled runs use the same dt",
+    ),
+    "source_time_shift": BugInfo(
+        "the source term is evaluated at the end of the step, t + dt, instead of t",
+        families("patch"),
+        "an O(dt) error like FTCS's own, so the order studies pass; the exact patch solution is lost",
     ),
 }
 
@@ -133,7 +143,8 @@ def solve(n_nodes, bugs, u0, source=None, n_steps=None):
             new = u.copy()
             new[1:-1] = u[1:-1] + r * lap
             if source is not None:
-                new[1:-1] += dt * source(x[1:-1], i * dt)
+                t_source = (i + 1) * dt if "source_time_shift" in bugs else i * dt
+                new[1:-1] += dt * source(x[1:-1], t_source)
             new[0] = new[-1] = 0.0
             u = new
     return x, u
@@ -189,3 +200,18 @@ def checks(bugs=frozenset()) -> list[Check]:
         Check("reference", "FTCS eigenmode decay", run_reference),
         Check("patch", "FTCS cubic in x, linear in t", run_patch),
     ]
+
+
+SMOKE_NODES = 33
+SMOKE_RTOL = 1e-2  # FTCS on 33 nodes is accurate to a few parts in a thousand here
+
+
+def smoke_checks(bugs=frozenset()) -> list[Check]:
+    """A plain unit test: one grid, the decaying sine mode, within 1%."""
+
+    def run():
+        x, u = solve(SMOKE_NODES, bugs, lambda xx: np.sin(math.pi * xx))
+        exact = np.sin(math.pi * x) * math.exp(-ALPHA * math.pi**2 * T_END)
+        return close_result(u, exact, SMOKE_RTOL)
+
+    return [Check("smoke", "eigenmode decay on 33 nodes", run)]

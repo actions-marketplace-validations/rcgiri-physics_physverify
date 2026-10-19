@@ -48,6 +48,8 @@ def checks(module=None) -> list[Check]:
         ns=P.NS_RK4,
         order=4.0,
         quantity=energy,
+        patch=P.PATCH,
+        integrate_trajectory=make_integrate(rhs, frozenset(), "rk4", trajectory=True),
     )
     out.append(P.frequency_check(rhs, label="mechanics.py small-oscillation frequencies"))
     return out

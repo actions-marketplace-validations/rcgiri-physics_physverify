@@ -56,7 +56,16 @@ def test_projectile_v2_landing_range_is_second_order(projectile_results):
 
 
 @pytest.mark.skipif(pendulum_missing, reason="double-pendulum-simulation not found")
-@pytest.mark.parametrize("family", ["mms", "reference", "invariant", "limit"])
+@pytest.mark.parametrize("family", ["mms", "reference", "invariant", "limit", "patch"])
 def test_double_pendulum_mechanics_passes_all_families(pendulum_results, family):
     results = [r for (fam, _), r in pendulum_results.items() if fam == family]
     assert results and all(r.ok for r in results), [r.message for r in results]
+
+
+@pytest.mark.skipif(projectile_missing, reason="projectile-simulation not found")
+@pytest.mark.parametrize("mode", ["vacuum", "linear", "quadratic"])
+@pytest.mark.parametrize("method", ["rk4", "euler"])
+def test_projectile_v2_reproduces_the_linear_patch_solution_and_whole_trajectory(projectile_results, mode, method):
+    assert projectile_results[("patch", f"{mode}/{method}")].status == "EXACT"
+    trajectory = projectile_results[("mms", f"{mode}/{method} (whole trajectory)")]
+    assert trajectory.ok, trajectory.message

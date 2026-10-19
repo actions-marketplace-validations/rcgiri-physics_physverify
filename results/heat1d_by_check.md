@@ -5,3 +5,4 @@
 | alpha_ignored | FLAGGED | FLAGGED | FLAGGED | FLAGGED | FLAGGED |
 | extra_time_step | no | no | no | no | FLAGGED |
 | unstable_dt | FLAGGED | no | FLAGGED | FLAGGED | FLAGGED |
+| source_time_shift | no | no | no | no | FLAGGED |

@@ -11,8 +11,11 @@ from __future__ import annotations
 
 import math
 
+import numpy as np
+
 from ..checks import Check
 from ..loaders import load_module_from_path
+from ..mms import zero_source
 from ..problems import projectile as P
 from ..studies import ode_checks
 from . import sibling_project
@@ -34,7 +37,7 @@ def _new_sim(module):
     return module.ProjectileV2(mass=p["m"], radius=p["r"], C_d=p["Cd"])
 
 
-def make_integrate(module, mode: str, method: str):
+def make_integrate(module, mode: str, method: str, trajectory: bool = False):
     def integrate(source, y0, t_end, n):
         if y0[0] != 0.0 or y0[1] != 0.0:
             raise ValueError("ProjectileV2 always launches from the origin")
@@ -42,18 +45,24 @@ def make_integrate(module, mode: str, method: str):
         original = sim._state_derivative
         # simulate() runs until landing; stop a run that never lands instead of hanging
         budget = [8 * 10 * n]
+        # In a forced run x = t, and past the measurement time the state no longer matters, so a
+        # strong downward push ends the run (the linear patch solution would never land). Half a
+        # step of margin keeps it out of the last measured step. Free runs are left alone.
+        after = t_end + 0.5 * t_end / n if source is not zero_source else math.inf
+        land = np.array([0.0, 0.0, 0.0, -1000.0])
 
         def wrapped(z, m):
             budget[0] -= 1
             if budget[0] < 0:
                 raise RuntimeError("simulation ran 10x past the measurement time without landing")
-            return original(z, m) + source(z[0])
+            extra = land if z[0] > after else 0.0
+            return original(z, m) + source(z[0]) + extra
 
         sim._state_derivative = wrapped
         v0 = math.hypot(y0[2], y0[3])
         angle = math.degrees(math.atan2(y0[3], y0[2]))
-        trajectory = sim.simulate(v0, angle, mode=mode, dt=t_end / n, method=method)
-        return trajectory[n]
+        states = sim.simulate(v0, angle, mode=mode, dt=t_end / n, method=method)
+        return np.asarray(states[: n + 1]) if trajectory else states[n]
 
     return integrate
 
@@ -73,6 +82,8 @@ def checks(module=None) -> list[Check]:
                 ns=ns,
                 order=order,
                 quantity=P.energy_vacuum if mode == "vacuum" else None,
+                patch=P.PATCH,
+                integrate_trajectory=make_integrate(module, mode, method, trajectory=True),
             )
 
     def range_fn(v0, angle, dt):

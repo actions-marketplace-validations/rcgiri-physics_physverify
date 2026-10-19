@@ -79,9 +79,40 @@ def mms_order_study(
     """Run `integrate` with the manufactured forcing at several step counts."""
     y0 = mms.value(0.0)
     y_exact = mms.value(t_end)
+    order_kwargs.setdefault("scale", float(np.max(np.abs(y_exact))))
     hs, errs = [], []
     for n in ns:
         y_end = integrate(mms.forcing, y0, t_end, n)
         hs.append(t_end / n)
         errs.append(max_abs_error(y_end, y_exact))
+    return check_order(hs, errs, expected_order, **order_kwargs)
+
+
+def mms_trajectory_study(
+    integrate_trajectory: Callable,
+    mms: ManufacturedODE,
+    t_end: float,
+    ns,
+    expected_order: float,
+    **order_kwargs,
+) -> OrderResult:
+    """Like `mms_order_study`, but the error is the largest one over the whole run.
+
+    `integrate_trajectory(source, y0, t_end, n_steps)` returns the n_steps + 1
+    states at t_k = k * t_end / n_steps, starting with y0. A code whose error
+    happens to cancel at the final time, or which goes wrong part way through
+    and recovers, is caught here and not by the final-state check.
+    """
+    y0 = mms.value(0.0)
+    hs, errs, scale = [], [], 0.0
+    for n in ns:
+        states = np.asarray(integrate_trajectory(mms.forcing, y0, t_end, n), dtype=float)
+        if states.shape[0] != n + 1:
+            raise ValueError(f"integrate_trajectory returned {states.shape[0]} states for {n} steps; expected {n + 1}")
+        times = np.linspace(0.0, t_end, n + 1)
+        exact = np.array([mms.value(t) for t in times])
+        scale = max(scale, float(np.max(np.abs(exact))))
+        hs.append(t_end / n)
+        errs.append(max_abs_error(states, exact))
+    order_kwargs.setdefault("scale", scale)
     return check_order(hs, errs, expected_order, **order_kwargs)

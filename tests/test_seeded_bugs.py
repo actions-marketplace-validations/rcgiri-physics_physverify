@@ -73,3 +73,26 @@ def test_every_bug_has_a_description_and_a_known_family():
         for bug, info in module.BUGS.items():
             assert info.description
             assert info.expected <= set(FAMILIES), bug
+
+
+def test_committed_tables_match_a_fresh_run(cache):
+    """Rerunning the benchmark gives the committed tables, so others can reproduce them."""
+    from pathlib import Path
+
+    from physverify.matrix import catalogue, to_markdown
+
+    rows = [_row(cache, name, None) for name in PROBLEMS] + [_row(cache, n, b) for n, b in CASES]
+    order = {(r.problem, r.bug): r for r in rows}
+    rows = []
+    for name, module in PROBLEMS.items():
+        rows.append(order[(name, None)])
+        rows += [order[(name, bug)] for bug in module.BUGS]
+    results = Path(__file__).resolve().parents[1] / "results"
+    assert to_markdown(rows) == (results / "detection_matrix.md").read_text(encoding="utf-8")
+    assert catalogue(rows) == (results / "bug_catalogue.md").read_text(encoding="utf-8")
+
+
+def test_every_bug_records_its_expected_symptom():
+    for module in PROBLEMS.values():
+        for bug, info in module.BUGS.items():
+            assert info.symptom, f"{module.NAME}/{bug}"

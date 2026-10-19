@@ -19,7 +19,22 @@ def fit_order(hs, errors) -> float:
     return float(np.polyfit(np.log(hs), np.log(errors), 1)[0])
 
 
-def check_exact(hs, errors, *, floor: float = 1e-12) -> OrderResult:
+def effective_floor(floor: float, scale: float, rel: float = 1e-13) -> float:
+    """Round-off grows with the size of the solution, so the noise floor does too.
+
+    The floor is the larger of the absolute `floor` (right for solutions of size
+    up to about 10) and `rel` times the solution's size (about 500 machine
+    epsilons, room for round-off accumulated over a few hundred steps). A
+    non-finite scale (a diverged run) leaves the floor unchanged so that the
+    non-finite error is still reported.
+    """
+    scale = abs(float(scale))
+    if not np.isfinite(scale):
+        return floor
+    return max(floor, rel * scale)
+
+
+def check_exact(hs, errors, *, floor: float = 1e-12, scale: float = 1.0) -> OrderResult:
     """Require the error to be at round-off level at every resolution.
 
     For a manufactured solution that lies inside the scheme's discrete solution
@@ -31,7 +46,10 @@ def check_exact(hs, errors, *, floor: float = 1e-12) -> OrderResult:
 
     EXACT  every error is at most `floor`
     FAIL   some error is larger, or non-finite
+
+    `scale` is the size of the solution; see `effective_floor`.
     """
+    floor = effective_floor(floor, scale)
     hs = np.asarray(hs, dtype=float)
     errs = np.asarray(errors, dtype=float)
     order = np.argsort(-hs)
@@ -60,6 +78,7 @@ def check_order(
     tol_high: float = 1.0,
     floor: float = 1e-12,
     fit_points: int = 4,
+    scale: float = 1.0,
 ) -> OrderResult:
     """Compare the observed order of convergence with the order the code claims.
 
@@ -68,9 +87,11 @@ def check_order(
     FAIL      order too low or too high, error plateau, or non-finite error
     INCONCLUSIVE  fewer than two resolutions are above the noise floor
 
-    `floor` is an absolute error level below which round-off dominates; the
-    default suits solutions of size about 1 to 10.
+    `floor` is the error level below which round-off dominates, for a solution
+    of size about 1. Pass `scale` (the size of the solution, for example the
+    largest absolute value of the exact answer) and the floor grows with it.
     """
+    floor = effective_floor(floor, scale)
     hs = np.asarray(hs, dtype=float)
     errs = np.asarray(errors, dtype=float)
     order = np.argsort(-hs)  # coarse to fine

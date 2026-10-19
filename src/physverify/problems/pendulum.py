@@ -12,7 +12,7 @@ import numpy as np
 
 from ..checks import FAIL, PASS, Check, Result
 from ..mms import ManufacturedODE
-from ..studies import ode_checks
+from ..studies import close_result, ode_checks, smoke_check
 from ._common import STEPPER_BUGS, BugInfo, families, make_integrate
 
 NAME = "pendulum"
@@ -21,23 +21,34 @@ PARAMS = dict(m1=1.0, m2=0.8, L1=1.0, L2=0.7, g=9.81)
 BUGS = {
     "coupling_sign": BugInfo(
         "centripetal coupling term of the first equation has the wrong sign",
-        families("mms", "reference", "invariant"),
+        families("mms", "reference", "invariant", "patch"),
+        "error plateaus; energy not conserved",
     ),
     "mass_matrix_missing_cos": BugInfo(
         "mass matrix entry m2*L2*cos(theta1-theta2) is missing its cosine",
-        families("mms", "reference", "invariant"),
+        families("mms", "reference", "invariant", "patch"),
+        "error plateaus; energy not conserved",
     ),
     "gravity_mass_missing": BugInfo(
         "gravity on the first equation uses m1 instead of m1+m2",
-        families("mms", "reference", "invariant", "limit"),
+        families("mms", "reference", "invariant", "limit", "patch"),
+        "error plateaus; energy not conserved; normal-mode frequencies wrong",
+    ),
+    "rk4_stage4_time": BugInfo(
+        "RK4 evaluates its fourth stage at t + h/2 instead of t + h",
+        families("mms", "patch"),
+        "visible only when the right-hand side depends on time: the free pendulum is autonomous, "
+        "so the reference and invariant checks cannot see it; the forced (MMS) runs drop to order 1",
     ),
     "swapped_lengths": BugInfo(
         "second equation uses L2 where L1 belongs in the omega1^2 term",
-        families("mms", "reference", "invariant"),
+        families("mms", "reference", "invariant", "patch"),
+        "error plateaus; energy not conserved",
     ),
     "small_angle_gravity": BugInfo(
         "gravity on the second pendulum uses theta2 instead of sin(theta2)",
-        families("mms", "reference", "invariant"),
+        families("mms", "reference", "invariant", "patch"),
+        "error plateaus at large angles; small-oscillation frequencies unchanged",
     ),
     **STEPPER_BUGS,
 }
@@ -151,6 +162,9 @@ def frequency_check(rhs, label="small-oscillation frequencies", tol=1e-5) -> Che
 MMS_T_END = 1.0
 NS_RK4 = (10, 20, 40, 80, 160)
 Y0_FREE = np.array([0.4, 0.3, 0.0, 0.0])  # moderate amplitude, released from rest
+PATCH = (np.array([0.3, -0.2, 0.5, -0.4]), np.array([0.5, -0.4, 0.3, 0.6]))
+SMOKE_N = 80
+SMOKE_RTOL = 1e-3
 
 
 def checks(bugs=frozenset()) -> list[Check]:
@@ -165,6 +179,23 @@ def checks(bugs=frozenset()) -> list[Check]:
         ns=NS_RK4,
         order=4.0,
         quantity=energy_reference,
+        patch=PATCH,
+        integrate_trajectory=make_integrate(rhs, bugs, "rk4", trajectory=True),
     )
     out.append(frequency_check(rhs))
     return out
+
+
+def smoke_checks(bugs=frozenset()) -> list[Check]:
+    """Plain unit tests: one run against a reference, and energy conserved, each within 0.1%."""
+    rhs = rhs_seeded(bugs)
+    integrate = make_integrate(rhs, bugs, "rk4")
+
+    def run_energy():
+        y = integrate(lambda t: 0.0, Y0_FREE, MMS_T_END, SMOKE_N)
+        return close_result(energy_reference(y), energy_reference(Y0_FREE), SMOKE_RTOL)
+
+    return [
+        smoke_check("rk4", integrate, rhs_reference(), Y0_FREE, MMS_T_END, SMOKE_N, rtol=SMOKE_RTOL),
+        Check("smoke", "energy conserved", run_energy),
+    ]
