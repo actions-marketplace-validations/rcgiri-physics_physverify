@@ -1,6 +1,11 @@
 # Changelog
 
-## 0.1.0 (2026-10-19, not yet published)
+## 0.1.0 (2026-10-19)
+
+First release on PyPI.
+
+- **Stochastic codes.** Checks for 2D Ising Monte Carlo samplers with exact references, 20 seeded bugs and a calibration study ([docs/ising.md](docs/ising.md)).
+- **Audit of the author's public physics projects** ([results/own_work/SUMMARY.md](results/own_work/SUMMARY.md)).
 
 - **Exactness (`patch`) checks for ODE codes.** Every consistent explicit Runge-Kutta method reproduces a solution linear in t exactly, so any error at all is a bug. [docs/patch.md](docs/patch.md) states the assumptions and proofs for this and for the heat-equation patch.
 - **Larger benchmark.** It now has 37 seeded bugs over 5 problems. The new problems are Kepler (energy and angular-momentum invariants, orbit closure) and Sod's shock tube (exact Riemann solution, exact discrete conservation). New bugs include several that keep the scheme's order of convergence.

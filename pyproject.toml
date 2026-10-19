@@ -16,9 +16,25 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Topic :: Scientific/Engineering :: Physics",
     "Framework :: Pytest",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Topic :: Software Development :: Testing",
     "Development Status :: 3 - Alpha",
 ]
 dependencies = ["numpy>=1.24"]
+
+[project.urls]
+Homepage = "https://github.com/rcgiri-physics/physverify"
+Documentation = "https://github.com/rcgiri-physics/physverify/blob/main/docs/technical.md"
+Issues = "https://github.com/rcgiri-physics/physverify/issues"
+Changelog = "https://github.com/rcgiri-physics/physverify/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 symbolic = ["sympy>=1.12"]
