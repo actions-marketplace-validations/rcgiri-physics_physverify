@@ -19,6 +19,38 @@ def fit_order(hs, errors) -> float:
     return float(np.polyfit(np.log(hs), np.log(errors), 1)[0])
 
 
+def check_exact(hs, errors, *, floor: float = 1e-12) -> OrderResult:
+    """Require the error to be at round-off level at every resolution.
+
+    For a manufactured solution that lies inside the scheme's discrete solution
+    space (a "patch test": for example, polynomials a finite-difference stencil
+    differentiates exactly), a correct code reproduces it to round-off whatever
+    the step sizes. Order of convergence cannot see an error that is as small
+    as the scheme's own truncation error and shrinks at the same rate; this
+    can, because the expected error is zero rather than small.
+
+    EXACT  every error is at most `floor`
+    FAIL   some error is larger, or non-finite
+    """
+    hs = np.asarray(hs, dtype=float)
+    errs = np.asarray(errors, dtype=float)
+    order = np.argsort(-hs)
+    hs, errs = hs[order], errs[order]
+    base = dict(expected=float("inf"), hs=tuple(hs), errors=tuple(errs))
+    if not np.all(np.isfinite(errs)):
+        return OrderResult(FAIL, "non-finite error: the solution diverged or produced NaN", **base)
+    worst = float(errs.max())
+    if worst <= floor:
+        return OrderResult(EXACT, f"reproduced to round-off (largest error {worst:.2g}), as designed", **base)
+    msg = f"expected an exact solution to round-off, but the error reaches {worst:.3g}"
+    measurable = errs > floor
+    fitted = float("nan")
+    if measurable.sum() >= 3:
+        fitted = fit_order(hs[measurable], errs[measurable])
+        msg += f" and shrinks at about order {fitted:.2f}"
+    return OrderResult(FAIL, msg, fitted=fitted, **base)
+
+
 def check_order(
     hs,
     errors,

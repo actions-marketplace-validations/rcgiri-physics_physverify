@@ -1,7 +1,7 @@
 import numpy as np
 
 from physverify.checks import EXACT, FAIL, INCONCLUSIVE, PASS
-from physverify.order import check_order, fit_order, pairwise_orders
+from physverify.order import check_exact, check_order, fit_order, pairwise_orders
 
 HS = [0.1, 0.05, 0.025, 0.0125]
 
@@ -53,6 +53,28 @@ def test_input_order_does_not_matter():
     errs = [3.0 * h**4 for h in HS]
     result = check_order(HS[::-1], errs[::-1], 4.0)
     assert result.status == PASS
+
+
+def test_check_exact_accepts_round_off_level_errors():
+    result = check_exact(HS, [3e-16, 1e-15, 5e-16, 2e-15])
+    assert result.status == EXACT and result.ok
+
+
+def test_check_exact_rejects_a_small_error_that_converges_at_the_expected_order():
+    """An error that shrinks at a perfectly good order is still a failure when the answer should be exact."""
+    errs = [3.0 * h for h in HS]  # first order, so check_order(expected=1) would pass it
+    assert check_order(HS, errs, 1.0).status == PASS
+    result = check_exact(HS, errs)
+    assert result.status == FAIL and "exact" in result.message
+
+
+def test_check_exact_reports_the_order_of_a_failing_error():
+    result = check_exact(HS, [3.0 * h for h in HS])
+    assert abs(result.fitted - 1.0) < 1e-9 and "order 1.00" in result.message
+
+
+def test_check_exact_fails_on_non_finite_error():
+    assert check_exact(HS, [1e-15, float("nan"), 1e-15, 1e-15]).status == FAIL
 
 
 def test_only_points_above_the_floor_are_fitted():

@@ -219,21 +219,36 @@
 - limit [small-oscillation frequencies] PASS: frequencies match the closed form (relative error 5.8e-13)
 
 ### heat1d / (baseline)
-- mms [FTCS] PASS: observed order 2.00 (expected 2)
+- mms [FTCS coupled dt ~ dx^2] PASS: observed order 2.00 (expected 2)
+- mms [FTCS time-only refinement] PASS: observed order 1.00 (expected 1)
+- mms [FTCS space-only refinement] PASS: observed order 2.00 (expected 2)
 - reference [FTCS eigenmode decay] PASS: observed order 1.99 (expected 2)
+- patch [FTCS cubic in x, linear in t] EXACT: reproduced to round-off (largest error 2.8e-16), as designed
 
 ### heat1d / dx_off_by_one
-- mms [FTCS] FAIL: observed order 0.91 is below the expected 2
+- mms [FTCS coupled dt ~ dx^2] FAIL: observed order 0.91 is below the expected 2
+- mms [FTCS time-only refinement] FAIL: error does not decrease with resolution (about 0.0117 at the finest level)
+- mms [FTCS space-only refinement] FAIL: observed order 0.91 is below the expected 2
 - reference [FTCS eigenmode decay] FAIL: observed order 1.00 is below the expected 2
+- patch [FTCS cubic in x, linear in t] FAIL: expected an exact solution to round-off, but the error reaches 0.0515 and shrinks at about order 0.34
 
 ### heat1d / alpha_ignored
-- mms [FTCS] FAIL: error does not decrease with resolution (about 0.235 at the finest level)
+- mms [FTCS coupled dt ~ dx^2] FAIL: error does not decrease with resolution (about 0.235 at the finest level)
+- mms [FTCS time-only refinement] FAIL: error does not decrease with resolution (about 0.0698 at the finest level)
+- mms [FTCS space-only refinement] FAIL: error does not decrease with resolution (about 0.272 at the finest level)
 - reference [FTCS eigenmode decay] FAIL: error does not decrease with resolution (about 0.128 at the finest level)
+- patch [FTCS cubic in x, linear in t] FAIL: expected an exact solution to round-off, but the error reaches 0.0789 and shrinks at about order 0.00
 
 ### heat1d / extra_time_step
-- mms [FTCS] PASS: observed order 2.00 (expected 2)
+- mms [FTCS coupled dt ~ dx^2] PASS: observed order 2.00 (expected 2)
+- mms [FTCS time-only refinement] PASS: observed order 1.00 (expected 1)
+- mms [FTCS space-only refinement] PASS: observed order 2.00 (expected 2)
 - reference [FTCS eigenmode decay] PASS: observed order 2.00 (expected 2)
+- patch [FTCS cubic in x, linear in t] FAIL: expected an exact solution to round-off, but the error reaches 0.00212 and shrinks at about order 1.00
 
 ### heat1d / unstable_dt
-- mms [FTCS] FAIL: error does not decrease with resolution (about 4.31e+261 at the finest level)
+- mms [FTCS coupled dt ~ dx^2] FAIL: error does not decrease with resolution (about 4.31e+261 at the finest level)
+- mms [FTCS time-only refinement] PASS: observed order 1.00 (expected 1)
+- mms [FTCS space-only refinement] FAIL: error does not decrease with resolution (about 3.09e+261 at the finest level)
 - reference [FTCS eigenmode decay] FAIL: error does not decrease with resolution (about 2.16e+261 at the finest level)
+- patch [FTCS cubic in x, linear in t] FAIL: expected an exact solution to round-off, but the error reaches 0.349

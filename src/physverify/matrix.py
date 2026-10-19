@@ -99,6 +99,21 @@ def details(rows) -> str:
     return "\n".join(out)
 
 
+def by_check_markdown(rows, problem: str) -> str:
+    """One column per individual check, for a problem whose checks differ in how they refine."""
+    rows = [r for r in rows if r.problem == problem]
+    labels = [(c.family, c.label) for c, _ in rows[0].results]
+    head = "| Bug | " + " | ".join(f"{fam}: {label}" for fam, label in labels) + " |\n"
+    head += "|---|" + "---|" * len(labels) + "\n"
+    lines = []
+    for row in rows:
+        cells = []
+        for _, result in row.results:
+            cells.append(("ok" if row.bug is None else "no") if result.ok else ("FALSE ALARM" if row.bug is None else "FLAGGED"))
+        lines.append(f"| {row.bug or '(none)'} | " + " | ".join(cells) + " |")
+    return head + "\n".join(lines) + "\n"
+
+
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     rows = build_rows()
@@ -109,6 +124,7 @@ def main(argv=None) -> int:
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_text(text, encoding="utf-8")
         path.with_name(path.stem + "_details.md").write_text(details(rows), encoding="utf-8")
+        path.with_name("heat1d_by_check.md").write_text(by_check_markdown(rows, "heat1d"), encoding="utf-8")
     return 0
 
 

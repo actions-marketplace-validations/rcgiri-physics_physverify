@@ -13,7 +13,7 @@ EXACT = "EXACT"  # error below the noise floor at every resolution
 INCONCLUSIVE = "INCONCLUSIVE"
 ERROR = "ERROR"  # the code under test raised an exception
 
-FAMILIES = ("mms", "reference", "invariant", "limit")
+FAMILIES = ("mms", "reference", "invariant", "limit", "patch")
 
 
 @dataclass
@@ -42,6 +42,8 @@ class Check:
     reference  comparison with an independently written reference solution
     invariant  drift of a conserved quantity as the resolution is refined
     limit      a known limiting case (analytic range, normal-mode frequencies, ...)
+    patch      a manufactured solution the scheme should reproduce exactly (to round-off),
+               so any error at all is a bug, whatever its order
     """
 
     family: str

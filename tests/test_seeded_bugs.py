@@ -44,6 +44,28 @@ def test_predicted_checks_flag_the_bug(cache, problem, bug):
         assert not flagged, f"documented blind spot is now detected by {sorted(flagged)}; update the catalogue"
 
 
+def test_separate_refinement_alone_cannot_see_the_extra_time_step(cache):
+    """Recorded finding. Refining dt and dx separately was expected to expose an extra time step.
+
+    It does not: the extra step is an O(dt) error, the same order as forward Euler's own, so the
+    time-only study still sees order 1 and the other studies still see their design order. Only the
+    patch test, which expects an exact answer rather than a small one, flags it.
+    """
+    row = _row(cache, "heat1d", "extra_time_step")
+    results = {(check.family, check.label): result for check, result in row.results}
+    for label in ("FTCS coupled dt ~ dx^2", "FTCS time-only refinement", "FTCS space-only refinement"):
+        assert results[("mms", label)].ok, label
+    patch = results[("patch", "FTCS cubic in x, linear in t")]
+    assert not patch.ok
+    assert abs(patch.fitted - 1.0) < 0.2, patch.message  # the leftover error is first order in dt
+
+
+def test_patch_test_passes_on_the_bug_free_heat_solver_to_round_off(cache):
+    row = _row(cache, "heat1d", None)
+    patch = {check.family: result for check, result in row.results}["patch"]
+    assert patch.status == "EXACT" and max(patch.errors) < 1e-12
+
+
 def test_every_bug_has_a_description_and_a_known_family():
     from physverify.checks import FAMILIES
 

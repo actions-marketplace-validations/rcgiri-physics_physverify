@@ -6,7 +6,7 @@ Status: version 0.0.1, an early prototype. It handles ODE systems and one PDE ex
 
 ## What it does
 
-You describe the physics once, independently of the code under test (a reference right-hand side). physverify then runs four kinds of check:
+You describe the physics once, independently of the code under test (a reference right-hand side). physverify then runs five kinds of check:
 
 | Family | What it does | What it can see |
 |---|---|---|
@@ -14,6 +14,7 @@ You describe the physics once, independently of the code under test (a reference
 | `reference` | Compares your code with a solution of the reference equations computed independently. | The same bugs, but only along the one trajectory you run. |
 | `invariant` | Drift of a conserved quantity (energy, say) as the step shrinks. | Inconsistency between the equations of motion and the conserved quantity. |
 | `limit` | A known limiting case: closed-form range, normal-mode frequencies. | Bugs in post-processing or in limits the other checks do not reach. |
+| `patch` | A manufactured solution that lies inside the scheme's discrete solution space (for example cubic in x and linear in t for a three-point stencil with forward Euler), so a correct code reproduces it to round-off for any grid and step. | An error that is as small as the scheme's own truncation error and shrinks at the same rate, which every order-of-convergence check accepts. Only available where such a solution exists; here, for the heat solver. |
 
 Pass/fail rests on the observed order of convergence (`physverify.order.check_order`), which reports PASS, FAIL, EXACT (error at round-off, order not measurable) or INCONCLUSIVE.
 
@@ -24,7 +25,7 @@ Only NumPy is needed (pytest to run the tests). No install step:
 ```bash
 PYTHONPATH=src python examples/check_my_solver.py   # check a small solver, then try the 10% bug described inside
 PYTHONPATH=src python -m physverify.matrix results/detection_matrix.md   # the seeded-bug table below
-python -m pytest -q                                  # 70 tests, about 30 s
+python -m pytest -q                                  # 86 tests, about 45 s
 ```
 
 To check your own ODE code you provide two things: an independent reference right-hand side, and an `integrate(source, y0, t_end, n_steps)` function that advances your code with an additive source term `source(t)`. `examples/check_my_solver.py` is the shortest working example. Codes with no source hook can still be wrapped; see `src/physverify/adapters/projectile_v2.py` for one that has no time argument either.
@@ -36,18 +37,20 @@ To check your own ODE code you provide two things: an independent reference righ
 | | Count |
 |---|---|
 | Bugs seeded | 22 |
-| Flagged by at least one check | 21 |
-| Missed by every check | 1 (`heat1d/extra_time_step`) |
+| Flagged by at least one check | 22 |
+| Missed by every check | 0 |
 | False alarms on the 3 bug-free baselines | 0 |
-| Flagged by `mms` / `reference` / `invariant` / `limit` | 19 / 18 / 12 / 7 |
-| Flagged by one family alone | `mms` 1, `limit` 2, `reference` 0, `invariant` 0 |
+| Flagged by `mms` / `reference` / `invariant` / `limit` / `patch` | 19 / 18 / 12 / 7 / 4 (`patch` exists for the heat solver only, which has 4 of the 22 bugs) |
+| Flagged by one family alone | `mms` 1, `limit` 2, `patch` 1, `reference` 0, `invariant` 0 |
+
+The heat solver has its own per-check table, [results/heat1d_by_check.md](results/heat1d_by_check.md), because its checks refine differently (coupled dt and dx, time step only, grid only, exact patch).
 
 How to read this:
 
 - The bugs and the checks were written by the same person (the author), and the predicted detections come from reasoning, not from tuning. This measures these 22 bugs. It is not an estimate of how many real-world bugs would be caught.
 - `mms` and `reference` overlap heavily. The one bug only `mms` caught is `quad_drag_abs_vx`, which is wrong only when the projectile moves backwards. A single forward trajectory never reaches it.
 - `limit` caught two bugs nothing else did (landing point not interpolated, launch angle not converted to radians). Both live in the code around the integrator, not in it.
-- The one blind spot is real and understood: an extra time step is an O(dt) shift, and with dt tied to dx^2 it is the same order as the scheme's own error, so no convergence-order test sees it.
+- The first version of this table had one miss: `heat1d/extra_time_step`. An extra time step is an O(dt) error, the same order as forward Euler's own, so every order-of-convergence check accepts it. Refining the time step and the grid separately (the obvious remedy) did **not** help: the time-only study still sees order 1 and the grid-only study still sees order 2. What caught it was the `patch` test, which expects zero error rather than a small one. That check was added after seeing the miss, so the 22-of-22 figure for this bug is not an independent result, and shift-type errors in other solvers would need their own exact solutions.
 - A manufactured solution built from the code's own right-hand side hides a wrong right-hand side. `tests/test_mms.py` demonstrates this on purpose.
 
 ## Results on two real projects
@@ -60,6 +63,7 @@ Run read-only against `projectile-simulation` and `double-pendulum-simulation` (
 ## Known limits
 
 - ODE systems get the full treatment. The one PDE example (`heat1d`) uses hand-derived forcing; a symbolic or automatic route for PDEs is not written yet.
+- The `patch` test needs a manufactured solution the scheme reproduces exactly. Finding one is easy for a three-point stencil with forward Euler and can be hard or impossible for other schemes. The "time-only" and "grid-only" studies isolate one kind of error only to leading order: the time-stepping error is itself smoothed by the discrete Laplacian, a cross term of order dt * dx^2 (visible as about 0.1% differences between grids in `tests/test_reference_problems.py`).
 - The error floor in `check_order` is an absolute 1e-12, which suits solutions of size 1 to 10. Rescale it for other magnitudes.
 - Checks measure the state at one final time, not the whole trajectory.
 - MMS needs a way to add a source term. Codes without one need a small adapter, and an adapter can itself be wrong.
@@ -76,7 +80,7 @@ src/physverify/
   problems/       seeded-bug solvers: projectile, pendulum, heat1d
   adapters/       read-only adapters for the two real projects
   matrix.py       builds the detection table
-tests/            70 tests, including the seeded-bug regression
+tests/            86 tests, including the seeded-bug regression
 ```
 
 ## Next steps (not done)
