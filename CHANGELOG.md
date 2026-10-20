@@ -11,6 +11,9 @@ Additions that came from testing other people's repositories in the sandbox (`sa
 - **`loaders.load_definitions_from_path`.** Loads only the imports, functions, classes and named constants of a script whose top level parses argv or runs a simulation. It can also lift functions defined inside notebook cells (marimo).
 - **Ising seeded bug `field_counted_twice`.** The measured energy uses -h × (sum of the 4 neighbours) / 2 per site, so the field term is -2hM. This was found in a real code. Predicted to be caught by `bookkeeping` and `moments`.
 - Fixed: the `init` signature in the sampler docstring now includes `h`, as the checks call it.
+- **`physverify.butcher`.** Checks a Runge-Kutta table's order exactly, from the order conditions on every rooted tree up to the claimed order plus one. It works for explicit and implicit tables and needs no test problem. Testing real packages found 3 wrong order labels in one and embedded weights that do not sum to 1 in another. The default tolerance 1e-8 accepts coefficients typed with about 10 digits and notes them.
+- **More hints in `check_order`.** It says when the errors are not monotone (the leading term changes sign, or round-off is reached) and when the error is the same at every resolution, which points to something independent of the step. In a molecular-dynamics code, one pair crossing an unshifted cutoff added V(r_c) = -0.0163 to the energy whatever dt was.
+- **Sandbox.** `deps` installs against the image's own package versions as constraints and gets a larger `/tmp`. The image has `libX11` and `libGL` for wheels such as Taichi. `fetch` leaves Git LFS files as pointer files even where LFS is marked required. `PHYSVERIFY_PASS_ENV` passes named environment variables into a run.
 
 ## 0.1.0 (2026-10-19)
 

@@ -90,3 +90,36 @@ def test_load_definitions_skips_the_script_body(tmp_path):
     )
     mod = load_definitions_from_path("sim_defs", src, keep=("J",), inner=("inner",))
     assert mod.energy(3.0) == -6.0 and mod.inner(1) == 2
+
+
+def test_butcher_order_conditions():
+    from physverify.butcher import check_tableau, tableau_order, trees
+
+    assert [len(trees(n)) for n in range(1, 8)] == [1, 1, 2, 4, 9, 20, 48]
+    A = np.array([[0, 0, 0, 0], [0.5, 0, 0, 0], [0, 0.5, 0, 0], [0, 0, 1, 0]])
+    b = np.array([1 / 6, 1 / 3, 1 / 3, 1 / 6])
+    assert tableau_order(A, b) == 4
+    assert check_tableau(A, b, [0, 0.5, 0.5, 1], claimed=4).status == PASS
+    # a real case: an order-3 table labelled as order 4
+    bad = check_tableau(A, b, claimed=5)
+    assert bad.status == FAIL and "only up to 4" in bad.message
+    s = np.sqrt(15)
+    gauss3 = np.array([[5 / 36, 2 / 9 - s / 15, 5 / 36 - s / 30], [5 / 36 + s / 24, 2 / 9, 5 / 36 - s / 24],
+                       [5 / 36 + s / 30, 2 / 9 + s / 15, 5 / 36]])
+    assert tableau_order(gauss3, [5 / 18, 4 / 9, 5 / 18], max_order=7) == 6  # implicit tables work too
+    # coefficients typed with few digits are noted
+    rough = check_tableau(np.round(gauss3, 8), [5 / 18, 4 / 9, 5 / 18], claimed=6, tol=1e-6)
+    assert rough.status == PASS and "limited digits" in rough.message
+
+
+def test_order_check_flags_non_monotone_errors():
+    hs = np.array([0.1, 0.05, 0.025, 0.0125])
+    errs = np.array([1e-6, 1e-8, 2e-8, 1e-8])  # leading term changes sign between the second and third
+    r = check_order(hs, errs, 4.0, floor=1e-14)
+    assert r.status == FAIL and "not monotone" in r.message
+
+
+def test_order_check_explains_a_step_independent_error():
+    hs = np.array([0.004, 0.002, 0.001, 0.0005])
+    r = check_order(hs, np.array([0.0164, 0.0164, 0.0163, 0.0163]), 2.0)  # the MD cutoff-crossing case
+    assert r.status == FAIL and "independent of the step" in r.message

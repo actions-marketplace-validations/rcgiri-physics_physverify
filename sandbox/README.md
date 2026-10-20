@@ -9,7 +9,7 @@ Every external repository is treated as untrusted. `sandbox.py` runs it in a fre
 | User | uid 10001, all capabilities dropped, `no-new-privileges`, no sudo |
 | Resources | 2 CPUs, 2 GB memory (no swap), 256 processes, 1024 open files, 1 GB max file size |
 | Time | 900 s per run (`PHYSVERIFY_TIME_LIMIT`), then the container is killed |
-| Image | Python 3.12 slim pinned by digest, NumPy, SciPy, SymPy, Matplotlib (Agg), pytest, physverify |
+| Image | Python 3.12 slim pinned by digest, NumPy, SciPy, SymPy, Matplotlib (Agg), pytest, physverify; libX11 and libGL for wheels that link them |
 
 The repository is cloned on the host with hooks, symlinks and LFS turned off and checked out at a fixed commit. Nothing from the repository runs on the host. Extra requirements, when needed, are installed by `deps` as wheels only (no `setup.py`) into a separate folder that is mounted read-only during `run`; `deps` is the only step with network access.
 
@@ -31,3 +31,8 @@ Mistakes made while writing the first adapters, worth avoiding in the next ones:
 - Before calling a low order a bug, refine. Large-amplitude problems can be pre-asymptotic at the usual step counts, and `check_order` now says when that looks likely.
 - A Crank–Nicolson reference with a start that does not match the boundary condition rings; use a few backward Euler steps first (Rannacher start).
 - When a sampler fails a statistical check, rerun it with an independently computed observable to tell a sampling bug from a measurement bug.
+- Rebuild the image after changing physverify: the image holds a copy of `src/`, not a live mount.
+- Taichi fields can be padded to a block size; read only the first N rows.
+- With an unshifted pair potential, a pair crossing the cutoff changes the energy by V(r_c) whatever dt is. Choose starting positions with no pair near the cutoff, or the energy check measures the model, not the integrator.
+- For Butcher tables, check the order conditions (`physverify.butcher`) before running order studies; they settle the question exactly.
+- Corpus data location: set `PHYSVERIFY_CORPUS` (on the author's machine `G:\physverify-corpus`, to keep the C drive free).

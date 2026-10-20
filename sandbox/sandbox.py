@@ -58,7 +58,8 @@ def fetch(repo_id, url, commit):
     dest = CORPUS / "repos" / repo_id
     if dest.exists():
         sys.exit(f"{dest} exists; delete it first")
-    safe = ["-c", "core.hooksPath=/dev/null", "-c", "core.symlinks=false", "-c", "filter.lfs.smudge=", "-c", "filter.lfs.process="]
+    safe = ["-c", "core.hooksPath=/dev/null", "-c", "core.symlinks=false", "-c", "filter.lfs.smudge=", "-c", "filter.lfs.process=",
+            "-c", "filter.lfs.clean=", "-c", "filter.lfs.required=false"]  # LFS files stay as small pointer files
     env = dict(os.environ, GIT_LFS_SKIP_SMUDGE="1", GIT_TERMINAL_PROMPT="0")
     subprocess.run(["git", *safe, "clone", "--no-checkout", "--filter=blob:limit=20m", url, str(dest)], check=True, env=env)
     subprocess.run(["git", *safe, "-C", str(dest), "checkout", "--detach", commit], check=True, env=env)
@@ -66,7 +67,11 @@ def fetch(repo_id, url, commit):
 
 
 def deps(repo_id, packages=()):
-    """Install the repo's requirements.txt, or the named packages, into deps/<id>, wheels only, so no setup.py runs."""
+    """Install the repo's requirements.txt, or the named packages, into deps/<id>, wheels only, so no setup.py runs.
+
+    The image's own packages are passed as constraints: a dependency that needs a different NumPy fails here
+    instead of silently shadowing the image's version during `run`.
+    """
     req = CORPUS / "repos" / repo_id / "requirements.txt"
     if packages:
         mounts, what = [], list(packages)
@@ -76,8 +81,11 @@ def deps(repo_id, packages=()):
         print("no requirements.txt and no packages named; nothing to install")
         return 0
     name = f"pv-deps-{repo_id}"
-    return docker(["run", *LOCKDOWN, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
-                   IMAGE, "pip", "install", "--no-cache-dir", "--only-binary=:all:", "--target=/deps", *what],
+    # pip unpacks wheels in /tmp: give this step more room than a run gets
+    lockdown = [a if not a.startswith("--tmpfs=/tmp") else "--tmpfs=/tmp:rw,nosuid,nodev,size=4g" for a in LOCKDOWN]
+    return docker(["run", *lockdown, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
+                   IMAGE, "pip", "install", "--no-cache-dir", "--only-binary=:all:", "--target=/deps",
+                   "--constraint=/opt/constraints.txt", *what],
                   timeout=TIME_LIMIT)
 
 
@@ -95,7 +103,7 @@ def run(repo_id, script, extra):
     args = ["run", *LOCKDOWN, "--network=none", "--name", name,
             "-v", f"{repo}:/repo:ro", "-v", f"{folder('deps', repo_id)}:/deps:ro",
             "-v", f"{script.parent}:/work:ro", "-v", f"{folder('out', repo_id)}:/out:rw",
-            "-e", "PHYSVERIFY_REPO=/repo", "-e", f"PHYSVERIFY_REPO_COMMIT={head(repo)}", IMAGE, "python", f"/work/{script.name}", *extra]
+            "-e", "PHYSVERIFY_REPO=/repo", *[a for k in os.environ.get("PHYSVERIFY_PASS_ENV", "").split(",") if k for a in ("-e", f"{k}={os.environ[k]}")], "-e", f"PHYSVERIFY_REPO_COMMIT={head(repo)}", IMAGE, "python", f"/work/{script.name}", *extra]
     try:
         return docker(args, timeout=TIME_LIMIT)
     except subprocess.TimeoutExpired:

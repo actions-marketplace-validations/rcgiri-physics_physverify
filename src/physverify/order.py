@@ -110,12 +110,13 @@ def check_order(
         return OrderResult(INCONCLUSIVE, "fewer than 2 resolutions above the noise floor", **base)
 
     if e_m[-2] / e_m[-1] < 1.2:
-        return OrderResult(
-            FAIL,
-            f"error does not decrease with resolution (about {e_m[-1]:.3g} at the finest level)",
-            fitted=0.0,
-            **base,
-        )
+        msg = f"error does not decrease with resolution (about {e_m[-1]:.3g} at the finest level)"
+        if len(e_m) >= 3 and e_m.max() / e_m.min() < 1.1:
+            # seen in a real MD code: one pair crossing an unshifted cutoff adds V(rc) to the energy, whatever dt is
+            msg += ("; the error is the same at every resolution, which points to something independent of the step"
+                    " (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a"
+                    " different problem) rather than to the integrator")
+        return OrderResult(FAIL, msg, fitted=0.0, **base)
 
     h_f, e_f = h_m[-fit_points:], e_m[-fit_points:]
     p = fit_order(h_f, e_f)
@@ -127,6 +128,9 @@ def check_order(
                     " reaches it, so the steps may be too coarse (pre-asymptotic): repeat with finer steps before"
                     " calling this a bug")
         status = FAIL
+        if np.any(np.diff(e_f) >= 0):
+            msg += ("; the errors are not monotone over the fitted resolutions, which happens when the leading error"
+                    " term changes sign or round-off is reached: try another test problem before calling this a bug")
     elif p > expected + tol_high:
         msg = f"observed order {p:.2f} is above the expected {expected:g}; check the expected order"
         status = FAIL
