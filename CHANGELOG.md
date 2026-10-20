@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.2.0 (2026-10-20)
 
-Additions that came from testing other people's repositories in the sandbox (`sandbox/`). Each one is a pattern a real code had, or a mistake the first adapter made, and has a test in `tests/test_corpus_lessons.py`.
+Additions that came from testing 40 public repositories in the sandbox (`sandbox/`); 20 could be tested and 9 confirmed bugs were found in 6 of them ([results/corpus/SUMMARY.md](results/corpus/SUMMARY.md)). Each one is a pattern a real code had, or a mistake the first adapter made, and has a test in `tests/test_corpus_lessons.py`.
 
 - **`studies.time_grid_check`.** Checks that a fixed-step run ends at `t_end` after exactly n steps. A `while t <= t_end` loop takes one extra step when t lands on `t_end` exactly (h = 0.5) and the right number otherwise (h = 0.1). An order study that compares at the time nearest `t_end` hid this.
 - **`studies.backward_mms_study`.** An MMS order study run from `t_end` back to 0 with a time-dependent forcing. A code that evaluates its stages at t + h/2 while stepping backwards passes on autonomous problems but is first order here.
@@ -13,7 +13,11 @@ Additions that came from testing other people's repositories in the sandbox (`sa
 - Fixed: the `init` signature in the sampler docstring now includes `h`, as the checks call it.
 - **`physverify.butcher`.** Checks a Runge-Kutta table's order exactly, from the order conditions on every rooted tree up to the claimed order plus one. It works for explicit and implicit tables and needs no test problem. Testing real packages found 3 wrong order labels in one and embedded weights that do not sum to 1 in another. The default tolerance 1e-8 accepts coefficients typed with about 10 digits and notes them.
 - **More hints in `check_order`.** It says when the errors are not monotone (the leading term changes sign, or round-off is reached) and when the error is the same at every resolution, which points to something independent of the step. In a molecular-dynamics code, one pair crossing an unshifted cutoff added V(r_c) = -0.0163 to the energy whatever dt was.
-- **Sandbox.** `deps` installs against the image's own package versions as constraints and gets a larger `/tmp`. The image has `libX11` and `libGL` for wheels such as Taichi. `fetch` leaves Git LFS files as pointer files even where LFS is marked required. `PHYSVERIFY_PASS_ENV` passes named environment variables into a run.
+- **Seeded method bugs (`physverify.method_bugs`, [results/method_bugs.md](results/method_bugs.md)).** Five bugs from real repositories that are bugs of a method rather than of one solver (an order label too high, error weights that sum to 0, backward stages on the wrong side, a `while` loop overshoot, an even-only spectral derivative), each with a bug-free control and the check meant to catch it. All 5 are caught and the 5 controls pass; the table says which older checks miss each one.
+- **`studies.size_sweep_check`.** Runs a function at odd and even sizes and reports the sizes where it raises. A spectral derivative crashed for every odd grid while being exact for even ones; an order study on 16 to 128 points cannot see that.
+- **`load_definitions_from_path(..., stubs=...)`** replaces missing imports (plotting, checkpointing, notebook packages) with empty modules.
+- **`physverify.constants`** accepts both CODATA 2018 and 2022 values for m_e and m_p, and says to use the edition the code states.
+- **Sandbox.** `deps` installs against the image's own package versions as constraints and gets a larger `/tmp`. The image has `libX11` and `libGL` for wheels such as Taichi. `fetch` leaves Git LFS files as pointer files even where LFS is marked required. `PHYSVERIFY_PASS_ENV` passes named environment variables into a run. Installs share one wheel cache (mounted only during installs), and `run` converts Git-Bash paths and checks the adapter exists before starting Docker.
 
 ## 0.1.0 (2026-10-19)
 

@@ -83,8 +83,13 @@ def deps(repo_id, packages=()):
     name = f"pv-deps-{repo_id}"
     # pip unpacks wheels in /tmp: give this step more room than a run gets
     lockdown = [a if not a.startswith("--tmpfs=/tmp") else "--tmpfs=/tmp:rw,nosuid,nodev,size=4g" for a in LOCKDOWN]
+    # one wheel cache for all repos, so a large package (JAX: 10 minutes) is downloaded once; it holds only
+    # wheels from PyPI, and it is mounted in this install step only, never during `run`
+    cache = CORPUS / "pip-cache"
+    cache.mkdir(parents=True, exist_ok=True)
     return docker(["run", *lockdown, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
-                   IMAGE, "pip", "install", "--no-cache-dir", "--only-binary=:all:", "--target=/deps",
+                   "-v", f"{cache}:/pip-cache:rw", "-e", "PIP_CACHE_DIR=/pip-cache",
+                   IMAGE, "pip", "install", "--only-binary=:all:", "--target=/deps",
                    "--constraint=/opt/constraints.txt", *what],
                   timeout=TIME_LIMIT)
 
@@ -94,8 +99,18 @@ def head(repo):
     return out.stdout.strip() or "unknown"
 
 
+def host_path(p):
+    """A path as Windows Docker needs it: Git-Bash style /c/Users/... becomes C:/Users/..."""
+    p = str(p)
+    if os.name == "nt" and len(p) > 2 and p[0] == "/" and p[2] == "/" and p[1].isalpha():
+        p = f"{p[1].upper()}:{p[2:]}"
+    return Path(p).resolve()
+
+
 def run(repo_id, script, extra):
-    script = Path(script).resolve()
+    script = host_path(script)
+    if not script.is_file():
+        sys.exit(f"no adapter script at {script}")
     repo = CORPUS / "repos" / repo_id
     if not repo.is_dir():
         sys.exit(f"no clone at {repo}; run fetch first")

@@ -184,3 +184,27 @@ def backward_mms_study(integrate_back: Callable, mms: ManufacturedODE, t_end: fl
         hs.append(t_end / n)
         errs.append(max_abs_error(integrate_back(mms.forcing, y_end, t_end, n), y_0))
     return check_order(hs, errs, expected_order, **kw)
+
+
+def size_sweep_check(run_at_size: Callable, sizes=(15, 16, 31, 32, 63, 64), *, label: str = "") -> Result:
+    """Call `run_at_size(n)` for odd and even sizes; FAIL if it raises for some of them.
+
+    Spectral and FFT-based codes often build their wavenumber arrays by splitting
+    the grid in two halves, which only works for even n. A real code raised a
+    ValueError for every odd grid size while being exact for even ones; an order
+    study on 16, 32, 64, 128 points cannot see that. `run_at_size` may also
+    return False to mark a wrong result at that size.
+    """
+    bad = []
+    for n in sizes:
+        try:
+            ok = run_at_size(n)
+        except Exception as exc:  # the code under test may crash; that is the finding
+            bad.append(f"n={n}: {type(exc).__name__}: {exc}")
+            continue
+        if ok is False:
+            bad.append(f"n={n}: wrong result")
+    prefix = f"{label}: " if label else ""
+    if bad:
+        return Result(FAIL, prefix + "; ".join(bad))
+    return Result(PASS, f"{prefix}runs for every size tested ({', '.join(map(str, sizes))})")

@@ -6,6 +6,8 @@ g = 9 in a projectile game, pi typed as 3.14. None of these is necessarily a bug
 one look, and an adapter's reference must use the code's value, not the textbook one.
 
 `scan(path)` returns notes, never failures: the code may be right to round.
+Several CODATA editions are accepted. When writing a reference, use the edition the code says it uses:
+one adapter failed at 1.35e-9 by taking the 2022 proton mass where the code stated 2018.
 """
 
 from __future__ import annotations
@@ -28,7 +30,8 @@ KNOWN = {
     "hbar": ((1.054571817e-34,), "J s", "1.054571817e-34"),
     "k_B": ((1.380649e-23,), "J/K", "exact: 1.380649e-23"),
     "e (charge)": ((1.602176634e-19,), "C", "exact: 1.602176634e-19"),
-    "m_e": ((9.1093837015e-31,), "kg", "9.1093837015e-31"),
+    "m_e": ((9.1093837015e-31, 9.1093837139e-31), "kg", "CODATA 2018: 9.1093837015e-31, 2022: 9.1093837139e-31"),
+    "m_p": ((1.67262192369e-27, 1.67262192595e-27), "kg", "CODATA 2018: 1.67262192369e-27, 2022: 1.67262192595e-27"),
     "epsilon_0": ((8.8541878128e-12,), "F/m", "8.8541878128e-12"),
     "T_c (2D Ising)": ((2 / math.log(1 + math.sqrt(2)),), "J/k_B", "2 / ln(1 + sqrt 2) = 2.269185314"),
 }

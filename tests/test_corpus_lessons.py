@@ -123,3 +123,23 @@ def test_order_check_explains_a_step_independent_error():
     hs = np.array([0.004, 0.002, 0.001, 0.0005])
     r = check_order(hs, np.array([0.0164, 0.0164, 0.0163, 0.0163]), 2.0)  # the MD cutoff-crossing case
     assert r.status == FAIL and "independent of the step" in r.message
+
+
+def test_size_sweep_finds_a_crash_at_odd_sizes():
+    from physverify.studies import size_sweep_check
+
+    def halves(n):  # the pattern of a real spectral code
+        k = np.arange(float(n))
+        k[int(n / 2):] = k[: int(n / 2)] - 1.0
+        return True
+
+    r = size_sweep_check(halves)
+    assert r.status == FAIL and "n=15" in r.message and "n=16" not in r.message
+    assert size_sweep_check(lambda n: np.fft.fftfreq(n).size == n).status == PASS
+
+
+def test_load_definitions_stubs_missing_imports(tmp_path):
+    src = tmp_path / "sim.py"
+    src.write_text("import not_installed_plotting_pkg\nimport math\ndef f(x):\n    return math.sqrt(x)\n")
+    mod = load_definitions_from_path("sim_stub", src, stubs=("not_installed_plotting_pkg",))
+    assert mod.f(4.0) == 2.0

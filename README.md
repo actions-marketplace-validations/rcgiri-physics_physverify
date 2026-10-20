@@ -2,7 +2,7 @@
 
 **A tool that checks whether a physics simulation is solving the right equations correctly, not just running without errors.**
 
-Status: early version (0.1.0). Nobody besides the author has used it yet, so feedback is very welcome.
+Status: early version (0.2.0). It has been tried on 20 public physics repositories (see below), but nobody besides the author has used it yet, so feedback is very welcome.
 
 ## The problem it addresses
 
@@ -17,6 +17,7 @@ physverify uses a few standard ideas from numerical analysis:
 3. **Check conserved quantities.** Energy, mass or momentum should stay constant (or drift in a predictable way).
 4. **Check known special cases.** For example, a projectile with no air resistance has a range you can write down by hand.
 5. **Exact "patch" tests.** Some solutions should be reproduced to computer precision. This catches small bugs that the other checks let through.
+6. **Algebraic checks on the method itself.** For a Runge-Kutta method, whether the coefficients really have the order they claim can be settled exactly, with no test problem (the "order conditions").
 
 Each check reports **PASS**, **FAIL**, **EXACT** or **INCONCLUSIVE**.
 
@@ -33,6 +34,17 @@ To test it, 37 bugs were added one at a time to five small solvers (projectile, 
 For the Monte Carlo checks, all 21 seeded bugs were caught with no false alarms.
 
 The bugs and the checks were written by the same person, so these numbers show the tool works as designed. They are not a promise about bugs in other people's code.
+
+## Trying it on other people's code
+
+To see what it does on code it was not written for, 40 public Python physics repositories were drawn at random from GitHub searches (October 2026) and run in a locked-down container: no network, the repository read-only, nothing from it run on the author's computer.
+
+- **20 of the 40 could be tested.** Most of the others were not numerical solvers (neural networks, apps and games, analysis tools), one needed a recent NVIDIA GPU, and a few need more set-up.
+- **9 confirmed bugs in 6 of the 20.** For example: a measured energy that counts the magnetic-field term twice; backward time-stepping that is only first-order accurate; Runge-Kutta coefficient tables labelled with a higher order than they have; error-estimate weights that do not sum to zero; a spectral derivative that crashes for an odd number of grid points; a crash on NumPy 2.
+- **The other 14 had no confirmed bug.** Most passed every check that applied, often to 1e-13 or better; one raised a question for its authors rather than a bug report.
+- **Our own adapters were wrong about 15 times** before checking (a wrong constant, too-coarse steps, and so on). Every FAIL was checked by hand before being called a bug, and these mistakes are recorded, not hidden.
+
+Each lesson became a new check or a clearer message in physverify. The testing and write-ups were done with help from an AI assistant; every number comes from running the code. Authors are told about a finding before their project is named, so the repositories are listed by ID: [results/corpus/SUMMARY.md](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/SUMMARY.md).
 
 ## Try it
 
@@ -71,6 +83,8 @@ pytest my_spec.py                              # each check becomes a pytest tes
 
 ## More
 
+- [results/corpus/SUMMARY.md](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/SUMMARY.md): the 40 public repositories, what was tested and what was found.
+- [sandbox/README.md](https://github.com/rcgiri-physics/physverify/blob/main/sandbox/README.md): the locked-down container used to run other people's code.
 - [results/own_work/SUMMARY.md](https://github.com/rcgiri-physics/physverify/blob/main/results/own_work/SUMMARY.md): results on four of the author's own public physics projects (two real bugs found and fixed).
 - [docs/technical.md](https://github.com/rcgiri-physics/physverify/blob/main/docs/technical.md): full details, benchmark tables, limits and related work.
 - [docs/patch.md](https://github.com/rcgiri-physics/physverify/blob/main/docs/patch.md): what the exact "patch" checks assume.

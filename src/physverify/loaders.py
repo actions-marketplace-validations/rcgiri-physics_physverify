@@ -50,7 +50,7 @@ def load_module_from_path(name: str, path, stubs=()):
     return module
 
 
-def load_definitions_from_path(name: str, path, *, keep=(), inner=(), namespace=None):
+def load_definitions_from_path(name: str, path, *, keep=(), inner=(), namespace=None, stubs=()):
     """Load only the definitions of a script whose top level runs a simulation.
 
     Many research scripts parse argv, open a window or run a long simulation at
@@ -62,6 +62,9 @@ def load_definitions_from_path(name: str, path, *, keep=(), inner=(), namespace=
 
     Nothing else in the file runs, so a function that relies on a global set by
     the skipped code fails with NameError; set it on the returned module.
+
+    `stubs` names modules to replace with empty ones when they are not installed
+    (pygame, IPython, orbax, ...), for imports the tested functions do not use.
     """
     path = Path(path)
     tree = ast.parse(path.read_text(encoding="utf-8"), str(path))
@@ -76,6 +79,14 @@ def load_definitions_from_path(name: str, path, *, keep=(), inner=(), namespace=
     if inner:
         wanted = set(inner)
         body += [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef) and n.name in wanted and n not in tree.body]
+    for stub in stubs:
+        try:
+            importlib.import_module(stub)
+        except ImportError:
+            parent, _, child = stub.rpartition(".")
+            sys.modules[stub] = _stub_module(stub)
+            if parent in sys.modules:
+                setattr(sys.modules[parent], child, sys.modules[stub])
     module = types.ModuleType(name)
     module.__file__ = str(path)
     module.__dict__.update(namespace or {})
