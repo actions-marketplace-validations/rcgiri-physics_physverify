@@ -2,7 +2,7 @@
 
 **A tool that checks whether a physics simulation is solving the right equations correctly, not just running without errors.**
 
-Status: early version (0.3.1). It has been tried on 68 public physics repositories (see below), but nobody besides the author has used it yet, so feedback is very welcome.
+Status: early version (0.3.0). It has been tried on 68 public physics repositories (see below), but nobody besides the author has used it yet, so feedback is very welcome.
 
 ## The problem it addresses
 
@@ -86,11 +86,11 @@ pytest my_spec.py                              # each check becomes a pytest tes
 
 ## Run it on every push
 
-Add physverify to your GitHub Actions workflow. The job fails when a check fails, just like a broken unit test:
+Add physverify to your GitHub Actions workflow (available from 0.4.0, not released yet). The job fails when a check fails, just like a broken unit test:
 
 ```yaml
       - uses: actions/checkout@v4
-      - uses: rcgiri-physics/physverify@v0.3.1
+      - uses: rcgiri-physics/physverify@v0.4.0
         with:
           specs: tests/verify_*.py
           install: -e .

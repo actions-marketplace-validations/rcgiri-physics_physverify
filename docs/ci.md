@@ -1,5 +1,7 @@
 # Running physverify in CI
 
+The GitHub Action and the pre-commit hook described here ship with 0.4.0, which is not released yet; on 0.3.0 use the pytest plugin or `physverify run`.
+
 A spec file can run on every push, so that a change which breaks the physics fails the build the same way a broken unit test does. This page covers starting a spec (`physverify init`), the GitHub Action, pre-commit, and plain pytest.
 
 ## 1. Start a spec
@@ -32,13 +34,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: rcgiri-physics/physverify@v0.3.1
+      - uses: rcgiri-physics/physverify@v0.4.0
         with:
           specs: tests/verify_*.py   # default: **/verify_*.py
           install: -e .              # your package and its dependencies
 ```
 
-Which tag to use: `@v0.3.1` runs exactly that version until you change it. `@v0` always runs the newest 0.x release, so you get fixes (and new checks, which can turn a passing job red) without editing the workflow.
+Which tag to use: `@v0.4.0` runs exactly that version until you change it. `@v0` always runs the newest 0.x release, so you get fixes (and new checks, which can turn a passing job red) without editing the workflow.
 
 The job fails when any check is not PASS or EXACT, or when no spec matches. The result table appears on the run's summary page, and an HTML report with convergence plots is uploaded as an artifact.
 
@@ -49,7 +51,7 @@ Inputs:
 | `specs` | `**/verify_*.py` | Spec files or glob patterns, separated by spaces. |
 | `install` | empty | Arguments for `pip install` for your own code, for example `-e .` or `-r requirements.txt`. |
 | `python-version` | `3.12` | Python to set up. Empty uses the Python already on the runner, for example one your job set up with its own dependencies. |
-| `version` | empty | physverify version from PyPI. Empty installs the copy at the action's ref, so `@v0.3.1` runs physverify 0.3.1. |
+| `version` | empty | physverify version from PyPI. Empty installs the copy at the action's ref, so `@v0.4.0` runs physverify 0.4.0. |
 | `working-directory` | `.` | Folder to run in. |
 | `html-report` | `physverify-report` | Name of the uploaded HTML report. Empty uploads nothing. |
 
@@ -68,7 +70,7 @@ If your job already sets up an environment (conda, a compiled extension), set `p
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/rcgiri-physics/physverify
-    rev: v0.3.1
+    rev: v0.4.0
     hooks:
       - id: physverify
         args: ["tests/verify_*.py"]

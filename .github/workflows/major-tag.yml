@@ -2,14 +2,14 @@ name: major tag
 
 # Keeps the major tag (v0, later v1) on the newest release, so users who write
 # `uses: rcgiri-physics/physverify@v0` get fixes without editing their
-# workflow. Users who pin a full version (@v0.3.1) are not affected.
+# workflow. Users who pin a full version (@v0.4.0) are not affected.
 on:
   release:
     types: [published]
   workflow_dispatch:
     inputs:
       tag:
-        description: Release tag to point the major tag at, for example v0.3.1
+        description: Release tag to point the major tag at, for example v0.4.0
         required: true
 
 permissions:
