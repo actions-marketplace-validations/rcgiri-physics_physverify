@@ -36,3 +36,10 @@ Mistakes made while writing the first adapters, worth avoiding in the next ones:
 - With an unshifted pair potential, a pair crossing the cutoff changes the energy by V(r_c) whatever dt is. Choose starting positions with no pair near the cutoff, or the energy check measures the model, not the integrator.
 - For Butcher tables, check the order conditions (`physverify.butcher`) before running order studies; they settle the question exactly.
 - Corpus data location: set `PHYSVERIFY_CORPUS` (on the author's machine `G:\physverify-corpus`, to keep the C drive free).
+- Fix the reference's convention before calling a mismatch a bug: a Thomas solver written for A x_{i-1} - C x_i + B x_{i+1} = F, a percolation test whose documented spanning means all four edges, a "protected fraction" defined by the symmetry algebra rather than its commutant.
+- Do not put a convergence probe at a re-entrant corner: the exact solution is singular there (order 2/3 in 2D).
+- A code that converges faster than expected is not a bug (a symmetric mode, midpoint sampling); write down the order you expect and why, and adjust only with a reason.
+- Use the README's own error norm when checking a README's numbers (area-weighted, interior only, normalised).
+- Budgets catch what convergence misses: an insulated wall, a source, a boundary flux. `studies.balance_check` asks for the exact budget at every resolution.
+- Compiled code (C) is built and run in a `gcc` image with the same lock-down flags; nothing is compiled on the host.
+- Installs: `PHYSVERIFY_DEPS_TIME_LIMIT` (default 2400 s). A half-finished install folder can import partly and fail later; delete `deps/<id>` and reinstall rather than patching it.

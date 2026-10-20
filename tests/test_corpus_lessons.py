@@ -143,3 +143,16 @@ def test_load_definitions_stubs_missing_imports(tmp_path):
     src.write_text("import not_installed_plotting_pkg\nimport math\ndef f(x):\n    return math.sqrt(x)\n")
     mod = load_definitions_from_path("sim_stub", src, stubs=("not_installed_plotting_pkg",))
     assert mod.f(4.0) == 2.0
+
+
+def test_balance_check_catches_a_converging_but_non_conservative_scheme():
+    from physverify.studies import balance_check
+
+    # a budget that is wrong by 1/n: converges, never conserves (the heat-loss pattern of a real code)
+    r = balance_check(lambda n: 1.0 / n, 0.0, (10, 20, 40), tol=1e-12)
+    assert r.status == FAIL and "converges but does not conserve" in r.message
+    # exact at every resolution
+    assert balance_check(lambda n: 2.0, 2.0, (10, 100)).status == PASS
+    # wrong and growing with n (a source added without dt): FAIL without the converging hint
+    r = balance_check(lambda n: 2.0 * n, 2.0, (10, 100))
+    assert r.status == FAIL and "converges" not in r.message

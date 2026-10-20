@@ -186,6 +186,32 @@ def backward_mms_study(integrate_back: Callable, mms: ManufacturedODE, t_end: fl
     return check_order(hs, errs, expected_order, **kw)
 
 
+def balance_check(measure: Callable, expected: float, resolutions, *, tol: float = 1e-9, label: str = "") -> Result:
+    """Check an exact discrete balance at every resolution: `measure(n)` must equal `expected` to `tol`.
+
+    A conservative scheme keeps a budget exactly on every grid: the total heat with
+    insulated walls, the heat gained from a known boundary flux or source over a run.
+    Three real codes failed such a budget while still converging: a zero-flux wall
+    made by copying the neighbour value lost 8.5% of the heat, a source added
+    without the factor dt depended on the number of steps, and boundary nodes
+    given full cells took in 7% too much heat. A convergence study alone can pass
+    these, so the check reports whether the mismatch shrinks with resolution.
+    """
+    rows = []
+    for n in resolutions:
+        rows.append((n, float(measure(n))))
+    bad = [(n, v) for n, v in rows if not abs(v - expected) <= tol]
+    prefix = f"{label}: " if label else ""
+    listing = ", ".join(f"n={n}: {v:.6g}" for n, v in rows)
+    if not bad:
+        return Result(PASS, f"{prefix}balance {expected:.6g} kept to {tol:g} at every resolution ({listing})")
+    gaps = [abs(v - expected) for _, v in rows]
+    shrinking = len(gaps) > 1 and all(b < a for a, b in zip(gaps, gaps[1:]))
+    hint = ("; the mismatch shrinks with resolution, so the scheme converges but does not conserve"
+            if shrinking else "")
+    return Result(FAIL, f"{prefix}expected {expected:.6g}, got {listing}{hint}")
+
+
 def size_sweep_check(run_at_size: Callable, sizes=(15, 16, 31, 32, 63, 64), *, label: str = "") -> Result:
     """Call `run_at_size(n)` for odd and even sizes; FAIL if it raises for some of them.
 

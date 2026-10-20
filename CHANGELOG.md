@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+From batch 5 of the corpus study: the 60 newest small repositories whose README says the work is complete; 32 tested, 6 confirmed bugs in 5 repositories ([results/corpus/SUMMARY.md](results/corpus/SUMMARY.md)).
+
+- **`studies.balance_check`.** Checks an exact budget at every resolution (total heat with insulated walls, heat gained from a known source or flux) and says when the mismatch shrinks with resolution: a scheme can converge and still not conserve. A zero-flux wall made by copying the neighbour value lost 8.5% of the heat in a real code whose own test passed.
+- **Four more seeded method bugs** (`physverify.method_bugs`), each with a control: Dirichlet values written after the solve instead of inside the linear system; an insulated wall made by copying the neighbour; a source term without its factor dt; a grid spacing off by one interval (dx = W/(N-1) with N-1 interior points). All 9 bugs are caught and the 9 controls pass ([results/method_bugs.md](results/method_bugs.md)).
+- **Sandbox.** A step stopped by the time limit no longer leaves its container running (it raced the next install into the same folder); installs have their own limit, `PHYSVERIFY_DEPS_TIME_LIMIT` (default 2400 s); wheels that bundle their own OpenMP runtime (qiskit-aer) get it preloaded, which avoids "cannot allocate memory in static TLS block".
+
 ## 0.2.0 (2026-10-20)
 
 Additions that came from testing 40 public repositories in the sandbox (`sandbox/`); 20 could be tested and 9 confirmed bugs were found in 6 of them ([results/corpus/SUMMARY.md](results/corpus/SUMMARY.md)). Each one is a pattern a real code had, or a mistake the first adapter made, and has a test in `tests/test_corpus_lessons.py`.

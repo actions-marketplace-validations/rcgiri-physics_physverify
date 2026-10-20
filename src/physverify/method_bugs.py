@@ -4,7 +4,9 @@ The problem benchmark (physverify.problems) seeds bugs into five solvers. Some b
 repositories are not bugs of a solver for one problem but of a method or a helper: a Butcher table with
 the wrong order label, error-estimate weights that do not sum to zero, backward time-stepping with
 stage times on the wrong side, a time loop that stops one step late, a spectral derivative that only
-works for even grids. This module seeds each of them, with a bug-free control, and names the check
+works for even grids, Dirichlet values written after the solve instead of inside the linear system, a
+zero-flux wall made by copying the neighbour value, a source term without its factor dt, a grid spacing
+off by one interval. This module seeds each of them, with a bug-free control, and names the check
 meant to catch it. `run_all()` returns one row per case; tests/test_method_bugs.py requires every
 prediction to come true.
 
@@ -21,7 +23,8 @@ import numpy as np
 from .butcher import check_tableau
 from .checks import FAIL, PASS, Result, run_check, Check
 from .mms import ManufacturedODE
-from .studies import backward_mms_study, size_sweep_check, time_grid_check
+from .order import check_order
+from .studies import backward_mms_study, balance_check, size_sweep_check, time_grid_check
 
 # --- Butcher tables ---------------------------------------------------------------------------------
 
@@ -100,6 +103,97 @@ def _spectral_derivative(halves_bug: bool):
     return check_at
 
 
+# --- heat equation boundaries and sources (batch 5) -------------------------------------------------
+
+def _cn_dirichlet_error(n: int, boundary_in_system: bool) -> float:
+    """Crank-Nicolson for u_t = u_xx on [0, 1], u = 0 at both ends, mode sin(pi x), t = 0.05, small dt.
+
+    With the bug the matrix covers all n points, boundary rows included, and the Dirichlet values are
+    written into the solution only after each solve, so the boundary nodes evolve freely meanwhile.
+    """
+    x = np.linspace(0.0, 1.0, n)
+    dx, t_end, steps = x[1] - x[0], 0.05, 2000
+    dt = t_end / steps
+    lam = dt / dx**2
+    u = np.sin(np.pi * x)
+    if boundary_in_system:
+        m = n - 2
+        D = (np.diag(-2.0 * np.ones(m)) + np.diag(np.ones(m - 1), 1) + np.diag(np.ones(m - 1), -1)) * lam
+        A, B = np.eye(m) - D / 2, np.eye(m) + D / 2
+        v = u[1:-1]
+        for _ in range(steps):
+            v = np.linalg.solve(A, B @ v)
+        u = np.concatenate([[0.0], v, [0.0]])
+    else:
+        D = (np.diag(-2.0 * np.ones(n)) + np.diag(np.ones(n - 1), 1) + np.diag(np.ones(n - 1), -1)) * lam
+        A, B = np.eye(n) - D / 2, np.eye(n) + D / 2
+        for _ in range(steps):
+            u = np.linalg.solve(A, B @ u)
+            u[0] = u[-1] = 0.0
+    return float(np.max(np.abs(u - np.exp(-np.pi**2 * t_end) * np.sin(np.pi * x))))
+
+
+def _dirichlet_case(boundary_in_system: bool):
+    ns = (11, 21, 41, 81)
+    return lambda: check_order([1.0 / (n - 1) for n in ns], [_cn_dirichlet_error(n, boundary_in_system) for n in ns], 2.0)
+
+
+def _neumann_heat_change(n: int, mirror: bool) -> float:
+    """Relative change of the total heat for u_t = u_xx on [0, 1] with insulated ends (explicit, 400 steps).
+
+    Control: edge nodes updated with a mirrored ghost value, total heat by the trapezoid rule (exactly
+    conserved). Bug: interior update, then u[0] = u[1], u[-1] = u[-2], total heat as sum(u) dx.
+    """
+    x = np.linspace(0.0, 1.0, n)
+    dx = x[1] - x[0]
+    dt = 0.25 * dx**2
+    u = np.exp(-((x - 0.3) ** 2) / 0.01)
+
+    def total(v):
+        w = np.full(n, dx)
+        if mirror:
+            w[[0, -1]] = dx / 2
+        return float(np.sum(w * v))
+
+    start = total(u)
+    for _ in range(400):
+        new = u.copy()
+        new[1:-1] = u[1:-1] + dt / dx**2 * (u[2:] - 2 * u[1:-1] + u[:-2])
+        if mirror:
+            new[0] = u[0] + dt / dx**2 * 2 * (u[1] - u[0])
+            new[-1] = u[-1] + dt / dx**2 * 2 * (u[-2] - u[-1])
+        else:
+            new[0], new[-1] = new[1], new[-2]
+        u = new
+    return (total(u) - start) / start
+
+
+def _source_gain(n: int, times_dt: bool) -> float:
+    """Gain of u under a constant source S = 2 over T = 1 with no diffusion, in n steps; exactly S T = 2."""
+    dt, u = 1.0 / n, 0.0
+    for _ in range(n):
+        u += 2.0 * dt if times_dt else 2.0
+    return u
+
+
+def _well_energy_error(n: int, spacing_from_intervals: bool) -> float:
+    """Lowest level of the infinite square well [0, 2] (hbar = m = 1) with n - 1 interior points.
+
+    n - 1 interior points split the well into n intervals, so dx = W/n; the bug uses W/(n - 1).
+    """
+    W = 2.0
+    dx = W / n if spacing_from_intervals else W / (n - 1)
+    m = n - 1
+    H = (np.diag(np.full(m, 1.0 / dx**2)) + np.diag(np.full(m - 1, -0.5 / dx**2), 1)
+         + np.diag(np.full(m - 1, -0.5 / dx**2), -1))
+    return float(abs(np.linalg.eigvalsh(H)[0] - np.pi**2 / (2 * W**2)))
+
+
+def _spacing_case(spacing_from_intervals: bool):
+    ns = (50, 100, 200, 400)
+    return lambda: check_order([2.0 / n for n in ns], [_well_energy_error(n, spacing_from_intervals) for n in ns], 2.0)
+
+
 @dataclass(frozen=True)
 class MethodCase:
     name: str
@@ -137,6 +231,27 @@ CASES = [
     MethodCase("spectral_even_only", True, "wavenumbers built from two halves of the array (fails for odd n)", "G10",
                "studies.size_sweep_check", lambda: size_sweep_check(_spectral_derivative(True)),
                missed_by="any study on power-of-two grids"),
+    MethodCase("dirichlet_ok", False, "Crank-Nicolson solving only for interior nodes, Dirichlet values in the system",
+               "-", "order.check_order", _dirichlet_case(True)),
+    MethodCase("dirichlet_after_solve", True,
+               "Crank-Nicolson matrix over all nodes, Dirichlet values written only after each solve", "H01",
+               "order.check_order", _dirichlet_case(False),
+               missed_by="a single run compared with a loose tolerance (the error is small but does not shrink)"),
+    MethodCase("neumann_ok", False, "insulated ends with a mirrored ghost value, trapezoid total", "-",
+               "studies.balance_check",
+               lambda: balance_check(lambda n: _neumann_heat_change(n, True), 0.0, (21, 41, 81), tol=1e-12)),
+    MethodCase("neumann_by_copy", True, "insulated ends made by copying the neighbour value after the update", "H54",
+               "studies.balance_check",
+               lambda: balance_check(lambda n: _neumann_heat_change(n, False), 0.0, (21, 41, 81), tol=1e-12),
+               missed_by="a one-step test with the heat away from the walls"),
+    MethodCase("source_ok", False, "source term multiplied by dt", "-", "studies.balance_check",
+               lambda: balance_check(lambda n: _source_gain(n, True), 2.0, (10, 100), tol=1e-12)),
+    MethodCase("source_without_dt", True, "source term added once per step without the factor dt", "H01",
+               "studies.balance_check", lambda: balance_check(lambda n: _source_gain(n, False), 2.0, (10, 100), tol=1e-12),
+               missed_by="any test with zero source"),
+    MethodCase("spacing_ok", False, "n - 1 interior points with dx = W/n", "-", "order.check_order", _spacing_case(True)),
+    MethodCase("spacing_off_by_one", True, "n - 1 interior points with dx = W/(n - 1)", "H19", "order.check_order",
+               _spacing_case(False), missed_by="a single comparison at n = 100 with a 5% tolerance"),
 ]
 
 

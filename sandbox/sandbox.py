@@ -21,6 +21,7 @@ IMAGE = "physverify-sandbox:1"
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = Path(os.environ.get("PHYSVERIFY_CORPUS") or Path(os.environ.get("LOCALAPPDATA", Path.home())) / "physverify-corpus")
 TIME_LIMIT = int(os.environ.get("PHYSVERIFY_TIME_LIMIT", "900"))  # seconds per run
+DEPS_TIME_LIMIT = int(os.environ.get("PHYSVERIFY_DEPS_TIME_LIMIT", "2400"))  # seconds per install (JAX, Qiskit on a slow link)
 
 LOCKDOWN = [
     "--rm",
@@ -48,6 +49,24 @@ def folder(kind, repo_id):
 def docker(args, timeout=None):
     print("+ docker " + " ".join(args), flush=True)
     return subprocess.run(["docker", *args], timeout=timeout).returncode
+
+
+def remove_stale(name):
+    """Remove a container left over from an earlier step with the same name.
+
+    A step killed by the host-side time limit can leave its container running; a later install
+    into the same deps folder then races it and leaves a half-installed folder.
+    """
+    subprocess.run(["docker", "rm", "-f", name], capture_output=True)
+
+
+def timed(args, name, limit):
+    try:
+        return docker(args, timeout=limit)
+    except subprocess.TimeoutExpired:
+        subprocess.run(["docker", "kill", name], capture_output=True)
+        print(f"killed after {limit} s")
+        return 124
 
 
 def build():
@@ -87,11 +106,12 @@ def deps(repo_id, packages=()):
     # wheels from PyPI, and it is mounted in this install step only, never during `run`
     cache = CORPUS / "pip-cache"
     cache.mkdir(parents=True, exist_ok=True)
-    return docker(["run", *lockdown, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
-                   "-v", f"{cache}:/pip-cache:rw", "-e", "PIP_CACHE_DIR=/pip-cache",
-                   IMAGE, "pip", "install", "--only-binary=:all:", "--target=/deps",
-                   "--constraint=/opt/constraints.txt", *what],
-                  timeout=TIME_LIMIT)
+    remove_stale(name)
+    return timed(["run", *lockdown, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
+                  "-v", f"{cache}:/pip-cache:rw", "-e", "PIP_CACHE_DIR=/pip-cache",
+                  IMAGE, "pip", "install", "--only-binary=:all:", "--target=/deps",
+                  "--constraint=/opt/constraints.txt", *what],
+                 name, DEPS_TIME_LIMIT)
 
 
 def head(repo):
@@ -115,16 +135,17 @@ def run(repo_id, script, extra):
     if not repo.is_dir():
         sys.exit(f"no clone at {repo}; run fetch first")
     name = f"pv-run-{repo_id}"
-    args = ["run", *LOCKDOWN, "--network=none", "--name", name,
+    remove_stale(name)
+    deps_dir = folder("deps", repo_id)
+    # wheels that bundle their own OpenMP runtime (qiskit-aer) fail to load it late ("cannot allocate
+    # memory in static TLS block"); preloading it at start-up is the usual fix
+    gomp = sorted(deps_dir.glob("*.libs/libgomp*.so*"))
+    preload = ["-e", f"LD_PRELOAD=/deps/{gomp[0].relative_to(deps_dir).as_posix()}"] if gomp else []
+    args = ["run", *LOCKDOWN, "--network=none", "--name", name, *preload,
             "-v", f"{repo}:/repo:ro", "-v", f"{folder('deps', repo_id)}:/deps:ro",
             "-v", f"{script.parent}:/work:ro", "-v", f"{folder('out', repo_id)}:/out:rw",
             "-e", "PHYSVERIFY_REPO=/repo", *[a for k in os.environ.get("PHYSVERIFY_PASS_ENV", "").split(",") if k for a in ("-e", f"{k}={os.environ[k]}")], "-e", f"PHYSVERIFY_REPO_COMMIT={head(repo)}", IMAGE, "python", f"/work/{script.name}", *extra]
-    try:
-        return docker(args, timeout=TIME_LIMIT)
-    except subprocess.TimeoutExpired:
-        subprocess.run(["docker", "kill", name], capture_output=True)
-        print(f"killed after {TIME_LIMIT} s")
-        return 124
+    return timed(args, name, TIME_LIMIT)
 
 
 def main(argv):

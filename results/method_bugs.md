@@ -14,3 +14,11 @@ Each bug is a pattern found in a public repository (IDs as in [corpus/SUMMARY.md
 | while_loop_overshoot | yes | D08 | `studies.time_grid_check` | FAIL | order studies that read the state nearest t_end |
 | spectral_ok | no (control) | - | `studies.size_sweep_check` | PASS |  |
 | spectral_even_only | yes | G10 | `studies.size_sweep_check` | FAIL | any study on power-of-two grids |
+| dirichlet_ok | no (control) | - | `order.check_order` | PASS |  |
+| dirichlet_after_solve | yes | H01 | `order.check_order` | FAIL | a single run compared with a loose tolerance (the error is small but does not shrink) |
+| neumann_ok | no (control) | - | `studies.balance_check` | PASS |  |
+| neumann_by_copy | yes | H54 | `studies.balance_check` | FAIL | a one-step test with the heat away from the walls |
+| source_ok | no (control) | - | `studies.balance_check` | PASS |  |
+| source_without_dt | yes | H01 | `studies.balance_check` | FAIL | any test with zero source |
+| spacing_ok | no (control) | - | `order.check_order` | PASS |  |
+| spacing_off_by_one | yes | H19 | `order.check_order` | FAIL | a single comparison at n = 100 with a 5% tolerance |
