@@ -130,6 +130,16 @@ Run read-only against `projectile-simulation` and `double-pendulum-simulation` (
 - `projectile_sim_v2.py` (`ProjectileV2`): in vacuum, linear and quadratic drag modes, for both RK4 and Euler, the code agrees with an independent reference at the claimed order (4 and 1). Vacuum energy drift also has the right order, the error over the whole trajectory converges at the same order, and every mode reproduces the linear `patch` solution to round-off. **One finding, now fixed:** the range read from the end of `simulate()` was only first order in dt, because the landing interpolation branch tested `int(fraction) != 0` and `fraction` was between -0.08 and 0 in the three cases run (dt = 0.1, 0.01, 0.001), so it never ran. With `dt=0.01`, `v0=30`, 45 degrees, the reported vacuum range was 91.641 m against an exact 91.743 m, an error of 0.10 m. The interior trajectory points were not affected. The fix (a few lines in `simulate()`, applied and committed in that repo on 2026-10-19) interpolates the landing point linearly; the observed order of the range is now 2.00 and the error at `dt=0.01` is 1.2e-4 m. `benchmark_scipy.py` could not be re-run here (it needs SciPy and matplotlib). Separately, the README gives the linear drag coefficient as 6*pi*eta*r while the code uses a fixed 0.01 N s/m; which one is intended is not for physverify to say.
 - `mechanics.py` (double pendulum): `get_derivatives` matches an independent closed-form reference, `calculate_energy` is consistent with it, the linear `patch` solution is reproduced to round-off, and the small-oscillation frequencies match the closed form. `solvers.py` was not tested because it needs SciPy, which is not installed here.
 
+## Helpers for testing other people's code
+
+Adapters for public repositories kept needing the same few things; they now live in the package.
+
+- `loaders.stub_modules({"sklearn.metrics": ["accuracy_score"], "flask": ["Flask"]})` installs stand-ins for imports the tested code path does not use. The stand-in names are placeholders: calling one returns another, and used as a decorator one returns the function unchanged, so `@app.route(...)` or `@jit` leaves the code usable. Modules that import for real are left alone.
+- `loaders.run_script(path, argv=...)` runs a whole script (coursework, an exported notebook) with plotting switched off and returns its globals and what it printed.
+- `loaders.load_definitions_from_path` loads only the functions of a script that runs a simulation at import; its `stubs` argument takes the same names or mapping.
+- `references`: the 2D Ising model by exact enumeration up to 4x4, the classical Heisenberg chain, heat-equation modes, a moving and spreading Gaussian, the semi-infinite step solution, double-pendulum accelerations and energy, the cantilever tip, the infinite well, square-barrier transmission and the open transverse-field Ising ground energy. Each is tested against an independent computation in `tests/test_references.py`.
+- `studies.balance_check`: an exact budget at every resolution, with a hint when the mismatch shrinks (a scheme can converge and still not conserve).
+
 ## Known limits
 
 - ODE systems get the full treatment. The PDE examples (`heat1d`, `sod`) are 1D. `physverify.symbolic` derives PDE source terms with SymPy (optional), and the tests use it to check the hand-derived heat sources; it does not yet run a whole PDE order study for you.
@@ -168,6 +178,11 @@ src/physverify/
   adapters/         read-only adapters for the two real projects
   matrix.py         the detection tables and bug catalogue
   compare.py        the families against plain tests
+  butcher.py        Runge-Kutta order conditions on rooted trees
+  method_bugs.py    seeded bugs in methods, from public repositories, with controls
+  references.py     exact references reused across adapters (Ising enumeration, heat modes, pendulums, ...)
+  loaders.py        load code from a path; stub_modules, run_script, load_definitions_from_path
+  constants.py      literals close to, but not equal to, a physical constant
 docs/               patch.md (what the exactness checks assume and prove), agent.md
 examples/           a solver and its spec
 tests/              about 140 tests, including the seeded-bug regression

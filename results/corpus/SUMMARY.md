@@ -1,4 +1,4 @@
-# physverify on other people's code: first five batches
+# physverify on other people's code: first six batches
 
 Status: development batches (October 2026), run before freezing the tool. They show what physverify finds on public code and what it cannot test yet; they are not the final study described in the plan (100 or more tested repositories, analysis plan written down first).
 
@@ -12,6 +12,8 @@ Public GitHub repositories of Python physics code, drawn at random with a record
 
 Batch 5 used a different, fixed rule: the 60 newest small repositories (created 2026-09-09 to 2026-10-19, under 3 MB) whose README says the work is complete and does not say it is in progress, from 60 physics topic searches, with machine-learning and dashboard projects left out. It is not random. Its counts describe those 60 repositories only and are not a rate for public physics code in general; nor is any other batch's.
 
+Batch 6 was chosen to be quick to test, to try new helpers in the package: the 20 newest small repositories (created 2026-10-17 to 2026-10-20) from 40 physics topic searches with at most 8 Python files that import nothing beyond NumPy, SciPy, Matplotlib and the standard library. It had no README filter. Small, new and single-purpose code is not a fair sample of anything, so its counts say nothing about a bug rate either.
+
 ## How each repository was tested
 
 1. Cloned on the host at a fixed commit, with Git hooks, symlinks and LFS downloads turned off. No code from the repository ran on the host.
@@ -21,15 +23,15 @@ Batch 5 used a different, fixed rule: the 60 newest small repositories (created 
 
 ## Funnel
 
-| | Batch 1 | Batch 2 | Batch 3 | Batch 4 | Batch 5 | Total |
-|---|---|---|---|---|---|---|
-| Drawn and cloned | 9 | 11 | 10 | 10 | 60 | 100 |
-| Out of scope (neural networks, apps, analysis-only, games, toys, data structures, finance, statistics) | 2 | 5 | 3 | 5 | 27 | 42 |
-| Needs hardware the author does not have (NVIDIA CUDA 12+) | 0 | 1 | 0 | 0 | 0 | 1 |
-| Testable but not tested (heavy set-up, dependencies, or input files not in the repository) | 0 | 1 | 2 | 1 | 1 | 5 |
-| Tested | 7 | 4 | 5 | 4 | 32 | 52 |
-| Repositories with a confirmed bug | 3 | 1 | 1 | 1 | 5 | 11 |
-| Confirmed bugs | 4 | 1 | 3 | 1 | 6 | 15 |
+| | Batch 1 | Batch 2 | Batch 3 | Batch 4 | Batch 5 | Batch 6 | Total |
+|---|---|---|---|---|---|---|---|
+| Drawn and cloned | 9 | 11 | 10 | 10 | 60 | 20 | 120 |
+| Out of scope (neural networks, apps, analysis-only, games, toys, data structures, finance, statistics, unfinished) | 2 | 5 | 3 | 5 | 27 | 4 | 46 |
+| Needs hardware the author does not have (NVIDIA CUDA 12+) | 0 | 1 | 0 | 0 | 0 | 0 | 1 |
+| Testable but not tested (heavy set-up, dependencies, or input files not in the repository) | 0 | 1 | 2 | 1 | 1 | 0 | 5 |
+| Tested | 7 | 4 | 5 | 4 | 32 | 16 | 68 |
+| Repositories with a confirmed bug | 3 | 1 | 1 | 1 | 5 | 1 | 12 |
+| Confirmed bugs | 4 | 1 | 3 | 1 | 6 | 1 | 16 |
 
 In batches 1 to 4, half of the drawn repositories (20 of 40) could be tested; in batch 5, 32 of 60. How often real code cannot be tested is itself a result: most of the rest are not numerical solvers. In batch 5 two of the 32 tested repositories hold the same student project (H47, H48), so the 6 bugs are in 4 distinct codes; one tested repository (H29) was tested only in part, because compiling its JAX solver on finer grids was too slow for the sandbox.
 
@@ -89,13 +91,30 @@ In batches 1 to 4, half of the drawn repositories (20 of 40) could be tested; in
 | H62 | Fisher information of a lossy chain | 5 | Clean: photon flux conserved to 4e-16 |
 | H64 | Classical Heisenberg Monte Carlo (C) | 5 | Clean: exact spin-chain results within 0.3% |
 
-261 checks were run in the final versions of the adapters of batches 1 to 4, and 117 in batch 5.
+| I01 | Two-body orbit, velocity Verlet | 4 | Clean: order 2, angular momentum to 1e-14 |
+| I02 | Simple pendulum, RK4 and exact period | 3 | Clean |
+| I03 | Projectile with quadratic drag | 3 | Clean: first order as expected for its Euler scheme |
+| I04 | 2D Euler equations, four schemes | 5 | Clean; 1 documentation note: the README calls Lax-Friedrichs unconditionally stable, and it blows up at CFL 1.3 |
+| I05 | 2D N-body, velocity Verlet | 2 | Clean: momentum to 8e-16, energy order 2 |
+| I06 | Double pendulum with joint friction | 3 | Clean: matches the Lagrangian reference to 7e-15, friction power balance exact |
+| I09 | 2D lattice random walk (animated) | 3 | Clean: unit steps, mean squared displacement n (z = 0.4) |
+| I11 | PN junction, depletion model and Poisson solver | 3 | Clean: numerical potential order 2 |
+| I12 | Two-body orbit toolkit | 6 | **1 bug** (minor): the Kepler solver does not converge for some negative mean anomalies at high eccentricity |
+| I13 | Orbit propagation with J2 and a Kalman filter | 3 | Clean: the filter's Jacobian matches finite differences to 2e-9 |
+| I14 | 2D heat equation, explicit | 3 | Clean: linear fields and discrete modes exact |
+| I15 | Three-body problem, Forest-Ruth integrator | 4 | Clean: order 4, energy error order 4 |
+| I16 | Laplace equation, Jacobi relaxation | 2 | No bug; 1 note: stopping at a change of 1e-6 per sweep leaves an error of 2e-3 at N = 100 |
+| I17 | Orbit propagator, mission planner, GNSS positioning | 6 | Clean |
+| I18 | 1D heat conduction, 5-node example | 1 | Clean |
+| I20 | Solar-system N-body, Beeman | 4 | Clean: Beeman order 2, Euler and Euler-Cromer order 1 |
+
+261 checks were run in the final versions of the adapters of batches 1 to 4, 117 in batch 5 and 55 in batch 6.
 
 ## Mistakes on our side
 
 The adapters made mistakes too, and they are counted, not hidden. Before adjudication, about 15 FAILs came from the adapters, not from the code, for example: a reference that used 4π² where the code used the Gaussian G; an integrator check with atoms placed so that a pair crossed the potential cutoff; a newer CODATA proton mass than the one the code states; reading past the end of a padded array; a fixed-point solver that diverged; steps too coarse to show the asymptotic order. Each was found by checking the FAIL before reporting it. No false alarm reached an issue draft.
 
-Batch 5 added 7 adapter mistakes, also caught before reporting: a sign convention of the course a Thomas solver was written for; a convergence point placed at a re-entrant corner, where the solution is singular; a projection onto the commutant of a symmetry instead of the symmetry algebra; a percolation test that assumed top-to-bottom spanning where the code documents all four edges; two expected orders that were too low (the codes converged faster); and an unweighted error norm where the README's numbers use an area-weighted one. A borrowed example helper in H29 also placed ghost nodes a fixed distance outside the boundary, which made finer grids singular; that is a property of the example, not of the solver, and is not counted as a bug.
+Batch 5 added 7 adapter mistakes, also caught before reporting: a sign convention of the course a Thomas solver was written for; a convergence point placed at a re-entrant corner, where the solution is singular; a projection onto the commutant of a symmetry instead of the symmetry algebra; a percolation test that assumed top-to-bottom spanning where the code documents all four edges; two expected orders that were too low (the codes converged faster); and an unweighted error norm where the README's numbers use an area-weighted one. Batch 6 added 6 more, all found before reporting: two tolerances or orders set without a reason (a Verlet energy band, Euler-Cromer measured after a whole orbit, where its error cancels), two order studies on steps too coarse (the pre-asymptotic hint said so), a probe placed so close to a junction that the field looked like a jump, and an issue draft whose first command-line example did not fail; the failing inputs were measured and the draft corrected before posting. A borrowed example helper in H29 also placed ghost nodes a fixed distance outside the boundary, which made finer grids singular; that is a property of the example, not of the solver, and is not counted as a bug.
 
 ## What physverify gained from this
 
@@ -112,6 +131,7 @@ Each lesson is a test in `tests/test_corpus_lessons.py`:
 - Sandbox fixes: package versions pinned against the image, LFS files left as pointers, a shared wheel cache, path checks.
 - From batch 5: `studies.balance_check`, an exact budget at every resolution (total heat with insulated walls, heat from a known source), which says when a mismatch shrinks with resolution: a scheme can converge and still not conserve (H54, H01, H47).
 - Four more seeded method bugs from batch 5, each with a control: Dirichlet values written after the solve (H01), an insulated wall made by copying the neighbour (H54), a source without dt (H01), a grid spacing off by one interval (H19). The table now has 9 bugs, all caught, and 9 controls that pass.
+- Before batch 6: `physverify.references` (exact solutions written by hand in several adapters, each tested against an independent computation), `loaders.stub_modules` (stand-ins for unused imports, including names and decorators) and `loaders.run_script` (run a whole script with plotting off). In batch 6 they replaced hand-written references and stubs in 6 of the 16 adapters.
 - Sandbox fixes from batch 5: a step stopped by the time limit no longer leaves its container running to race the next install; installs have their own time limit (`PHYSVERIFY_DEPS_TIME_LIMIT`, default 40 min); wheels that bundle their own OpenMP runtime (qiskit-aer) are preloaded automatically.
 
 ## What could not be tested, and why

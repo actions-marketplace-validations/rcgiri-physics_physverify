@@ -2,10 +2,13 @@
 
 ## Unreleased
 
-From batch 5 of the corpus study: the 60 newest small repositories whose README says the work is complete; 32 tested, 6 confirmed bugs in 5 repositories ([results/corpus/SUMMARY.md](results/corpus/SUMMARY.md)).
+From batches 5 and 6 of the corpus study: the 60 newest small repositories whose README says the work is complete (32 tested, 6 confirmed bugs in 5), then 20 picked because they are quick to test (16 tested, 1 confirmed bug) ([results/corpus/SUMMARY.md](results/corpus/SUMMARY.md)).
 
 - **`studies.balance_check`.** Checks an exact budget at every resolution (total heat with insulated walls, heat gained from a known source or flux) and says when the mismatch shrinks with resolution: a scheme can converge and still not conserve. A zero-flux wall made by copying the neighbour value lost 8.5% of the heat in a real code whose own test passed.
 - **Four more seeded method bugs** (`physverify.method_bugs`), each with a control: Dirichlet values written after the solve instead of inside the linear system; an insulated wall made by copying the neighbour; a source term without its factor dt; a grid spacing off by one interval (dx = W/(N-1) with N-1 interior points). All 9 bugs are caught and the 9 controls pass ([results/method_bugs.md](results/method_bugs.md)).
+- **`physverify.references`.** Exact references that adapters kept writing by hand: the 2D Ising model by enumeration (up to 4x4), the classical Heisenberg chain, heat-equation modes, a moving and spreading Gaussian, the semi-infinite step solution, double-pendulum accelerations and energy, the cantilever tip, the infinite well, square-barrier transmission and the open transverse-field Ising ground energy. Each is tested against an independent computation.
+- **`loaders.stub_modules`.** Stand-ins for imports a tested path does not use, including the names a `from x import y` needs (`{"sklearn.metrics": ["accuracy_score"]}`). The names are placeholders; used as decorators they return the function unchanged, so `@app.route(...)` and `@jit` leave the code usable. `load_module_from_path` and `load_definitions_from_path` take the same mapping in `stubs`.
+- **`loaders.run_script`.** Runs a whole script (coursework, exported notebooks) with plotting off and returns its globals and what it printed.
 - **Sandbox.** A step stopped by the time limit no longer leaves its container running (it raced the next install into the same folder); installs have their own limit, `PHYSVERIFY_DEPS_TIME_LIMIT` (default 2400 s); wheels that bundle their own OpenMP runtime (qiskit-aer) get it preloaded, which avoids "cannot allocate memory in static TLS block".
 
 ## 0.2.0 (2026-10-20)

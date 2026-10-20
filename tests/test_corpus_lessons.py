@@ -156,3 +156,35 @@ def test_balance_check_catches_a_converging_but_non_conservative_scheme():
     # wrong and growing with n (a source added without dt): FAIL without the converging hint
     r = balance_check(lambda n: 2.0 * n, 2.0, (10, 100))
     assert r.status == FAIL and "converges" not in r.message
+
+
+def test_stub_modules_provide_names_and_keep_decorated_functions():
+    import sys
+
+    from physverify.loaders import Placeholder, stub_modules
+
+    names = stub_modules({"no_such_pkg_xyz.metrics": ["score"], "no_such_web_xyz": ["Flask"]})
+    try:
+        from no_such_pkg_xyz.metrics import score  # noqa: F401  (a parent package is created too)
+        import no_such_web_xyz
+
+        app = no_such_web_xyz.Flask(__name__)
+
+        @app.route("/x", methods=["POST"])
+        def view():
+            return 42
+
+        assert view() == 42 and isinstance(score, Placeholder)
+        assert stub_modules(["math"]) == []  # a module that imports for real is left alone
+    finally:
+        for n in names:
+            sys.modules.pop(n, None)
+
+
+def test_run_script_returns_globals_and_output(tmp_path):
+    from physverify.loaders import run_script
+
+    src = tmp_path / "demo.py"
+    src.write_text("import sys\nx = 6 * 7\nprint('hello', sys.argv[1:])\n")
+    g, out = run_script(src, argv=["a"])
+    assert g["x"] == 42 and "hello ['a']" in out

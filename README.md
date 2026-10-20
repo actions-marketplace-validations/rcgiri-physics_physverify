@@ -2,7 +2,7 @@
 
 **A tool that checks whether a physics simulation is solving the right equations correctly, not just running without errors.**
 
-Status: early version (0.2.0). It has been tried on 52 public physics repositories (see below), but nobody besides the author has used it yet, so feedback is very welcome.
+Status: early version (0.2.0). It has been tried on 68 public physics repositories (see below), but nobody besides the author has used it yet, so feedback is very welcome.
 
 ## The problem it addresses
 
@@ -37,12 +37,12 @@ The bugs and the checks were written by the same person, so these numbers show t
 
 ## Trying it on other people's code
 
-To see what it does on code it was not written for, public Python physics repositories from GitHub were run in a locked-down container (October 2026): no network, the repository read-only, nothing from it run on the author's computer. 40 were drawn at random from topic searches (batches 1 to 4); another 60 were the newest small repositories whose README says the work is complete (batch 5, not random).
+To see what it does on code it was not written for, public Python physics repositories from GitHub were run in a locked-down container (October 2026): no network, the repository read-only, nothing from it run on the author's computer. 40 were drawn at random from topic searches (batches 1 to 4); another 60 were the newest small repositories whose README says the work is complete (batch 5), and 20 more were picked because they are quick to test (batch 6); batches 5 and 6 are not random.
 
-- **52 of the 100 could be tested.** Most of the others were not numerical solvers (neural networks, apps and games, analysis tools, finance), one needed a recent NVIDIA GPU, and a few need more set-up.
-- **15 confirmed bugs in 11 of the 52.** For example: a measured energy that counts the magnetic-field term twice; backward time-stepping that is only first-order accurate; Runge-Kutta coefficient tables labelled with a higher order than they have; a spectral derivative that crashes for an odd number of grid points; boundary values applied after the linear solve instead of inside it; an insulated wall that leaks heat; a grid spacing off by one interval.
+- **68 of the 120 could be tested.** Most of the others were not numerical solvers (neural networks, apps and games, analysis tools, finance), one needed a recent NVIDIA GPU, and a few need more set-up.
+- **16 confirmed bugs in 12 of the 68.** For example: a measured energy that counts the magnetic-field term twice; backward time-stepping that is only first-order accurate; Runge-Kutta coefficient tables labelled with a higher order than they have; a spectral derivative that crashes for an odd number of grid points; boundary values applied after the linear solve instead of inside it; an insulated wall that leaks heat; a grid spacing off by one interval; a Kepler solver that fails for negative angles.
 - **The rest had no confirmed bug.** Most passed every check that applied, often to 1e-13 or better.
-- **Our own adapters were wrong about 22 times** before checking (a wrong constant, too-coarse steps, a wrong sign convention, and so on). Every FAIL was checked by hand before being called a bug, and these mistakes are recorded, not hidden.
+- **Our own adapters were wrong about 28 times** before checking (a wrong constant, too-coarse steps, a wrong sign convention, and so on). Every FAIL was checked by hand before being called a bug, and these mistakes are recorded, not hidden.
 
 These counts describe the repositories that were drawn; they are not a bug rate for physics code in general.
 
@@ -85,7 +85,7 @@ pytest my_spec.py                              # each check becomes a pytest tes
 
 ## More
 
-- [results/corpus/SUMMARY.md](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/SUMMARY.md): the 100 public repositories, what was tested and what was found.
+- [results/corpus/SUMMARY.md](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/SUMMARY.md): the 120 public repositories, what was tested and what was found.
 - [sandbox/README.md](https://github.com/rcgiri-physics/physverify/blob/main/sandbox/README.md): the locked-down container used to run other people's code.
 - [results/own_work/SUMMARY.md](https://github.com/rcgiri-physics/physverify/blob/main/results/own_work/SUMMARY.md): results on four of the author's own public physics projects (two real bugs found and fixed).
 - [docs/technical.md](https://github.com/rcgiri-physics/physverify/blob/main/docs/technical.md): full details, benchmark tables, limits and related work.
