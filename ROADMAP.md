@@ -1,0 +1,42 @@
+# Roadmap
+
+What may come after 0.4.0. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
+
+## Next (0.5.0): checking code without writing a wrapper
+
+Today every check needs a short spec file, and for most codes a small adapter that adds a source term. That is the biggest barrier to trying physverify. Several checks need no adapter at all, because they ask the code only to run, not to solve a different problem:
+
+- **Find and check Runge-Kutta tables automatically.** Scan a project's source for Butcher tables (arrays named `A`/`b`/`c`, `butcher`, `tableau`, or the classic coefficient patterns) and run `check_tableau` on each, with the order taken from the name or the docstring. This found mislabelled tables in two real packages and needs no knowledge of the equations.
+- **Self-convergence (Richardson) studies.** Run the code at three or more resolutions and measure the order from the differences between them, with no exact solution. It cannot prove the equations are right, but it catches a wrong order, an off-by-one step count or a time grid that ends at the wrong time.
+- **A declarative spec instead of Python.** A `[tool.physverify]` table in `pyproject.toml` (or a small YAML file) that names the solver function, its call pattern (`solve(y0, t_end, n_steps)`), the claimed order and the equations as text (turned into a reference with SymPy). physverify would then build the checks itself.
+- **Call-pattern discovery.** Inspect a module for functions that look like a right-hand side `f(t, y)`, a stepper `step(y, dt)` or a solver `solve(..., n)`, call each with small test inputs, and suggest a spec. The user confirms; nothing is assumed silently.
+- **`physverify scan PATH`.** One command that runs the wrapper-free stages in order (smoke run, near-miss constants, Butcher tables, self-convergence where a solver is found) and writes one report.
+
+## Must-have improvements
+
+- **2D and 3D heat equation.** Manufactured solutions, an independent reference operator, order studies in space and time, and checks for Dirichlet, Neumann and periodic boundaries, including the corners and edges where 2D/3D codes most often go wrong. Then the same for the wave and advection-diffusion equations.
+- **Whole PDE order studies from SymPy.** `physverify.symbolic` already derives source terms; the next step is to run the full study from an equation written as text.
+- **IMEX / additive Runge-Kutta coupling conditions.** Check the conditions that link the explicit and implicit tables of an IMEX pair (bi-coloured trees), not only each table on its own. Also the order of embedded error estimators.
+- **Loading code that needs repair.** A `load_repaired(path, fix)` helper for files that do not parse as published, recording the repair so that a pass on repaired code is never reported as a pass on the original.
+- **"Was any work done?" probe.** Count iterations or call every public function once; two real bugs were functions that silently did almost nothing (one Jacobi sweep in a pressure solver).
+- **Stochastic checks that stop early.** Stop sampling as soon as the result is decisive, so slow Monte Carlo codes fit inside a time budget.
+- **Clearer messages** when only an absolute tolerance fails while the observed order is exact, and a helper that skips the start-up transient before fitting a decay rate.
+- **Sandbox speed.** A shared wheel cache across repositories (installing astropy or pandas took 15-25 minutes per repository).
+
+## Documentation website (after 0.4.0)
+
+A documentation site built with MkDocs (Material theme), published on GitHub Pages, with many short worked examples:
+
+- **Getting started:** install, the damped oscillator example, reading a report.
+- **One page per kind of check,** each with a small buggy code, the check that catches it and the output: manufactured solutions, order of convergence, conserved quantities, known limits, exact patch tests, Runge-Kutta tables, Monte Carlo statistics, coverage of intervals.
+- **Recipes:** an ODE solver, a 1D heat code, a code with no source-term hook, a Runge-Kutta library in CI (like the qmat example), an inference code, a script that asks for `input()`.
+- **Common pitfalls in convergence studies,** with plots.
+- **Running in CI:** GitHub Action, pre-commit, pytest.
+- **API reference** generated from the docstrings (mkdocstrings).
+- **Results:** the corpus study, written for readers who do not want the raw tables.
+
+## Later
+
+- A small C/C++ and Fortran bridge (run a compiled solver through a command line or `ctypes` and read its output), since much physics code is not Python.
+- Julia support through the same command-line route.
+- A gallery of real bugs found (with the authors' permission), each with the check that found it.

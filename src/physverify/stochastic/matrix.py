@@ -16,7 +16,7 @@ from ..checks import ERROR, FAIL, INCONCLUSIVE, run_check
 from . import ising
 from .checks import FAMILIES
 
-SHORT = {"PASS": "ok", "EXACT": "ok", FAIL: "FAIL", ERROR: "ERROR", INCONCLUSIVE: "inconcl."}
+SHORT = {"PASS": "ok", "EXACT": "ok", FAIL: "FAIL", ERROR: "ERROR", INCONCLUSIVE: "inconcl.", "SKIP": "skip"}
 
 
 def run_row(bug=None, algorithm=None):

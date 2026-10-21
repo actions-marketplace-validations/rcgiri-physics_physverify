@@ -5,7 +5,7 @@ Every external repository is treated as untrusted. `sandbox.py` runs it in a fre
 | Limit | Setting |
 |---|---|
 | Network | none (`--network=none`) during `run` |
-| File system | root file system read-only; repo mounted read-only at `/repo`; only `/out` and a 512 MB `/tmp` are writable |
+| File system | root file system read-only; clone mounted read-only at `/repo-src` and copied to `/tmp/repo` for each run (`$PHYSVERIFY_REPO`; files the code writes there are reported as a portability note; `--read-only-repo` runs from a read-only `/repo` instead); only `/out` and a 512 MB `/tmp` are writable. `--py314-shim` adds `from __future__ import annotations` to each file of the copy, for code written for Python 3.14 |
 | User | uid 10001, all capabilities dropped, `no-new-privileges`, no sudo |
 | Resources | 2 CPUs, 2 GB memory (no swap), 256 processes, 1024 open files, 1 GB max file size |
 | Time | 900 s per run (`PHYSVERIFY_TIME_LIMIT`), then the container is killed |

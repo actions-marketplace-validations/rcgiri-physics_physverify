@@ -126,3 +126,118 @@ def tfim_open_ground_energy(N: int, J: float, h: float) -> float:
         B[i, i + 1], B[i + 1, i] = J, -J
     eps = np.linalg.eigvalsh(np.block([[A, B], [-B, -A]]))
     return float(-0.5 * np.sum(eps[eps > 0]))
+
+
+# --- molecules ---------------------------------------------------------------------------------------
+
+
+def morse_levels(v, omega_e: float, omega_e_x_e: float):
+    """Morse vibrational levels above the potential minimum, G(v) = w_e (v + 1/2) - w_e x_e (v + 1/2)^2, exact for the
+    potential D (1 - exp(-a (r - r_e)))^2 with D = w_e^2 / (4 w_e x_e). Used for J222, J414."""
+    x = np.asarray(v, dtype=float) + 0.5
+    return omega_e * x - omega_e_x_e * x * x
+
+
+def morse_turning_width(E, D: float, a: float):
+    """r_max - r_min of the Morse potential D (1 - exp(-a (r - r_e)))^2 at energy E (0 < E < D):
+    (1/a) ln((1 + q)/(1 - q)) with q = sqrt(E/D). An RKR inversion reproduces this exactly from G(v) alone. Used for J414."""
+    q = np.sqrt(np.asarray(E, dtype=float) / D)
+    return np.log((1 + q) / (1 - q)) / a
+
+
+# --- gravitation -------------------------------------------------------------------------------------
+
+
+_QNM_FUNDAMENTAL = {  # (spin of the field, l): M omega for the n = 0 mode of a Schwarzschild black hole
+    (0, 0): 0.11046 - 0.10490j, (0, 1): 0.29294 - 0.09766j, (0, 2): 0.48364 - 0.09677j,
+    (2, 2): 0.37367 - 0.08896j, (2, 3): 0.59944 - 0.09270j,
+}
+
+
+def schwarzschild_qnm(l: int, s: int = 2) -> complex:
+    """Fundamental (n = 0) quasinormal frequency M omega of a Schwarzschild black hole for a field of spin s
+    (0 scalar, 2 gravitational) and multipole l; 5-digit literature values (Leaver 1985; Berti, Cardoso and
+    Starinets 2009). A ringdown that matches s = 0 when the code claims gravitational waves points to the
+    potential term (1 - s^2) 2M/r^3. Used for J216."""
+    try:
+        return _QNM_FUNDAMENTAL[(s, l)]
+    except KeyError:
+        raise ValueError(f"no tabulated mode for s = {s}, l = {l}; available: {sorted(_QNM_FUNDAMENTAL)}") from None
+
+
+def kerr_isco(a: float, prograde: bool = True) -> float:
+    """Radius of the innermost stable circular orbit of a Kerr black hole (Bardeen, Press and Teukolsky 1972), in
+    units of M; a is the dimensionless spin, 0 <= a <= 1. Gives 6 at a = 0, and 1 or 9 at a = 1. Used for J116."""
+    z1 = 1 + (1 - a * a) ** (1 / 3) * ((1 + a) ** (1 / 3) + (1 - a) ** (1 / 3))
+    z2 = math.sqrt(3 * a * a + z1 * z1)
+    root = math.sqrt((3 - z1) * (3 + z1 + 2 * z2))
+    return 3 + z2 - root if prograde else 3 + z2 + root
+
+
+def _bisect(f, lo: float, hi: float, iters: int = 200) -> float:
+    flo = f(lo)
+    for _ in range(iters):
+        mid = 0.5 * (lo + hi)
+        fm = f(mid)
+        if fm == 0 or hi - lo <= 1e-16 * max(1.0, abs(mid)):
+            return mid
+        if (fm < 0) == (flo < 0):
+            lo, flo = mid, fm
+        else:
+            hi = mid
+    return 0.5 * (lo + hi)
+
+
+def schwarzschild_deflection(b: float, nodes: int = 200) -> float:
+    """Exact deflection angle (radians) of light with impact parameter b > 3 sqrt(3) M past a Schwarzschild black hole,
+    G = c = M = 1: 2 int_0^{u0} du / sqrt(1/b^2 - u^2 + 2 u^3) - pi, u0 the turning point. The substitution
+    u = u0 (1 - s^2) removes the endpoint singularity; Gauss-Legendre on s. Tends to 4/b. Used for J243."""
+    if b <= 3 * math.sqrt(3):
+        raise ValueError("b must exceed 3 sqrt(3): the photon is captured")
+    g = lambda u: 1 / b**2 - u * u + 2 * u**3  # noqa: E731
+    u0 = _bisect(g, 1e-15, 1 / 3)
+    x, w = np.polynomial.legendre.leggauss(nodes)
+    s_ = 0.5 * (x + 1)
+    vals = 2 * u0 * s_ / np.sqrt(np.maximum(g(u0 * (1 - s_ * s_)), 1e-300))
+    return float(2 * 0.5 * np.dot(w, vals) - math.pi)
+
+
+# --- reactor physics ---------------------------------------------------------------------------------
+
+
+def inhour_stable_period(rho: float, Lambda: float, beta_i, lambda_i) -> float:
+    """Asymptotic (stable) reactor period in seconds from the inhour equation
+    rho = w Lambda + sum_i w beta_i / (w + lambda_i): the largest root, positive for rho > 0 and in (-min lambda_i, 0)
+    for rho < 0 (it tends to -1/min lambda_i, about -80 s for U-235, after a large negative step). Used for J192."""
+    b = np.asarray(beta_i, dtype=float)
+    lam = np.asarray(lambda_i, dtype=float)
+    f = lambda w: rho - (w * Lambda + np.sum(w * b / (w + lam)))  # noqa: E731
+    if rho == 0:
+        return math.inf
+    if rho > 0:
+        hi = 1.0
+        while f(hi) > 0:
+            hi *= 10
+        return 1 / _bisect(f, 1e-14, hi)
+    return 1 / _bisect(f, -lam.min() * (1 - 1e-12), -1e-14)
+
+
+REFERENCES = {
+    "ising2d_exact": "2D Ising energy, magnetisation, heat capacity by enumeration (L <= 4)",
+    "heisenberg_open_chain": "classical Heisenberg open chain, energy per spin",
+    "heat_sine_mode": "heat equation sine mode exp(-kappa (n pi / L)^2 t) sin(n pi x / L)",
+    "advection_diffusion_gaussian": "moving, spreading Gaussian",
+    "semi_infinite_step": "semi-infinite solid with a temperature step (erfc)",
+    "double_pendulum_acc": "double pendulum angular accelerations (th1, w1, th2, w2 order)",
+    "double_pendulum_energy": "double pendulum total energy",
+    "cantilever_tip": "cantilever tip deflection and slope under an end load",
+    "infinite_well_energy": "infinite square well levels",
+    "barrier_transmission": "square-barrier transmission",
+    "tfim_open_ground_energy": "open transverse-field Ising chain ground energy (free fermions)",
+    "morse_levels": "Morse vibrational levels G(v)",
+    "morse_turning_width": "Morse classical turning-point width at energy E",
+    "schwarzschild_qnm": "Schwarzschild fundamental quasinormal frequencies (s = 0, 2)",
+    "kerr_isco": "Kerr innermost stable circular orbit",
+    "schwarzschild_deflection": "exact light deflection by a Schwarzschild black hole",
+    "inhour_stable_period": "asymptotic reactor period from the inhour equation (either sign of rho)",
+}

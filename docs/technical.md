@@ -14,7 +14,7 @@ You describe the physics once, independently of the code under test (a reference
 | `limit` | A known limiting case: closed-form range, normal-mode frequencies. | Bugs in post-processing or in limits the other checks do not reach. |
 | `patch` | A manufactured solution that lies inside the scheme's discrete solution space (for example cubic in x and linear in t for a three-point stencil with forward Euler), so a correct code reproduces it to round-off for any grid and step. | An error that is as small as the scheme's own truncation error and shrinks at the same rate, which every order-of-convergence check accepts. Available for every explicit Runge-Kutta ODE code (a solution linear in t) and for the heat solver; see [docs/patch.md](patch.md). |
 
-Pass/fail rests on the observed order of convergence (`physverify.order.check_order`), which reports PASS, FAIL, EXACT (error at round-off, order not measurable) or INCONCLUSIVE.
+Pass/fail rests on the observed order of convergence (`physverify.order.check_order`), which reports PASS, FAIL, EXACT (error at round-off, order not measurable) or INCONCLUSIVE. A check whose optional dependency is missing reports SKIP, which is neither a pass nor a failure.
 
 ## Try it
 
@@ -135,10 +135,16 @@ Run read-only against `projectile-simulation` and `double-pendulum-simulation` (
 Adapters for public repositories kept needing the same few things; they now live in the package.
 
 - `loaders.stub_modules({"sklearn.metrics": ["accuracy_score"], "flask": ["Flask"]})` installs stand-ins for imports the tested code path does not use. The stand-in names are placeholders: calling one returns another, and used as a decorator one returns the function unchanged, so `@app.route(...)` or `@jit` leaves the code usable. Modules that import for real are left alone.
-- `loaders.run_script(path, argv=...)` runs a whole script (coursework, an exported notebook) with plotting switched off and returns its globals and what it printed.
+- `loaders.run_script(path, argv=..., inputs=...)` runs a whole script (coursework, an exported notebook) with plotting switched off and returns its globals and what it printed; `inputs` answers its `input()` prompts in order.
 - `loaders.load_definitions_from_path` loads only the functions of a script that runs a simulation at import; its `stubs` argument takes the same names or mapping.
-- `references`: the 2D Ising model by exact enumeration up to 4x4, the classical Heisenberg chain, heat-equation modes, a moving and spreading Gaussian, the semi-infinite step solution, double-pendulum accelerations and energy, the cantilever tip, the infinite well, square-barrier transmission and the open transverse-field Ising ground energy. Each is tested against an independent computation in `tests/test_references.py`.
+- `references`: the 2D Ising model by exact enumeration up to 4x4, the classical Heisenberg chain, heat-equation modes, a moving and spreading Gaussian, the semi-infinite step solution, double-pendulum accelerations and energy, the cantilever tip, the infinite well, square-barrier transmission the open transverse-field Ising ground energy, Morse levels and turning-point width, Schwarzschild quasinormal frequencies (scalar and gravitational), the Kerr ISCO, exact Schwarzschild light deflection and the inhour asymptotic reactor period. Each is tested against an independent computation in `tests/test_references.py` and `tests/test_batch7_lessons.py`; `physverify references` lists them.
 - `studies.balance_check`: an exact budget at every resolution, with a hint when the mismatch shrinks (a scheme can converge and still not conserve).
+- `studies.damped_sinusoid_fit(t, y, t_start, t_stop)`: the complex frequency of a ringdown or any damped oscillation (two-pole Prony fit, no starting guess).
+- `butcher.check_tableau(A, b, c, claimed=p, claimed_linear=..., claimed_stage=..., a_stable=..., l_stable=..., stiffly_accurate=...)`: order conditions on rooted trees, linear order (where R(z) matches e^z; a Dahlquist test measures this one), stage order, A-stability (E-polynomial and poles of R), L-stability and stiff accuracy; row sums of A must equal c.
+- `studies.trajectory_order_study(runs, exact, t_compare, p, period=...)`: order from whole trajectories at one fixed time; fails when a run has no sample there (the `int(t_end / h)` loop) and notes a whole number of periods.
+- `studies.coverage_check(simulate, interval, prior_sampler, level=...)`: coverage of stated intervals by an exact binomial test, with the truth drawn from the analysis prior.
+- `requires("module")` / `SkipCheck`: report SKIP (neither pass nor failure) when an optional dependency is missing. `Check(..., budget_s=...)` or `physverify run --budget SECONDS`: a per-check time budget; order studies stop adding resolutions that would overrun it.
+- `physverify smoke PATH`: a first stage before any physics. Each script is compiled and run with a time limit, stdin closed and plotting off; parse errors, crashes, waits for input and NaN warnings are reported. It runs the code, so use it on trusted code or inside the sandbox.
 
 ## Known limits
 
@@ -178,7 +184,7 @@ src/physverify/
   adapters/         read-only adapters for the two real projects
   matrix.py         the detection tables and bug catalogue
   compare.py        the families against plain tests
-  butcher.py        Runge-Kutta order conditions on rooted trees
+  butcher.py        Runge-Kutta order conditions on rooted trees; linear and stage order, R(z), A/L-stability
   method_bugs.py    seeded bugs in methods, from public repositories, with controls
   references.py     exact references reused across adapters (Ising enumeration, heat modes, pendulums, ...)
   loaders.py        load code from a path; stub_modules, run_script, load_definitions_from_path

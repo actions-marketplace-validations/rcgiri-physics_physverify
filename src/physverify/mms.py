@@ -28,7 +28,7 @@ from typing import Callable
 
 import numpy as np
 
-from .checks import OrderResult
+from .checks import OrderResult, within_budget
 from .order import check_order
 
 
@@ -81,7 +81,7 @@ def mms_order_study(
     y_exact = mms.value(t_end)
     order_kwargs.setdefault("scale", float(np.max(np.abs(y_exact))))
     hs, errs = [], []
-    for n in ns:
+    for n in within_budget(ns):
         y_end = integrate(mms.forcing, y0, t_end, n)
         hs.append(t_end / n)
         errs.append(max_abs_error(y_end, y_exact))
@@ -105,7 +105,7 @@ def mms_trajectory_study(
     """
     y0 = mms.value(0.0)
     hs, errs, scale = [], [], 0.0
-    for n in ns:
+    for n in within_budget(ns):
         states = np.asarray(integrate_trajectory(mms.forcing, y0, t_end, n), dtype=float)
         if states.shape[0] != n + 1:
             raise ValueError(f"integrate_trajectory returned {states.shape[0]} states for {n} steps; expected {n + 1}")

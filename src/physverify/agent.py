@@ -150,7 +150,7 @@ TOOLS = [
             "invariants, limits, exactness) on physics simulation code. Takes spec files that "
             "define checks(); with no specs given, finds verify_*.py files under `project`. "
             "Returns a JSON report: per check family, label, status (PASS, EXACT, FAIL, "
-            "INCONCLUSIVE, ERROR), message, observed and expected order, step sizes and errors."
+            "INCONCLUSIVE, ERROR, SKIP), message, observed and expected order, step sizes and errors."
         ),
         "inputSchema": {
             "type": "object",

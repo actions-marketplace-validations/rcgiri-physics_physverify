@@ -12,7 +12,8 @@ try:
     check("no network", False)
 except OSError:
     check("no network", True)
-for path in ["/repo/probe_write", "/usr/probe_write", "/work/probe_write"]:
+src = "/repo" if os.path.isdir("/repo") else "/repo-src"  # --read-only-repo mounts the clone at /repo
+for path in [f"{src}/probe_write", "/usr/probe_write", "/work/probe_write"]:
     try:
         open(path, "w").close()
         check(f"cannot write {path}", False)
@@ -20,7 +21,8 @@ for path in ["/repo/probe_write", "/usr/probe_write", "/work/probe_write"]:
         check(f"cannot write {path}", True)
 open("/out/probe_ok", "w").close(); check("can write /out", True)
 check("not root", os.getuid() != 0)
-check("repo mounted", os.path.isdir("/repo"))
+check("repo mounted", os.path.isdir(src))
+check("PHYSVERIFY_REPO is a folder", os.path.isdir(os.environ.get("PHYSVERIFY_REPO", "")))
 try:
     subprocess.run(["sudo", "true"], capture_output=True); check("no sudo", False)
 except OSError:

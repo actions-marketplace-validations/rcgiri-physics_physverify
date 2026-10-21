@@ -1,7 +1,5 @@
 # Running physverify in CI
 
-The GitHub Action and the pre-commit hook described here ship with 0.4.0, which is not released yet; on 0.3.0 use the pytest plugin or `physverify run`.
-
 A spec file can run on every push, so that a change which breaks the physics fails the build the same way a broken unit test does. This page covers starting a spec (`physverify init`), the GitHub Action, pre-commit, and plain pytest.
 
 ## 1. Start a spec

@@ -6,7 +6,7 @@ from typing import Callable
 
 import numpy as np
 
-from .checks import FAIL, PASS, Check, OrderResult, Result
+from .checks import FAIL, PASS, Check, OrderResult, Result, within_budget
 from .mms import ManufacturedODE, max_abs_error, mms_order_study, mms_trajectory_study, zero_source
 from .order import check_exact, check_order
 from .steppers import integrate_fixed, rk4
@@ -21,7 +21,7 @@ def reference_study(integrate, rhs_ref, y0, t_end, ns, expected_order, ref_facto
     y_ref = integrate_fixed(rhs_ref, y0, 0.0, t_end, ref_factor * max(ns), rk4)
     kw.setdefault("scale", float(np.max(np.abs(y_ref))))
     hs, errs = [], []
-    for n in ns:
+    for n in within_budget(ns):
         hs.append(t_end / n)
         errs.append(max_abs_error(integrate(zero_source, y0, t_end, n), y_ref))
     return check_order(hs, errs, expected_order, **kw)
@@ -38,7 +38,7 @@ def invariant_study(integrate, quantity, y0, t_end, ns, expected_order, **kw) ->
     q0 = float(quantity(np.asarray(y0, dtype=float)))
     scale = max(abs(q0), 1.0)
     hs, errs = [], []
-    for n in ns:
+    for n in within_budget(ns):
         with np.errstate(all="ignore"):
             y_end = np.asarray(integrate(zero_source, y0, t_end, n), dtype=float)
             drift = abs(float(quantity(y_end)) - q0) / scale
@@ -71,7 +71,7 @@ def patch_study(integrate, rhs_ref, y0, slope, t_end, ns, *, floor=1e-11) -> Ord
     mms = linear_manufactured(rhs_ref, y0, slope)
     exact = mms.value(t_end)
     hs, errs = [], []
-    for n in ns:
+    for n in within_budget(ns):
         y_end = integrate(mms.forcing, mms.value(0.0), t_end, n)
         hs.append(t_end / n)
         errs.append(max_abs_error(y_end, exact))
@@ -180,7 +180,7 @@ def backward_mms_study(integrate_back: Callable, mms: ManufacturedODE, t_end: fl
     y_0 = mms.value(0.0)
     kw.setdefault("scale", float(np.max(np.abs(y_0))))
     hs, errs = [], []
-    for n in ns:
+    for n in within_budget(ns):
         hs.append(t_end / n)
         errs.append(max_abs_error(integrate_back(mms.forcing, y_end, t_end, n), y_0))
     return check_order(hs, errs, expected_order, **kw)
@@ -234,3 +234,111 @@ def size_sweep_check(run_at_size: Callable, sizes=(15, 16, 31, 32, 63, 64), *, l
     if bad:
         return Result(FAIL, prefix + "; ".join(bad))
     return Result(PASS, f"{prefix}runs for every size tested ({', '.join(map(str, sizes))})")
+
+
+def damped_sinusoid_fit(t, y, t_start: float, t_stop: float) -> complex:
+    """Complex frequency omega_R - i gamma of y ~ A exp(-gamma t) cos(omega_R t + phi) on [t_start, t_stop].
+
+    Two-pole Prony fit (linear prediction y_n = a1 y_{n-1} + a2 y_{n-2} by least squares on a uniform grid), so no
+    starting guess is needed. Start the window after the direct pulse has passed the observer and stop before the
+    late-time tail or reflections dominate; a window that includes the pulse gave a wrong frequency for a real
+    ringdown code (J216). Returns omega_R - i gamma with omega_R >= 0, to compare with tabulated quasinormal modes
+    (references.schwarzschild_qnm) or any damped oscillator.
+    """
+    t = np.asarray(t, dtype=float)
+    y = np.asarray(y, dtype=float)
+    m = (t >= t_start) & (t <= t_stop)
+    tt, yy = t[m], y[m]
+    if len(yy) < 8:
+        raise ValueError("need at least 8 samples in the window")
+    dt = np.diff(tt)
+    if np.max(np.abs(dt - dt.mean())) > 1e-6 * dt.mean():
+        raise ValueError("the samples in the window must be uniformly spaced")
+    M = np.column_stack([yy[1:-1], yy[:-2]])
+    a1, a2 = np.linalg.lstsq(M, yy[2:], rcond=None)[0]
+    z = np.roots([1.0, -a1, -a2]).astype(complex)
+    s = np.log(z[np.argmax(z.imag)]) / dt.mean()  # s = -gamma + i omega_R
+    return complex(abs(s.imag), s.real)
+
+
+def trajectory_order_study(runs, exact: Callable, t_compare: float, expected_order, *, period: float | None = None,
+                           time_tol: float = 1e-9, **kw) -> OrderResult:
+    """Order study from whole trajectories, compared at one fixed time, guarding against the usual study-design
+    pitfalls (batch 7 of the corpus study).
+
+    `runs` is a list of (t, y) pairs, one per step size, as the code under test returns them; `exact(t)` is the
+    solution. Each run is compared at `t_compare`, found on its own time grid; the step size is the run's mean step.
+
+    Pitfalls it catches:
+    * A run whose grid does not contain `t_compare`: a loop over `int(t_end / h)` steps stops one step early
+      (int(2 pi / (2 pi / 200)) = 199), which made an order-4 method look first order (J348). FAIL, naming the run
+      and where it ended; it is the study, or the code's step count, that is wrong.
+    * Comparing arrays index by index, or a maximum over the last N samples, moves the comparison time with h
+      (J155). Comparing at one time on every grid avoids both.
+    * `t_compare` a whole number of periods: errors in the phase can cancel there, and a symplectic Euler showed
+      order 2 (J155). Noted in the message, with the advice to also compare at a time that is not a multiple.
+    """
+    hs, errs, problems = [], [], []
+    for k, (t, y) in enumerate(runs):
+        t = np.asarray(t, dtype=float)
+        y = np.asarray(y, dtype=float)
+        if len(t) < 2:
+            problems.append(f"run {k} has fewer than two samples")
+            continue
+        h = float(np.mean(np.diff(t)))
+        i = int(np.argmin(np.abs(t - t_compare)))
+        if abs(t[i] - t_compare) > time_tol * max(1.0, abs(t_compare)) + 1e-9 * abs(h):
+            problems.append(f"run {k} (h = {h:.3g}) has no sample at t = {t_compare:g}; it ends at t = {t[-1]:.9g}"
+                            + (f", {round((t_compare - t[-1]) / h)} step(s) short (a loop over int(t_end / h) steps?)"
+                               if t[-1] < t_compare else ""))
+            continue
+        hs.append(abs(h))
+        errs.append(max_abs_error(y[i], exact(float(t[i]))))
+    if problems:
+        return OrderResult(FAIL, "the comparison time is not on every grid: " + "; ".join(problems),
+                           expected=expected_order, hs=tuple(hs), errors=tuple(errs))
+    result = check_order(hs, errs, expected_order, **kw)
+    if period:
+        cycles = t_compare / period
+        if abs(cycles - round(cycles)) < 1e-6 and round(cycles) != 0:
+            result.message += (f"; t = {t_compare:g} is {round(cycles)} whole period(s), where phase errors can cancel"
+                                " and show a higher order than the method has: compare at a time that is not a multiple too")
+    return result
+
+
+def _binom_two_sided_p(k: int, n: int, p: float) -> float:
+    """Exact two-sided binomial p-value (sum of outcomes no more likely than k)."""
+    from math import exp, lgamma, log
+
+    def logpmf(j):
+        return lgamma(n + 1) - lgamma(j + 1) - lgamma(n - j + 1) + j * log(p) + (n - j) * log(1 - p)
+
+    ref = logpmf(k) + 1e-9
+    return min(1.0, sum(exp(logpmf(j)) for j in range(n + 1) if logpmf(j) <= ref))
+
+
+def coverage_check(simulate: Callable, interval: Callable, prior_sampler: Callable, *, level: float = 0.68,
+                   trials: int = 400, seed: int = 0, alpha: float = 1e-3, label: str = "") -> Result:
+    """Frequentist coverage of an inference code: the stated `level` interval should contain the truth in that
+    fraction of repeated experiments.
+
+    Each trial draws the truth from `prior_sampler(rng)`, simulates data with `simulate(theta, rng)` and asks
+    `interval(data, level)` for (low, high). The truth must come from the same prior the analysis assumes:
+    drawing it from a narrower range gave a spurious coverage of 0.865 for a nominal 0.68 interval (J399), which
+    is why the prior sampler is a required argument and not a fixed truth. For a frequentist (not Bayesian)
+    interval any fixed truth works; pass a sampler that returns it.
+
+    FAIL when an exact binomial test rejects the stated level at `alpha` (two-sided; the false-alarm rate of
+    a correct code is at most `alpha`). Scalar parameters; for vectors, check each component separately.
+    """
+    rng = np.random.default_rng(seed)
+    hits = 0
+    for _ in range(trials):
+        theta = prior_sampler(rng)
+        lo, hi = interval(simulate(theta, rng), level)
+        hits += bool(lo <= theta <= hi)
+    p = _binom_two_sided_p(hits, trials, level)
+    prefix = f"{label}: " if label else ""
+    msg = (f"{prefix}{hits} of {trials} intervals contain the truth ({hits / trials:.3f}, stated {level}); "
+           f"binomial p = {p:.1e}, false-alarm rate {alpha:g}")
+    return Result(FAIL if p < alpha else PASS, msg)

@@ -79,6 +79,7 @@ def check_order(
     floor: float = 1e-12,
     fit_points: int = 4,
     scale: float = 1.0,
+    tol: float | None = None,
 ) -> OrderResult:
     """Compare the observed order of convergence with the order the code claims.
 
@@ -90,7 +91,12 @@ def check_order(
     `floor` is the error level below which round-off dominates, for a solution
     of size about 1. Pass `scale` (the size of the solution, for example the
     largest absolute value of the exact answer) and the floor grows with it.
+
+    `tol` sets tol_low and tol_high to the same value (a common way to write it; without the alias an
+    adapter that wrote `tol=` failed with a TypeError after its whole run).
     """
+    if tol is not None:
+        tol_low = tol_high = float(tol)
     floor = effective_floor(floor, scale)
     hs = np.asarray(hs, dtype=float)
     errs = np.asarray(errors, dtype=float)
@@ -107,10 +113,14 @@ def check_order(
 
     h_m, e_m = hs[measurable], errs[measurable]
     if len(e_m) < 2:
-        return OrderResult(INCONCLUSIVE, "fewer than 2 resolutions above the noise floor", **base)
+        return OrderResult(INCONCLUSIVE, f"fewer than 2 resolutions above the noise floor ({floor:.2g}); the errors are"
+                           f" near round-off already (largest {errs.max():.2g}), so use coarser resolutions", **base)
 
     if e_m[-2] / e_m[-1] < 1.2:
         msg = f"error does not decrease with resolution (about {e_m[-1]:.3g} at the finest level)"
+        if e_m[0] < 1e3 * floor:
+            msg += ("; even the coarsest error is within a factor 1000 of the noise floor, so round-off may already"
+                    " dominate: use coarser resolutions")
         if len(e_m) >= 3 and e_m.max() / e_m.min() < 1.1:
             # seen in a real MD code: one pair crossing an unshifted cutoff adds V(rc) to the energy, whatever dt is
             msg += ("; the error is the same at every resolution, which points to something independent of the step"

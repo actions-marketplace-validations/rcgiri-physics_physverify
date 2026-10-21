@@ -7,7 +7,7 @@
     physverify hook        (Claude Code PostToolUse hook; see docs/agent.md)
     physverify mcp         (MCP server on stdio; see docs/agent.md)
 
-`run` exits 0 when every check passes (PASS or EXACT), 1 when any does not,
+`run` exits 0 when no check fails (PASS, EXACT or SKIP), 1 when any does not,
 and 2 when a spec cannot be loaded. A spec is a Python file defining
 `checks()`; see examples/verify_damped_oscillator.py.
 """
@@ -56,7 +56,7 @@ def _cmd_run(args) -> int:
         except Exception as exc:
             print(f"physverify: cannot load {spec}: {type(exc).__name__}: {exc}", file=sys.stderr)
             return 2
-        outcomes += run_checks(checks)
+        outcomes += run_checks(checks, args.budget)
     source = ", ".join(str(Path(s)) for s in args.specs)
     if args.json == "-":
         print(to_json(outcomes, source))
@@ -70,7 +70,7 @@ def _cmd_run(args) -> int:
     if args.markdown:
         with open(args.markdown, "a", encoding="utf-8") as f:  # append: $GITHUB_STEP_SUMMARY may hold other steps' output
             f.write(to_markdown(outcomes, source))
-    return 0 if all(o.result.ok for o in outcomes) else 1
+    return 1 if any(o.result.failed for o in outcomes) else 0
 
 
 def _cmd_init(args) -> int:
@@ -111,6 +111,28 @@ def _cmd_mcp(args) -> int:
     return mcp_main()
 
 
+def _cmd_smoke(args) -> int:
+    from .smoke import OK, smoke
+
+    results = smoke(args.path, timeout=args.timeout)
+    for r in results:
+        note = f" ({r.nan_warnings} NaN/overflow warnings)" if r.nan_warnings else ""
+        print(f"{r.outcome:16s} {r.path}: {r.detail}{note}")
+    bad = sum(r.outcome != OK for r in results)
+    print(f"{len(results)} scripts, {len(results) - bad} ran to the end")
+    return 1 if bad else 0
+
+
+def _cmd_references(args) -> int:
+    from . import references
+
+    for name, what in references.REFERENCES.items():
+        print(f"{name:30s} {what}")
+    print()
+    print("from physverify import references; help(references.<name>) gives the formula and its source")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="physverify", description="Verification checks for physics simulation code.")
     parser.add_argument("--version", action="version", version=f"physverify {__version__}")
@@ -122,6 +144,9 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--html", metavar="FILE", help="write a self-contained HTML report")
     run.add_argument("--markdown", metavar="FILE", help="append a Markdown table to FILE (for $GITHUB_STEP_SUMMARY)")
     run.add_argument("--quiet", action="store_true", help="no text output")
+    run.add_argument("--budget", type=float, metavar="SECONDS",
+                     help="time budget per check: order studies stop adding resolutions when the next would overrun it,"
+                          " and a check still running at twice the budget is reported INCONCLUSIVE")
     run.set_defaults(func=_cmd_run)
 
     i = sub.add_parser("init", help="write a starter spec for a fixed-step ODE solver")
@@ -144,6 +169,14 @@ def build_parser() -> argparse.ArgumentParser:
 
     h = sub.add_parser("hook", help="Claude Code PostToolUse hook: reads the event on stdin, exits 2 on a failed check")
     h.set_defaults(func=_cmd_hook)
+
+    sm = sub.add_parser("smoke", help="check that each script parses and runs to the end (runs the code: trusted code or the sandbox only)")
+    sm.add_argument("path", help="a script or a folder of scripts")
+    sm.add_argument("--timeout", type=float, default=60.0, help="seconds per script (default 60)")
+    sm.set_defaults(func=_cmd_smoke)
+
+    r = sub.add_parser("references", help="list the exact reference solutions in physverify.references")
+    r.set_defaults(func=_cmd_references)
 
     s = sub.add_parser("mcp", help="run a minimal MCP server on stdio with a run_checks tool")
     s.set_defaults(func=_cmd_mcp)

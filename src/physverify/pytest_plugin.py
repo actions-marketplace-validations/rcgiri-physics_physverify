@@ -13,7 +13,7 @@ from __future__ import annotations
 
 import pytest
 
-from .checks import OrderResult, run_check
+from .checks import SKIP, OrderResult, run_check
 
 
 def pytest_collect_file(file_path, parent):
@@ -54,6 +54,8 @@ class CheckItem(pytest.Item):
     def runtest(self):
         result = run_check(self.check)
         self.user_properties.append(("status", result.status))
+        if result.status == SKIP:
+            pytest.skip(result.message)
         if not result.ok:
             raise CheckFailed(result)
 

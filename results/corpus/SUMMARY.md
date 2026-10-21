@@ -1,5 +1,7 @@
 # physverify on other people's code: first six batches
 
+Batch 7 (450 more repositories, 182 tested) is in [BATCH7.md](BATCH7.md).
+
 Status: development batches (October 2026), run before freezing the tool. They show what physverify finds on public code and what it cannot test yet; they are not the final study described in the plan (100 or more tested repositories, analysis plan written down first).
 
 Repositories are identified here by an ID and the kind of code, not by name: the authors are told about a finding before it is published with their name. Per-repository records (URL, commit, adapter, every check result) are kept and can be shared on request.

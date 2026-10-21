@@ -80,32 +80,217 @@ def tableau_order(A, b, *, max_order: int = 6, tol: float = 1e-8) -> int:
     return p
 
 
-def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1e-8, max_order: int | None = None) -> Result:
-    """PASS when the table has at least the claimed order; FAIL when it has less.
+def linear_residuals(A, b, max_order: int = 8) -> dict:
+    """{k: |b . A^(k-1) 1 - 1/k!|}: how far the stability function R(z) is from e^z at each power of z."""
+    A = np.asarray(A, dtype=float)
+    v = np.ones(len(b))
+    b = np.asarray(b, dtype=float)
+    out, fact = {}, 1.0
+    for k in range(1, max_order + 1):
+        fact *= k
+        out[k] = abs(float(b @ v) - 1.0 / fact)
+        v = A @ v
+    return out
+
+
+def linear_order(A, b, *, max_order: int = 8, tol: float = 1e-8) -> int:
+    """Order on linear constant-coefficient problems (y' = λy): highest p with R(z) = e^z + O(z^(p+1)).
+
+    It is at least the classical order and can be higher; a convergence test on y' = λy measures this
+    number, not the classical one (Hairer & Wanner, Solving ODEs II, section IV.3).
+    """
+    p = 0
+    for q, r in linear_residuals(A, b, max_order).items():
+        if r > tol:
+            break
+        p = q
+    return p
+
+
+def stage_order(A, c=None, b=None, *, max_order: int = 8, tol: float = 1e-8) -> int:
+    """Highest q with A c^(k-1) = c^k / k for k = 1..q (simplifying assumption C(q)).
+
+    With `b` given, b . c^(k-1) = 1/k (assumption B(q)) is required as well, the usual definition of
+    stage order. A low stage order is what causes order reduction on stiff problems.
+    """
+    A = np.asarray(A, dtype=float)
+    c = A.sum(axis=1) if c is None else np.asarray(c, dtype=float)
+    q = 0
+    for k in range(1, max_order + 1):
+        r = float(np.max(np.abs(A @ c ** (k - 1) - c**k / k)))
+        if b is not None:
+            r = max(r, abs(float(np.asarray(b, float) @ c ** (k - 1)) - 1.0 / k))
+        if r > tol:
+            break
+        q = k
+    return q
+
+
+def stability_polynomials(A, b):
+    """(P, Q) coefficient arrays, lowest power first, with R(z) = P(z) / Q(z).
+
+    P(z) = det(I - zA + z 1 b^T) and Q(z) = det(I - zA) have degree at most s; they are recovered
+    from their values on the unit circle, which is well conditioned.
+    """
+    A = np.asarray(A, dtype=float)
+    b = np.asarray(b, dtype=float)
+    s = len(b)
+    n = s + 1
+    z = np.exp(2j * np.pi * np.arange(n) / n)
+    eb = np.outer(np.ones(s), b)
+    I = np.eye(s)
+    Pv = np.array([np.linalg.det(I - zz * A + zz * eb) for zz in z])
+    Qv = np.array([np.linalg.det(I - zz * A) for zz in z])
+    P = np.real(np.fft.fft(Pv) / n)
+    Q = np.real(np.fft.fft(Qv) / n)
+    return P, Q
+
+
+def _trim(p, tol=1e-12):
+    p = np.array(p, dtype=float)
+    p[np.abs(p) < tol] = 0.0
+    nz = np.nonzero(p)[0]
+    return p[: nz[-1] + 1] if len(nz) else np.zeros(1)
+
+
+def stability_function(A, b):
+    """R(z) = 1 + z b^T (I - zA)^(-1) 1, as a function of a complex z."""
+    A = np.asarray(A, dtype=float)
+    b = np.asarray(b, dtype=float)
+    e = np.ones(len(b))
+    return lambda z: 1 + z * (b @ np.linalg.solve(np.eye(len(b)) - z * A, e))
+
+
+def r_infinity(A, b) -> float:
+    """lim R(z) as |z| -> infinity: 0 for an L-stable method, inf when R is a polynomial (explicit)."""
+    P, Q = (_trim(x) for x in stability_polynomials(A, b))
+    if len(P) > len(Q):
+        return float("inf")
+    if len(P) < len(Q):
+        return 0.0
+    return float(P[-1] / Q[-1])
+
+
+def a_stability_margin(A, b) -> float:
+    """min over real y of |Q(iy)|^2 - |P(iy)|^2, scaled by the largest coefficient; >= 0 on the imaginary axis
+    means |R(iy)| <= 1. Returns -inf when R has a pole in the closed left half-plane or grows at infinity.
+
+    A method is A-stable exactly when the margin is >= 0 (up to round-off) and every pole of R lies in
+    Re z > 0 (Hairer & Wanner II, section IV.3, the E-polynomial).
+    """
+    P, Q = (_trim(x) for x in stability_polynomials(A, b))
+    if len(P) > len(Q):
+        return float("-inf")
+    if len(Q) > 1 and np.any(np.roots(Q[::-1]).real <= 1e-12):
+        return float("-inf")
+    iy = np.polynomial.Polynomial([0, 1j])
+    Pi = np.polynomial.Polynomial(P.astype(complex))(iy)
+    Qi = np.polynomial.Polynomial(Q.astype(complex))(iy)
+    def sq(p):  # |p(iy)|^2 for real y, as a polynomial in y
+        return p * np.polynomial.Polynomial(np.conj(p.coef))
+
+    E = np.polynomial.Polynomial(np.real((sq(Qi) - sq(Pi)).coef))
+    scale = max(1.0, float(np.max(np.abs(E.coef))))
+    pts = [0.0, 1.0, -1.0]
+    if E.degree() >= 2:
+        pts += [float(r.real) for r in E.deriv().roots() if abs(r.imag) < 1e-7 * max(1.0, abs(r))]
+    lead = E.coef[-1] if E.degree() >= 1 else 0.0
+    if E.degree() >= 1 and lead < -1e-12 * scale:
+        return float("-inf")
+    return float(min(E(y) for y in pts)) / scale
+
+
+def is_stiffly_accurate(A, b, *, tol: float = 1e-12) -> bool:
+    """b equals the last row of A, so the step result is the last stage (Hairer & Wanner II, IV.6)."""
+    return bool(np.max(np.abs(np.asarray(A, float)[-1] - np.asarray(b, float))) <= tol)
+
+
+def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1e-8, max_order: int | None = None,
+                  claimed_linear: int | None = None, claimed_stage: int | None = None, a_stable: bool | None = None,
+                  l_stable: bool | None = None, stiffly_accurate: bool | None = None) -> Result:
+    """PASS when the table has at least the claimed order and every other stated property; FAIL otherwise.
 
     The default tolerance 1e-8 accepts coefficients typed with 9 or 10 digits (a real package had
     residuals of 2e-10 for that reason), while a missing order shows residuals of 1e-4 or more.
     The message gives the residuals, so a table whose conditions hold only to about 1e-10 is visible, and a claim that is lower than the true
-    order is noted rather than failed. If `c` is given, the row sums of A are compared with it.
+    order is noted rather than failed. If `c` is given, the row sums of A must equal it (the order
+    conditions assume they do, so a mismatch fails).
+
+    Optional claims, each checked only when given:
+    claimed_linear  order on y' = λy (the order a Dahlquist convergence test measures); see `linear_order`
+    claimed_stage   stage order, C(q) and B(q); see `stage_order`
+    a_stable        |R(z)| <= 1 on Re z <= 0; see `a_stability_margin`
+    l_stable        A-stable and R(inf) = 0
+    stiffly_accurate  b equals the last row of A
+    True means "the method has it" and False means "the method does not"; a mismatch either way fails.
     """
     top = max_order or claimed + 1
     res = order_residuals(A, b, top)
     p = tableau_order(A, b, max_order=top, tol=tol)
     shown = ", ".join(f"{q}: {r:.1e}" for q, r in res.items())
     prefix = f"{label}: " if label else ""
-    notes = []
+    notes, fails = [], []
     if c is not None:
         rs = float(np.max(np.abs(np.asarray(A, float).sum(axis=1) - np.asarray(c, float))))
         if rs > tol:
-            notes.append(f"row sums of A differ from c by {rs:.1e}")
+            fails.append(f"row sums of A differ from c by {rs:.1e}")
     worst_kept = max((r for q, r in res.items() if q <= max(p, 1)), default=0.0)
     if p >= 1 and worst_kept > 1e-13:
         notes.append(f"conditions hold only to {worst_kept:.0e} (coefficients with limited digits?)")
-    tail = ("; " + "; ".join(notes)) if notes else ""
     if p < claimed:
-        return Result(FAIL, f"{prefix}claims order {claimed} but satisfies the order conditions only up to {p} "
-                            f"(largest residual per order: {shown}){tail}")
-    if p > claimed:
-        return Result(PASS, f"{prefix}claims order {claimed}; the conditions hold up to at least {p}, so the claim is "
-                            f"conservative ({shown}){tail}")
-    return Result(PASS, f"{prefix}order {claimed} confirmed by the order conditions ({shown}){tail}")
+        missing = max(r for q, r in res.items() if p < q <= claimed)
+        msg = f"claims order {claimed} but satisfies the order conditions only up to {p} (largest residual per order: {shown})"
+        if missing < 1e-5:
+            msg += (f"; the conditions for order {claimed} hold to {missing:.1e}, which looks like coefficients typed"
+                    f" with too few digits rather than a wrong method: retry with tol={10 * missing:.0e} and compare"
+                    " with the published table")
+        fails.insert(0, msg)
+    elif p > claimed:
+        notes.insert(0, f"claims order {claimed}; the conditions hold up to at least {p}, so the claim is conservative ({shown})")
+    else:
+        notes.insert(0, f"order {claimed} confirmed by the order conditions ({shown})")
+
+    if claimed_linear is not None:
+        pl = linear_order(A, b, max_order=max(claimed_linear + 1, 2), tol=tol)
+        if pl < claimed_linear:
+            fails.append(f"claims linear order {claimed_linear} but R(z) matches e^z only up to z^{pl}")
+        elif pl > claimed_linear:
+            notes.append(f"linear order is at least {pl} (claimed {claimed_linear})")
+        else:
+            notes.append(f"linear order {pl} confirmed")
+    elif linear_order(A, b, max_order=max(p, claimed) + 2, tol=tol) > p:
+        notes.append(f"linear order {linear_order(A, b, max_order=max(p, claimed) + 2, tol=tol)} is higher than the order {p}:"
+                     " a convergence test on y' = lambda*y alone would overstate the order")
+    if claimed_stage is not None:
+        q = stage_order(A, c, b, max_order=claimed_stage + 1, tol=tol)
+        if q < claimed_stage:
+            fails.append(f"claims stage order {claimed_stage} but C(q) and B(q) hold only up to q = {q}")
+        else:
+            notes.append(f"stage order {q}" + (f" (claimed {claimed_stage})" if q > claimed_stage else " confirmed"))
+    want_a = a_stable if a_stable is not None else (True if l_stable else None)
+    if want_a is not None:
+        m = a_stability_margin(A, b)
+        has = m >= -1e-10
+        if has != want_a:
+            fails.append(f"stated {'' if want_a else 'not '}A-stable but it is {'' if has else 'not '}"
+                         f"(min |Q(iy)|^2 - |P(iy)|^2 = {m:.1e})")
+        else:
+            notes.append(f"{'' if has else 'not '}A-stable as stated")
+    if l_stable is not None:
+        ri = r_infinity(A, b)
+        has = abs(ri) < 1e-8 and a_stability_margin(A, b) >= -1e-10
+        if has != l_stable:
+            fails.append(f"stated {'' if l_stable else 'not '}L-stable but it is {'' if has else 'not '}(R(inf) = {ri:.1e})")
+        else:
+            notes.append(f"{'' if has else 'not '}L-stable as stated")
+    if stiffly_accurate is not None:
+        has = is_stiffly_accurate(A, b, tol=tol)
+        if has != stiffly_accurate:
+            fails.append(f"stated {'' if stiffly_accurate else 'not '}stiffly accurate, but b "
+                         f"{'equals' if has else 'differs from'} the last row of A")
+        else:
+            notes.append(f"{'' if has else 'not '}stiffly accurate as stated")
+
+    if fails:
+        return Result(FAIL, prefix + "; ".join(fails + notes))
+    return Result(PASS, prefix + "; ".join(notes))

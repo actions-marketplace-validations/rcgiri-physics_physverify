@@ -3,13 +3,17 @@
     python -I sandbox/sandbox.py build
     python -I sandbox/sandbox.py fetch  <id> <git-url> <commit>   # clone on the host, no hooks, no checkout of LFS
     python -I sandbox/sandbox.py deps   <id> [package ...]        # optional: wheels-only install, network on
-    python -I sandbox/sandbox.py run    <id> <script> [args ...]  # network off, repo read-only
+    python -I sandbox/sandbox.py run    [--read-only-repo] [--py314-shim] <id> <script> [args ...]  # network off
 
 Folders (under %LOCALAPPDATA%/physverify-corpus or $PHYSVERIFY_CORPUS):
-    repos/<id>   the clone, mounted read-only at /repo
+    repos/<id>   the clone, mounted read-only at /repo-src and copied to /tmp/repo (writable, $PHYSVERIFY_REPO)
+                 for the run; files the code writes there are reported as a portability note.
+                 --read-only-repo runs from the read-only mount at /repo instead (no copy)
     deps/<id>    extra packages, mounted read-only at /deps during run
     out/<id>     the only writable mount, at /out
 The folder holding the script given to `run` is mounted read-only at /work; it is ours (adapters), never the repo's.
+--py314-shim adds `from __future__ import annotations` to every file of the copy, for code written for
+Python 3.14's lazy annotations (the image has an older Python); it needs the copy.
 """
 
 import os
@@ -127,7 +131,7 @@ def host_path(p):
     return Path(p).resolve()
 
 
-def run(repo_id, script, extra):
+def run(repo_id, script, extra, *, read_only_repo=False, py314_shim=False):
     script = host_path(script)
     if not script.is_file():
         sys.exit(f"no adapter script at {script}")
@@ -141,10 +145,19 @@ def run(repo_id, script, extra):
     # memory in static TLS block"); preloading it at start-up is the usual fix
     gomp = sorted(deps_dir.glob("*.libs/libgomp*.so*"))
     preload = ["-e", f"LD_PRELOAD=/deps/{gomp[0].relative_to(deps_dir).as_posix()}"] if gomp else []
-    args = ["run", *LOCKDOWN, "--network=none", "--name", name, *preload,
-            "-v", f"{repo}:/repo:ro", "-v", f"{folder('deps', repo_id)}:/deps:ro",
+    if py314_shim and read_only_repo:
+        sys.exit("--py314-shim edits the copy, so it cannot be used with --read-only-repo")
+    if read_only_repo:
+        repo_mount, start = ["-v", f"{repo}:/repo:ro", "-e", "PHYSVERIFY_REPO=/repo"], ["python"]
+    else:
+        repo_mount = ["-v", f"{repo}:/repo-src:ro", "-v", f"{Path(__file__).resolve().parent}:/pv:ro",
+                      "-e", "PHYSVERIFY_REPO_SRC=/repo-src", "-e", "PHYSVERIFY_REPO=/tmp/repo",
+                      *(["-e", "PHYSVERIFY_PY314_SHIM=1"] if py314_shim else [])]
+        start = ["python", "/pv/runner.py"]
+    args = ["run", *LOCKDOWN, "--network=none", "--name", name, *preload, *repo_mount,
+            "-v", f"{folder('deps', repo_id)}:/deps:ro",
             "-v", f"{script.parent}:/work:ro", "-v", f"{folder('out', repo_id)}:/out:rw",
-            "-e", "PHYSVERIFY_REPO=/repo", *[a for k in os.environ.get("PHYSVERIFY_PASS_ENV", "").split(",") if k for a in ("-e", f"{k}={os.environ[k]}")], "-e", f"PHYSVERIFY_REPO_COMMIT={head(repo)}", IMAGE, "python", f"/work/{script.name}", *extra]
+            *[a for k in os.environ.get("PHYSVERIFY_PASS_ENV", "").split(",") if k for a in ("-e", f"{k}={os.environ[k]}")], "-e", f"PHYSVERIFY_REPO_COMMIT={head(repo)}", IMAGE, *start, f"/work/{script.name}", *extra]
     return timed(args, name, TIME_LIMIT)
 
 
@@ -158,8 +171,13 @@ def main(argv):
         return fetch(*rest)
     if cmd == "deps" and len(rest) >= 1:
         return deps(rest[0], rest[1:])
-    if cmd == "run" and len(rest) >= 2:
-        return run(rest[0], rest[1], rest[2:])
+    if cmd == "run":
+        flags = {"--read-only-repo": "read_only_repo", "--py314-shim": "py314_shim"}
+        opts = {}
+        while rest and rest[0] in flags:
+            opts[flags[rest.pop(0)]] = True
+        if len(rest) >= 2:
+            return run(rest[0], rest[1], rest[2:], **opts)
     sys.exit(__doc__)
 
 

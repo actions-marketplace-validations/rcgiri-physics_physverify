@@ -20,11 +20,12 @@ class Outcome:
     seconds: float
 
 
-def run_checks(checks) -> list[Outcome]:
+def run_checks(checks, budget_s: float | None = None) -> list[Outcome]:
+    """Run each check; `budget_s` is the per-check time budget for checks that do not set their own."""
     out = []
     for check in checks:
         start = time.perf_counter()
-        result = run_check(check)
+        result = run_check(check, budget_s)
         out.append(Outcome(check, result, time.perf_counter() - start))
     return out
 
@@ -79,7 +80,8 @@ def summary(outcomes) -> dict:
     return {
         "total": len(outcomes),
         "ok": sum(o.result.ok for o in outcomes),
-        "not_ok": sum(not o.result.ok for o in outcomes),
+        "not_ok": sum(o.result.failed for o in outcomes),
+        "skipped": sum(o.result.status == "SKIP" for o in outcomes),
         "by_status": {s: sum(o.result.status == s for o in outcomes) for s in sorted({o.result.status for o in outcomes})},
     }
 
@@ -111,7 +113,8 @@ def to_markdown(outcomes, source: str = "") -> str:
 
     s = summary(outcomes)
     mark = "✅" if s["not_ok"] == 0 else "❌"
-    lines = [f"### {mark} physverify: {s['ok']} of {s['total']} checks passed", ""]
+    skipped = f", {s['skipped']} skipped" if s["skipped"] else ""
+    lines = [f"### {mark} physverify: {s['ok']} of {s['total']} checks passed{skipped}", ""]
     if source:
         lines += [f"Spec: `{cell(source)}`", ""]
     lines += ["| Family | Status | Check | Observed order | Message |", "|---|---|---|---|---|"]
@@ -181,7 +184,7 @@ def to_html(outcomes, title: str = "physverify report", source: str = "") -> str
     rows = []
     for o in outcomes:
         r = o.result
-        cls = "ok" if r.ok else ("warn" if r.status == "INCONCLUSIVE" else "bad")
+        cls = "ok" if r.ok else ("warn" if r.status in ("INCONCLUSIVE", "SKIP") else "bad")
         plot = _svg_plot(r) if isinstance(r, OrderResult) else ""
         order = ""
         if isinstance(r, OrderResult) and math.isfinite(r.fitted):

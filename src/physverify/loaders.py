@@ -82,13 +82,17 @@ def stub_modules(spec, *, force: bool = False) -> list[str]:
     return installed
 
 
-def run_script(path, *, argv=(), stubs=None) -> tuple[dict, str]:
+def run_script(path, *, argv=(), stubs=None, inputs=None) -> tuple[dict, str]:
     """Run a whole script as __main__ and return (its globals, what it printed).
 
     For scripts whose results are only module-level variables (coursework,
     notebooks exported to .py, demos). Matplotlib is switched to a non-interactive
     backend and plt.show() does nothing, so the run never waits for a window.
+
+    `inputs` answers the script's input() prompts in order (interactive scripts);
+    a prompt with no answer left raises EOFError instead of waiting.
     """
+    import builtins
     import contextlib
     import io
     import runpy
@@ -104,14 +108,24 @@ def run_script(path, *, argv=(), stubs=None) -> tuple[dict, str]:
         plt.show = lambda *a, **k: None
     except ImportError:
         pass
-    old_argv = sys.argv
+    old_argv, old_input = sys.argv, builtins.input
     sys.argv = [str(path), *argv]
+    if inputs is not None:
+        answers = iter([str(a) for a in inputs])
+
+        def _input(prompt=""):
+            try:
+                return next(answers)
+            except StopIteration:
+                raise EOFError(f"the script asked for more input than given: {prompt!r}") from None
+
+        builtins.input = _input
     out = io.StringIO()
     try:
         with contextlib.redirect_stdout(out):
             globs = runpy.run_path(str(path), run_name="__main__")
     finally:
-        sys.argv = old_argv
+        sys.argv, builtins.input = old_argv, old_input
     return globs, out.getvalue()
 
 
