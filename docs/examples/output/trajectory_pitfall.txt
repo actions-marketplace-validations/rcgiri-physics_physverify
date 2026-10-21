@@ -1,0 +1,3 @@
+at 3T/4: observed order 4.00 (expected 4)
+one run short: FAIL - the comparison time is not on every grid: run 1 (h = 0.0785) has no sample at t = 6.28319; it ends at t = 6.20464549, 1 step(s) short (a loop over int(t_end / h) steps?)
+at a whole period: PASS - observed order 4.00 (expected 4); t = 6.28319 is 1 whole period(s), where phase errors can cancel and show a higher order than the method has: compare at a time that is not a multiple too

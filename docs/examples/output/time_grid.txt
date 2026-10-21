@@ -1,0 +1,2 @@
+while loop: h=0.1: 11 steps ending at t=1.1 (expected 10 ending at 1)
+counted:    ends at t=1 with the expected number of steps for every h tested

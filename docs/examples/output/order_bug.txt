@@ -1,0 +1,2 @@
+correct: observed order 2.00 (expected 2)
+buggy:   observed order 0.98 is below the expected 2

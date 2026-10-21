@@ -1,0 +1,3 @@
+limit      SKIP         polygon area: needs shapely_not_installed_here, which is not installed (No module named 'shapely_not_installed_here')
+limit      INCONCLUSIVE slow check: did not finish within twice its time budget (2 s); use coarser resolutions or a larger budget
+0 of 2 checks passed, 1 skipped

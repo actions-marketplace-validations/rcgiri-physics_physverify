@@ -1,8 +1,10 @@
 # physverify
 
+[![PyPI](https://img.shields.io/pypi/v/physverify)](https://pypi.org/project/physverify/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23534512.svg)](https://doi.org/10.5281/zenodo.23534512) [![Docs](https://img.shields.io/badge/docs-site-blue)](https://rcgiri-physics.github.io/physverify/)
+
 **A tool that checks whether a physics simulation is solving the right equations correctly, not just running without errors.**
 
-Status: early version (0.4.0). It has been tried on 250 public physics repositories (see below), but nobody besides the author has used it yet, so feedback is very welcome.
+Status: early version (0.4.1). Documentation with many examples: https://rcgiri-physics.github.io/physverify/. It has been tried on 250 public physics repositories (see below), but nobody besides the author has used it yet, so feedback is very welcome.
 
 ## Who it is for
 
@@ -176,7 +178,7 @@ Run the project's own tests with `pip install -e .[dev]` then `python -m pytest 
 
 ## Citing
 
-If physverify helps your work, please cite it: GitHub's "Cite this repository" button uses [CITATION.cff](https://github.com/rcgiri-physics/physverify/blob/main/CITATION.cff).
+If physverify helps your work, please cite it. The DOI [10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) always points to the newest version, and each release has its own DOI on Zenodo. GitHub's "Cite this repository" button gives the same information from [CITATION.cff](https://github.com/rcgiri-physics/physverify/blob/main/CITATION.cff).
 
 ## Licence
 

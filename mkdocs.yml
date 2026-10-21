@@ -1,0 +1,82 @@
+site_name: physverify
+site_description: Check that physics simulation code solves the right equations at the order it claims.
+site_author: Ram Chandra Giri
+site_url: https://rcgiri-physics.github.io/physverify/
+repo_url: https://github.com/rcgiri-physics/physverify
+repo_name: rcgiri-physics/physverify
+edit_uri: edit/main/docs/
+copyright: Copyright &copy; 2026 Ram Chandra Giri, MIT licence
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.top
+    - navigation.footer
+    - content.code.copy
+    - search.suggest
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      toggle:
+        icon: material/weather-night
+        name: Dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/weather-sunny
+        name: Light mode
+
+hooks:
+  - docs/hooks.py
+
+exclude_docs: |
+  plan_ising.md
+  hooks.py
+  examples/
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+
+nav:
+  - Home: index.md
+  - Getting started: getting-started.md
+  - How it works: how-it-works.md
+  - Checks with examples:
+      - Manufactured solutions: checks/manufactured-solutions.md
+      - Order of convergence: checks/order.md
+      - Reference solutions: checks/reference.md
+      - Conserved quantities and budgets: checks/conservation.md
+      - Exact patch tests: checks/patch.md
+      - Runge-Kutta tables: checks/runge-kutta.md
+      - Exact references: checks/exact-references.md
+      - Statistics and Monte Carlo: checks/statistics.md
+  - Convergence-study pitfalls: pitfalls.md
+  - Recipes: recipes.md
+  - Running physverify:
+      - Command line: running/cli.md
+      - Continuous integration: ci.md
+      - AI coding assistants: agent.md
+  - Reference:
+      - API overview: api.md
+      - Patch test theory: patch.md
+      - Ising checks: ising.md
+      - Technical details: technical.md
+  - Results on real code: results.md
+  - Roadmap: roadmap.md
+  - Changelog: changelog.md

@@ -1,0 +1,2 @@
+correct: PASS - balance 0 kept to 1e-12 at every resolution (n=40: -4.44089e-17, n=80: 4.44089e-17, n=160: 4.44089e-17)
+buggy:   FAIL - expected 0, got n=40: 0.0119969, n=80: 0.00389703, n=160: 0.000583943; the mismatch shrinks with resolution, so the scheme converges but does not conserve

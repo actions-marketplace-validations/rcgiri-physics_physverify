@@ -1,0 +1,7 @@
+RK4: order 4 confirmed by the order conditions (1: 1.1e-16, 2: 0.0e+00, 3: 0.0e+00, 4: 0.0e+00, 5: 1.2e-02)
+labelled 3: FAIL - claims order 3 but satisfies the order conditions only up to 2 (largest residual per order: 1: 0.0e+00, 2: 0.0e+00, 3: 1.7e-01, 4: 2.5e-01); linear order 3 is higher than the order 2: a convergence test on y' = lambda*y alone would overstate the order
+labelled 2, linear 3: PASS
+typo in c: FAIL - row sums of A differ from c by 1.0e-01
+SDIRK: order 2 confirmed by the order conditions (1: 0.0e+00, 2: 1.1e-16, 3: 4.0e-02); A-stable as stated; L-stable as stated; stiffly accurate as stated
+trapezoid claimed L-stable: FAIL - stated L-stable but it is not (R(inf) = -1.0e+00)
+R(inf) of the trapezoid rule: -1.0 | stage order of SDIRK: 1

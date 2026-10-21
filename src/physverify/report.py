@@ -101,7 +101,8 @@ def to_json(outcomes, source: str = "") -> str:
 def to_text(outcomes) -> str:
     lines = [f"{o.check.family:10s} {o.result.status:12s} {o.check.label}: {o.result.message}" for o in outcomes]
     s = summary(outcomes)
-    lines.append(f"{s['ok']} of {s['total']} checks passed")
+    skipped = f", {s['skipped']} skipped" if s["skipped"] else ""
+    lines.append(f"{s['ok']} of {s['total']} checks passed{skipped}")
     return "\n".join(lines)
 
 

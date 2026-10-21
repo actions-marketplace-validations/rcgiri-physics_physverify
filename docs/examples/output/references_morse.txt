@@ -1,0 +1,4 @@
+v=0: solver 2.32447  exact 2.32449  difference 2.0e-05
+v=1: solver 6.22340  exact 6.22347  difference 6.4e-05
+v=2: solver 9.12235  exact 9.12245  difference 9.7e-05
+v=3: solver 11.02134  exact 11.02143  difference 8.6e-05

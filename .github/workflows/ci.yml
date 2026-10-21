@@ -4,6 +4,7 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call:  # the publish workflow runs these tests before uploading to PyPI
 
 jobs:
   test:

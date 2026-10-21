@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- **Documentation site** (MkDocs, published on GitHub Pages): a page per kind of check built around a small runnable example, recipes, convergence-study pitfalls, the command line and an API overview. `tests/test_docs_examples.py` re-runs every example and fails if its output no longer matches the page. `pip install physverify[docs]` installs the tools to build it.
+- The text summary counts skipped checks ("0 of 2 checks passed, 1 skipped").
+- Releases run the full test suite before uploading to PyPI.
+- Citation: DOI 10.5281/zenodo.23534512 (all versions) and ORCID in `CITATION.cff`.
+
 ## 0.4.1 (2026-10-21)
 
 - Shorter description in `action.yml` (the GitHub Marketplace allows at most 125 characters), so the action can be listed there. No change to physverify itself.

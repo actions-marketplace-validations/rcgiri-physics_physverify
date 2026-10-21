@@ -1,0 +1,2 @@
+correct: EXACT - reproduced to round-off (largest error 6.7e-16), as designed
+buggy:   FAIL - expected an exact solution to round-off, but the error reaches 0.0115 and shrinks at about order 0.99

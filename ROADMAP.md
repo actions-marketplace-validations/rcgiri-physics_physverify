@@ -1,6 +1,6 @@
 # Roadmap
 
-What may come after 0.4.0. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
+What may come after 0.4.1. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
 
 ## Next (0.5.0): checking code without writing a wrapper
 
@@ -23,17 +23,15 @@ Today every check needs a short spec file, and for most codes a small adapter th
 - **Clearer messages** when only an absolute tolerance fails while the observed order is exact, and a helper that skips the start-up transient before fitting a decay rate.
 - **Sandbox speed.** A shared wheel cache across repositories (installing astropy or pandas took 15-25 minutes per repository).
 
-## Documentation website (after 0.4.0)
+## Documentation website
 
-A documentation site built with MkDocs (Material theme), published on GitHub Pages, with many short worked examples:
+Done: the site at https://rcgiri-physics.github.io/physverify/ has a page for each kind of check, each built around a small runnable example (most with a deliberate bug and the check that catches it), plus recipes, convergence-study pitfalls, the command line and an API overview. A test re-runs every example and fails if its output no longer matches the page.
 
-- **Getting started:** install, the damped oscillator example, reading a report.
-- **One page per kind of check,** each with a small buggy code, the check that catches it and the output: manufactured solutions, order of convergence, conserved quantities, known limits, exact patch tests, Runge-Kutta tables, Monte Carlo statistics, coverage of intervals.
-- **Recipes:** an ODE solver, a 1D heat code, a code with no source-term hook, a Runge-Kutta library in CI (like the qmat example), an inference code, a script that asks for `input()`.
-- **Common pitfalls in convergence studies,** with plots.
-- **Running in CI:** GitHub Action, pre-commit, pytest.
-- **API reference** generated from the docstrings (mkdocstrings).
-- **Results:** the corpus study, written for readers who do not want the raw tables.
+Still to do:
+
+- An API reference generated from the docstrings (mkdocstrings), in place of the hand-written overview.
+- More recipes: a 1D heat code end to end, an inference code, a Monte Carlo sampler.
+- Plots of convergence studies on the pages, made from the examples.
 
 ## Later
 

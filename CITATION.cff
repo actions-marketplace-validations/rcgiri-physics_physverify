@@ -9,8 +9,13 @@ authors:
 version: 0.4.1
 date-released: 2026-10-21
 license: MIT
+doi: 10.5281/zenodo.23534512
+identifiers:
+  - type: doi
+    value: 10.5281/zenodo.23534512
+    description: Concept DOI, all versions (Zenodo)
 repository-code: https://github.com/rcgiri-physics/physverify
-url: https://github.com/rcgiri-physics/physverify
+url: https://rcgiri-physics.github.io/physverify/
 abstract: >-
   physverify checks whether a physics simulation solves the equations it is
   meant to, at the order of accuracy it claims: the method of manufactured
