@@ -10,7 +10,8 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
 EXAMPLES = ROOT / "docs" / "examples"
-ROUNDOFF = re.compile(r"-?\d+(?:\.\d+)?e-(?:1[3-9]|[2-9]\d)")  # 1e-13 and below differ between platforms
+# 1e-13 and below, and exact zeros, differ between platforms (1.1e-16 on one, 0.0e+00 on another)
+ROUNDOFF = re.compile(r"-?\d+(?:\.\d+)?e-(?:1[3-9]|[2-9]\d)|-?0\.0+e[+-]00")
 
 
 def normalise(text):
