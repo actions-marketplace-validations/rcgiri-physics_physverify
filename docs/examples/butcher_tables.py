@@ -23,4 +23,4 @@ print("SDIRK:", check_tableau(*SDIRK, claimed=2, l_stable=True, stiffly_accurate
 TRAP = ([[0, 0], [.5, .5]], [.5, .5])  # trapezoid rule: A-stable but not L-stable
 r = check_tableau(*TRAP, claimed=2, l_stable=True)
 print("trapezoid claimed L-stable:", r.status, "-", r.message.split(";")[0])
-print("R(inf) of the trapezoid rule:", r_infinity(*TRAP), "| stage order of SDIRK:", stage_order(SDIRK[0], b=SDIRK[1]))
+print(f"R(inf) of the trapezoid rule: {r_infinity(*TRAP):.3g} | stage order of SDIRK:", stage_order(SDIRK[0], b=SDIRK[1]))
