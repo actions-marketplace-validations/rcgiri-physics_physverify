@@ -120,7 +120,7 @@ Add physverify to your GitHub Actions workflow. The job fails when a check fails
 
 ```yaml
       - uses: actions/checkout@v4
-      - uses: rcgiri-physics/physverify@v0.4.0
+      - uses: rcgiri-physics/physverify@v0.4.1
         with:
           specs: tests/verify_*.py
           install: -e .

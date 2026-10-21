@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 (2026-10-21)
+
+- Shorter description in `action.yml` (the GitHub Marketplace allows at most 125 characters), so the action can be listed there. No change to physverify itself.
+
 ## 0.4.0 (2026-10-21)
 
 From batch 7 of the corpus study: 450 repositories, 182 tested, at least one confirmed defect in 41 ([results/corpus/BATCH7.md](results/corpus/BATCH7.md)). Each item has a test in `tests/test_batch7_lessons.py`.

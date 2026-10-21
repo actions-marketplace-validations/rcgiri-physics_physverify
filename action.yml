@@ -1,5 +1,5 @@
 name: physverify
-description: Check that a physics simulation solves the right equations at the order it claims (manufactured solutions, convergence order, exactness).
+description: Check that physics simulation code solves the right equations at the order it claims.
 author: Ram Chandra Giri
 branding:
   icon: check-circle
