@@ -57,3 +57,40 @@ Listed by `physverify references`; see [Exact references](checks/exact-reference
 ## Reports (`physverify.report`)
 
 `run_checks(checks, budget_s=None)`, `to_text`, `to_json`, `to_markdown`, `to_html`, `summary`.
+
+## What is public, and the rule for changes
+
+The public API is:
+
+- the names in `physverify.__all__` (`Check`, `Result`, `OrderResult`, `SkipCheck`, `requires`, `ManufacturedODE`, `mms_order_study`, `zero_source`, `check_order`, `check_exact`, `fit_order`, `pairwise_orders`, `ode_checks`, `invariant_study`, `patch_study`, `reference_study`);
+- the functions listed on this page in `physverify.studies`, `physverify.butcher` and `physverify.references`;
+- the command line (`physverify run`, `init`, `demo`, `smoke`, `references`) and its exit codes: 0 when no check fails, 1 when one does, 2 when a spec cannot be loaded or defines no checks;
+- the JSON output below.
+
+Before version 1.0, a release may change the public API, but every such change is listed under **Changed** in the [changelog](changelog.md) with what to do instead. New fields in the JSON output are not breaking changes; removing or renaming one is, and raises `schema_version`.
+
+## JSON output (`physverify run --json`)
+
+`schema_version` is 1.
+
+| Field | Meaning |
+|---|---|
+| `schema_version` | Version of this layout. |
+| `physverify` | Version of physverify that wrote the file. |
+| `source` | The spec file(s). |
+| `summary` | `total`, `ok`, `not_ok`, `skipped`, and `by_status` (count per status). |
+| `checks` | One record per check, below. |
+| `note` | What a PASS means: these checks found nothing wrong; it does not prove the simulation correct. |
+
+Each record in `checks`:
+
+| Field | Meaning |
+|---|---|
+| `family`, `label` | The kind of check and its name. |
+| `status` | PASS, FAIL, EXACT, INCONCLUSIVE, ERROR or SKIP. |
+| `ok` | True for PASS and EXACT. |
+| `message` | The verdict in words. |
+| `seconds` | Run time. |
+| `claim` | What property this family tests. |
+| `expected_order`, `observed_order`, `h`, `error` | Order studies only (`null` where not finite). |
+| `acceptance` | Order studies only: the rule a PASS had to meet, for example "fitted order within [1.7, 3] on errors above 1e-12". |

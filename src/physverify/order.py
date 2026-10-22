@@ -54,7 +54,8 @@ def check_exact(hs, errors, *, floor: float = 1e-12, scale: float = 1.0) -> Orde
     errs = np.asarray(errors, dtype=float)
     order = np.argsort(-hs)
     hs, errs = hs[order], errs[order]
-    base = dict(expected=float("inf"), hs=tuple(hs), errors=tuple(errs))
+    base = dict(expected=float("inf"), hs=tuple(hs), errors=tuple(errs),
+                acceptance=f"every error at most {floor:.2g} (round-off)")
     if not np.all(np.isfinite(errs)):
         return OrderResult(FAIL, "non-finite error: the solution diverged or produced NaN", **base)
     worst = float(errs.max())
@@ -100,9 +101,19 @@ def check_order(
     floor = effective_floor(floor, scale)
     hs = np.asarray(hs, dtype=float)
     errs = np.asarray(errors, dtype=float)
+    if hs.shape != errs.shape:
+        return OrderResult(INCONCLUSIVE, f"{hs.size} step sizes but {errs.size} errors; they must match",
+                           expected=float(expected), hs=tuple(hs), errors=tuple(errs))
     order = np.argsort(-hs)  # coarse to fine
     hs, errs = hs[order], errs[order]
-    base = dict(expected=float(expected), hs=tuple(hs), errors=tuple(errs))
+    base = dict(expected=float(expected), hs=tuple(hs), errors=tuple(errs),
+                acceptance=f"fitted order within [{expected - tol_low:g}, {expected + tol_high:g}] on errors above {floor:.2g}")
+
+    if not np.all(np.isfinite(hs) & (hs > 0)):
+        return OrderResult(INCONCLUSIVE, "step sizes must be positive and finite; check how h is computed", **base)
+    if len(np.unique(hs)) < 2:
+        return OrderResult(INCONCLUSIVE, "all step sizes are the same, so no order can be measured; use at least two"
+                           " different resolutions", **base)
 
     if not np.all(np.isfinite(errs)):
         return OrderResult(FAIL, "non-finite error: the solution diverged or produced NaN", **base)

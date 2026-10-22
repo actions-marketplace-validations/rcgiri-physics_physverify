@@ -25,28 +25,28 @@
 - limit [vacuum/rk4 range] PASS: observed order 2.00 (expected 2)
 
 ### projectile / gravity_sign
-- mms [vacuum/rk4] FAIL: error does not decrease with resolution (about 19.6 at the finest level)
-- reference [vacuum/rk4] FAIL: error does not decrease with resolution (about 19.6 at the finest level)
-- mms [vacuum/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 19.6 at the finest level)
-- invariant [vacuum/rk4] FAIL: error does not decrease with resolution (about 2.72 at the finest level)
+- mms [vacuum/rk4] FAIL: error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [vacuum/rk4] FAIL: error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [vacuum/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- invariant [vacuum/rk4] FAIL: error does not decrease with resolution (about 2.72 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [vacuum/rk4] FAIL: expected an exact solution to round-off, but the error reaches 19.6 and shrinks at about order -0.00
-- mms [vacuum/euler] FAIL: error does not decrease with resolution (about 19.6 at the finest level)
-- reference [vacuum/euler] FAIL: error does not decrease with resolution (about 19.6 at the finest level)
-- invariant [vacuum/euler] FAIL: error does not decrease with resolution (about 2.72 at the finest level)
+- mms [vacuum/euler] FAIL: error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [vacuum/euler] FAIL: error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- invariant [vacuum/euler] FAIL: error does not decrease with resolution (about 2.72 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [vacuum/euler] FAIL: expected an exact solution to round-off, but the error reaches 19.6 and shrinks at about order -0.00
-- mms [linear/rk4] FAIL: error does not decrease with resolution (about 19.4 at the finest level)
-- reference [linear/rk4] FAIL: error does not decrease with resolution (about 19.4 at the finest level)
-- mms [linear/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 19.4 at the finest level)
+- mms [linear/rk4] FAIL: error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [linear/rk4] FAIL: error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [linear/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [linear/rk4] FAIL: expected an exact solution to round-off, but the error reaches 19.4 and shrinks at about order -0.00
-- mms [linear/euler] FAIL: error does not decrease with resolution (about 19.4 at the finest level)
-- reference [linear/euler] FAIL: error does not decrease with resolution (about 19.4 at the finest level)
+- mms [linear/euler] FAIL: error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [linear/euler] FAIL: error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [linear/euler] FAIL: expected an exact solution to round-off, but the error reaches 19.4 and shrinks at about order 0.00
-- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 16.5 at the finest level)
-- reference [quadratic/rk4] FAIL: error does not decrease with resolution (about 15.6 at the finest level)
-- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 16.5 at the finest level)
+- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 16.5 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [quadratic/rk4] FAIL: error does not decrease with resolution (about 15.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 16.5 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [quadratic/rk4] FAIL: expected an exact solution to round-off, but the error reaches 16.5 and shrinks at about order -0.00
-- mms [quadratic/euler] FAIL: error does not decrease with resolution (about 16.5 at the finest level)
-- reference [quadratic/euler] FAIL: error does not decrease with resolution (about 15.6 at the finest level)
+- mms [quadratic/euler] FAIL: error does not decrease with resolution (about 16.5 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [quadratic/euler] FAIL: error does not decrease with resolution (about 15.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [quadratic/euler] FAIL: expected an exact solution to round-off, but the error reaches 16.6 and shrinks at about order 0.00
 - limit [vacuum/rk4 range] ERROR: RuntimeError: projectile never landed within 100 s
 
@@ -60,9 +60,9 @@
 - reference [vacuum/euler] PASS: observed order 1.00 (expected 1)
 - invariant [vacuum/euler] PASS: observed order 1.00 (expected 1)
 - patch [vacuum/euler] EXACT: reproduced to round-off (largest error 5.7e-14), as designed
-- mms [linear/rk4] FAIL: error does not decrease with resolution (about 0.0389 at the finest level)
-- reference [linear/rk4] FAIL: error does not decrease with resolution (about 0.12 at the finest level)
-- mms [linear/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.0404 at the finest level)
+- mms [linear/rk4] FAIL: error does not decrease with resolution (about 0.0389 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [linear/rk4] FAIL: error does not decrease with resolution (about 0.12 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [linear/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.0404 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [linear/rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.0182 and shrinks at about order -0.00
 - mms [linear/euler] FAIL: error does not decrease with resolution (about 0.0412 at the finest level)
 - reference [linear/euler] FAIL: error does not decrease with resolution (about 0.12 at the finest level)
@@ -93,12 +93,12 @@
 - mms [linear/euler] PASS: observed order 1.00 (expected 1)
 - reference [linear/euler] PASS: observed order 1.00 (expected 1)
 - patch [linear/euler] EXACT: reproduced to round-off (largest error 5.7e-14), as designed
-- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 0.339 at the finest level)
-- reference [quadratic/rk4] FAIL: error does not decrease with resolution (about 1.41 at the finest level)
-- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.347 at the finest level)
+- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 0.339 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [quadratic/rk4] FAIL: error does not decrease with resolution (about 1.41 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.347 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [quadratic/rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.0581 and shrinks at about order -0.00
-- mms [quadratic/euler] FAIL: error does not decrease with resolution (about 0.338 at the finest level)
-- reference [quadratic/euler] FAIL: error does not decrease with resolution (about 1.41 at the finest level)
+- mms [quadratic/euler] FAIL: error does not decrease with resolution (about 0.338 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [quadratic/euler] FAIL: error does not decrease with resolution (about 1.41 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [quadratic/euler] FAIL: expected an exact solution to round-off, but the error reaches 0.0591 and shrinks at about order 0.01
 - limit [vacuum/rk4 range] PASS: observed order 2.00 (expected 2)
 
@@ -119,9 +119,9 @@
 - mms [linear/euler] PASS: observed order 1.00 (expected 1)
 - reference [linear/euler] PASS: observed order 1.00 (expected 1)
 - patch [linear/euler] EXACT: reproduced to round-off (largest error 5.7e-14), as designed
-- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 0.354 at the finest level)
-- reference [quadratic/rk4] FAIL: error does not decrease with resolution (about 0.343 at the finest level)
-- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.357 at the finest level)
+- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 0.354 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [quadratic/rk4] FAIL: error does not decrease with resolution (about 0.343 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.357 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [quadratic/rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.0344 and shrinks at about order -0.00
 - mms [quadratic/euler] FAIL: error does not decrease with resolution (about 0.357 at the finest level)
 - reference [quadratic/euler] FAIL: error does not decrease with resolution (about 0.343 at the finest level)
@@ -145,9 +145,9 @@
 - mms [linear/euler] PASS: observed order 1.00 (expected 1)
 - reference [linear/euler] PASS: observed order 1.00 (expected 1)
 - patch [linear/euler] EXACT: reproduced to round-off (largest error 5.7e-14), as designed
-- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 0.000503 at the finest level)
+- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 0.000503 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - reference [quadratic/rk4] PASS: observed order 4.01 (expected 4)
-- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.000503 at the finest level)
+- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.000503 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [quadratic/rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.0652 and shrinks at about order 0.00
 - mms [quadratic/euler] PASS: observed order 1.00 (expected 1)
 - reference [quadratic/euler] PASS: observed order 1.00 (expected 1)
@@ -204,7 +204,7 @@
 - mms [quadratic/euler] PASS: observed order 1.00 (expected 1)
 - reference [quadratic/euler] PASS: observed order 1.00 (expected 1)
 - patch [quadratic/euler] EXACT: reproduced to round-off (largest error 5.7e-14), as designed
-- limit [vacuum/rk4 range] FAIL: error does not decrease with resolution (about 182 at the finest level)
+- limit [vacuum/rk4 range] FAIL: error does not decrease with resolution (about 182 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 
 ### projectile / euler_extra_step
 - mms [vacuum/rk4] PASS: observed order 4.00 (expected 4)
@@ -249,18 +249,18 @@
 - limit [vacuum/rk4 range] FAIL: observed order 1.00 is below the expected 2
 
 ### projectile / rk4_weights
-- mms [vacuum/rk4] FAIL: error does not decrease with resolution (about 3.03 at the finest level)
-- reference [vacuum/rk4] FAIL: error does not decrease with resolution (about 3.33 at the finest level)
-- mms [vacuum/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 3.03 at the finest level)
+- mms [vacuum/rk4] FAIL: error does not decrease with resolution (about 3.03 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [vacuum/rk4] FAIL: error does not decrease with resolution (about 3.33 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [vacuum/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 3.03 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - invariant [vacuum/rk4] FAIL: observed order 1.00 is below the expected 4
 - patch [vacuum/rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.9 and shrinks at about order 0.00
-- mms [linear/rk4] FAIL: error does not decrease with resolution (about 3.01 at the finest level)
-- reference [linear/rk4] FAIL: error does not decrease with resolution (about 3.3 at the finest level)
-- mms [linear/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 3.01 at the finest level)
+- mms [linear/rk4] FAIL: error does not decrease with resolution (about 3.01 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [linear/rk4] FAIL: error does not decrease with resolution (about 3.3 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [linear/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 3.01 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [linear/rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.901 and shrinks at about order 0.00
-- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 2.91 at the finest level)
-- reference [quadratic/rk4] FAIL: error does not decrease with resolution (about 3.42 at the finest level)
-- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 2.91 at the finest level)
+- mms [quadratic/rk4] FAIL: error does not decrease with resolution (about 2.91 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [quadratic/rk4] FAIL: error does not decrease with resolution (about 3.42 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [quadratic/rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 2.91 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [quadratic/rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.902 and shrinks at about order 0.00
 - limit [vacuum/rk4 range] FAIL: observed order 1.01 is below the expected 2
 
@@ -289,26 +289,26 @@
 - limit [small-oscillation frequencies] PASS: frequencies match the closed form (relative error 5.8e-13)
 
 ### pendulum / coupling_sign
-- mms [rk4] FAIL: error does not decrease with resolution (about 0.02 at the finest level)
-- reference [rk4] FAIL: error does not decrease with resolution (about 0.247 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.02 at the finest level)
-- invariant [rk4] FAIL: error does not decrease with resolution (about 0.00248 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.02 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.247 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.02 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- invariant [rk4] FAIL: error does not decrease with resolution (about 0.00248 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.0273 and shrinks at about order -0.00
 - limit [small-oscillation frequencies] PASS: frequencies match the closed form (relative error 5.8e-13)
 
 ### pendulum / mass_matrix_missing_cos
-- mms [rk4] FAIL: error does not decrease with resolution (about 0.46 at the finest level)
-- reference [rk4] FAIL: error does not decrease with resolution (about 0.0603 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.46 at the finest level)
-- invariant [rk4] FAIL: error does not decrease with resolution (about 0.00065 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.46 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.0603 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.46 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- invariant [rk4] FAIL: error does not decrease with resolution (about 0.00065 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.883 and shrinks at about order 0.00
 - limit [small-oscillation frequencies] PASS: frequencies match the closed form (relative error 3.3e-13)
 
 ### pendulum / gravity_mass_missing
-- mms [rk4] FAIL: error does not decrease with resolution (about 1.73 at the finest level)
-- reference [rk4] FAIL: error does not decrease with resolution (about 0.422 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 1.73 at the finest level)
-- invariant [rk4] FAIL: error does not decrease with resolution (about 0.0203 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 1.73 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.422 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 1.73 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- invariant [rk4] FAIL: error does not decrease with resolution (about 0.0203 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 3.34 and shrinks at about order -0.00
 - limit [small-oscillation frequencies] FAIL: frequencies [np.float64(2.1219488542025706), np.float64(5.525671664678316)] differ from [2.621396023017722, 6.0009996814048545] (relative error 0.19)
 
@@ -321,18 +321,18 @@
 - limit [small-oscillation frequencies] PASS: frequencies match the closed form (relative error 5.8e-13)
 
 ### pendulum / swapped_lengths
-- mms [rk4] FAIL: error does not decrease with resolution (about 0.0884 at the finest level)
-- reference [rk4] FAIL: error does not decrease with resolution (about 0.0381 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.0884 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.0884 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.0381 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.0884 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - invariant [rk4] FAIL: error does not decrease with resolution (about 0.000296 at the finest level)
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.165 and shrinks at about order -0.00
 - limit [small-oscillation frequencies] PASS: frequencies match the closed form (relative error 5.8e-13)
 
 ### pendulum / small_angle_gravity
-- mms [rk4] FAIL: error does not decrease with resolution (about 0.0129 at the finest level)
-- reference [rk4] FAIL: error does not decrease with resolution (about 0.074 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.0129 at the finest level)
-- invariant [rk4] FAIL: error does not decrease with resolution (about 0.000762 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.0129 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.074 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.0129 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- invariant [rk4] FAIL: error does not decrease with resolution (about 0.000762 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.165 and shrinks at about order -0.00
 - limit [small-oscillation frequencies] PASS: frequencies match the closed form (relative error 5.3e-13)
 
@@ -370,36 +370,36 @@
 - limit [orbit closes after one period] PASS: observed order 4.14 (expected 4)
 
 ### kepler / inverse_r_force
-- mms [rk4] FAIL: error does not decrease with resolution (about 0.073 at the finest level)
-- reference [rk4] FAIL: error does not decrease with resolution (about 0.735 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.073 at the finest level)
-- invariant [rk4] FAIL: error does not decrease with resolution (about 0.279 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.073 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.735 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.073 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- invariant [rk4] FAIL: error does not decrease with resolution (about 0.279 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.165 and shrinks at about order -0.00
 - invariant [rk4 angular momentum] PASS: observed order 5.01 (expected 4)
-- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 1.78 at the finest level)
+- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 1.78 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 
 ### kepler / y_force_sign
-- mms [rk4] FAIL: error does not decrease with resolution (about 0.612 at the finest level)
-- reference [rk4] FAIL: error does not decrease with resolution (about 2.6 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.612 at the finest level)
-- invariant [rk4] FAIL: error does not decrease with resolution (about 4.09 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.612 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [rk4] FAIL: error does not decrease with resolution (about 2.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.612 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- invariant [rk4] FAIL: error does not decrease with resolution (about 4.09 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.577 and shrinks at about order 0.00
-- invariant [rk4 angular momentum] FAIL: error does not decrease with resolution (about 0.524 at the finest level)
-- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 16.9 at the finest level)
+- invariant [rk4 angular momentum] FAIL: error does not decrease with resolution (about 0.524 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 16.9 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 
 ### kepler / gm_one_percent
-- mms [rk4] FAIL: error does not decrease with resolution (about 0.00909 at the finest level)
-- reference [rk4] FAIL: error does not decrease with resolution (about 0.0322 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.00909 at the finest level)
-- invariant [rk4] FAIL: error does not decrease with resolution (about 0.00952 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.00909 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- reference [rk4] FAIL: error does not decrease with resolution (about 0.0322 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.00909 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
+- invariant [rk4] FAIL: error does not decrease with resolution (about 0.00952 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.00552 and shrinks at about order 0.00
 - invariant [rk4 angular momentum] PASS: observed order 5.03 (expected 4)
-- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 0.942 at the finest level)
+- limit [orbit closes after one period] FAIL: error does not decrease with resolution (about 0.942 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 
 ### kepler / softening_left_on
-- mms [rk4] FAIL: error does not decrease with resolution (about 1.16e-06 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 1.16e-06 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - reference [rk4] FAIL: error does not decrease with resolution (about 1.37e-05 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 1.16e-06 at the finest level)
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 1.16e-06 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - invariant [rk4] FAIL: error does not decrease with resolution (about 3.44e-06 at the finest level)
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 4.99e-07 and shrinks at about order 0.00
 - invariant [rk4 angular momentum] PASS: observed order 5.03 (expected 4)
@@ -415,9 +415,9 @@
 - limit [orbit closes after one period] FAIL: observed order 0.49 is below the expected 4
 
 ### kepler / rk4_weights
-- mms [rk4] FAIL: error does not decrease with resolution (about 0.326 at the finest level)
+- mms [rk4] FAIL: error does not decrease with resolution (about 0.326 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - reference [rk4] FAIL: error does not decrease with resolution (about 0.418 at the finest level)
-- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.326 at the finest level)
+- mms [rk4 (whole trajectory)] FAIL: error does not decrease with resolution (about 0.326 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - invariant [rk4] FAIL: observed order 1.00 is below the expected 4
 - patch [rk4] FAIL: expected an exact solution to round-off, but the error reaches 0.147 and shrinks at about order -0.00
 - invariant [rk4 angular momentum] FAIL: observed order 1.00 is below the expected 4
@@ -441,7 +441,7 @@
 
 ### heat1d / dx_off_by_one
 - mms [FTCS coupled dt ~ dx^2] FAIL: observed order 0.91 is below the expected 2
-- mms [FTCS time-only refinement] FAIL: error does not decrease with resolution (about 0.0117 at the finest level)
+- mms [FTCS time-only refinement] FAIL: error does not decrease with resolution (about 0.0117 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - mms [FTCS space-only refinement] FAIL: observed order 0.91 is below the expected 2
 - reference [FTCS eigenmode decay] FAIL: observed order 1.00 is below the expected 2
 - patch [FTCS cubic in x, linear in t] FAIL: expected an exact solution to round-off, but the error reaches 0.0515 and shrinks at about order 0.34
@@ -450,7 +450,7 @@
 - mms [FTCS coupled dt ~ dx^2] FAIL: error does not decrease with resolution (about 0.235 at the finest level)
 - mms [FTCS time-only refinement] FAIL: error does not decrease with resolution (about 0.0698 at the finest level)
 - mms [FTCS space-only refinement] FAIL: error does not decrease with resolution (about 0.272 at the finest level)
-- reference [FTCS eigenmode decay] FAIL: error does not decrease with resolution (about 0.128 at the finest level)
+- reference [FTCS eigenmode decay] FAIL: error does not decrease with resolution (about 0.128 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - patch [FTCS cubic in x, linear in t] FAIL: expected an exact solution to round-off, but the error reaches 0.0789 and shrinks at about order 0.00
 
 ### heat1d / extra_time_step
@@ -480,7 +480,7 @@
 - invariant [discrete conservation of mass, momentum, energy] EXACT: reproduced to round-off (largest error 4.4e-16), as designed
 
 ### sod / gamma_wrong
-- reference [Sod shock tube, density L1] FAIL: error does not decrease with resolution (about 0.0605 at the finest level)
+- reference [Sod shock tube, density L1] FAIL: error does not decrease with resolution (about 0.0605 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator
 - reference [smooth density wave, periodic] PASS: observed order 0.98 (expected 1)
 - invariant [discrete conservation of mass, momentum, energy] FAIL: expected an exact solution to round-off, but the error reaches 0.03 and shrinks at about order -0.00
 

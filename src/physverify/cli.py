@@ -1,6 +1,7 @@
 """Command line.
 
     physverify run SPEC.py [SPEC.py ...] [--json FILE|-] [--html FILE] [--markdown FILE] [--quiet]
+    physverify demo        (a correct and a broken solver, no files needed)
     physverify init [SPEC.py] [--solver MODULE] [--function NAME] [--dim N] [--order P]
     physverify matrix [OUT.md]
     physverify compare [OUT.md]
@@ -42,7 +43,7 @@ def expand_specs(patterns) -> list[str]:
 
 
 def _cmd_run(args) -> int:
-    from .report import load_spec, run_checks, to_html, to_json, to_markdown, to_text
+    from .report import NOTE, load_spec, run_checks, to_html, to_json, to_markdown, to_text
 
     try:
         args.specs = expand_specs(args.specs)
@@ -56,6 +57,9 @@ def _cmd_run(args) -> int:
         except Exception as exc:
             print(f"physverify: cannot load {spec}: {type(exc).__name__}: {exc}", file=sys.stderr)
             return 2
+        if not checks:
+            print(f"physverify: {spec}: checks() returned no checks, so nothing was tested", file=sys.stderr)
+            return 2
         outcomes += run_checks(checks, args.budget)
     source = ", ".join(str(Path(s)) for s in args.specs)
     if args.json == "-":
@@ -63,6 +67,7 @@ def _cmd_run(args) -> int:
     else:
         if not args.quiet:
             print(to_text(outcomes))
+            print(NOTE)
         if args.json:
             Path(args.json).write_text(to_json(outcomes, source), encoding="utf-8")
     if args.html:
@@ -85,6 +90,12 @@ def _cmd_init(args) -> int:
     print("next: write reference_rhs and Y0 in it (marked TODO), then run")
     print(f"    physverify run {path}")
     return 0
+
+
+def _cmd_demo(args) -> int:
+    from .demo import main as demo_main
+
+    return demo_main()
 
 
 def _cmd_matrix(args) -> int:
@@ -148,6 +159,9 @@ def build_parser() -> argparse.ArgumentParser:
                      help="time budget per check: order studies stop adding resolutions when the next would overrun it,"
                           " and a check still running at twice the budget is reported INCONCLUSIVE")
     run.set_defaults(func=_cmd_run)
+
+    d = sub.add_parser("demo", help="run the checks on a correct and on a broken example solver (no files needed)")
+    d.set_defaults(func=_cmd_demo)
 
     i = sub.add_parser("init", help="write a starter spec for a fixed-step ODE solver")
     i.add_argument("spec", nargs="?", default="verify_solver.py", help="spec file to write (default verify_solver.py)")

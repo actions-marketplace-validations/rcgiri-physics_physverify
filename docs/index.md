@@ -50,4 +50,4 @@ Each check reports **PASS**, **FAIL**, **EXACT** (reproduced to round-off), **IN
 
 If physverify helps your work, please cite it: [doi:10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) (all versions; each release also has its own DOI on Zenodo).
 
-physverify is an early, one-person project (version 0.4). Feedback and issues are very welcome on [GitHub](https://github.com/rcgiri-physics/physverify/issues).
+physverify is an early, one-person project (version 0.4.1). Feedback and issues are very welcome on [GitHub](https://github.com/rcgiri-physics/physverify/issues).

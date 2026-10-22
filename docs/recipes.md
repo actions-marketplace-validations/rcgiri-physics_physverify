@@ -2,6 +2,9 @@
 
 Short patterns for common situations. Each assumes `pip install physverify`.
 
+!!! tip "Before trusting a PASS"
+    Write the reference equations from the physics, not from the code; state units and signs; check initial and boundary conditions separately; test where bugs hide; add a second, independent check (a conserved quantity or a limit). See [What a PASS means](assumptions.md).
+
 ## Your own ODE solver
 
 If your solver can run `n` fixed steps and accept an extra term on the right-hand side, `ode_checks` gives the standard set. [Getting started](getting-started.md#2-read-the-spec) shows a complete spec; `physverify init` writes one for you:

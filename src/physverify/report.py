@@ -54,6 +54,17 @@ def load_spec(path):
     return checks
 
 
+SCHEMA_VERSION = 1  # of the --json output; see docs/api.md
+NOTE = "A PASS means these checks found nothing wrong; it does not prove the simulation correct."
+CLAIMS = {  # what each family tests, for the JSON output
+    "mms": "the code converges at the claimed order to a manufactured solution of the reference equations",
+    "reference": "the code converges at the claimed order to an independently computed reference solution",
+    "invariant": "the drift of a conserved quantity shrinks as the resolution is refined",
+    "limit": "the code reproduces a known limiting or special case",
+    "patch": "the code reproduces a solution it should represent exactly, to round-off",
+}
+
+
 def _number(x):
     x = float(x)
     return x if math.isfinite(x) else None
@@ -67,12 +78,15 @@ def outcome_to_dict(o: Outcome) -> dict:
         "ok": o.result.ok,
         "message": o.result.message,
         "seconds": round(o.seconds, 4),
+        "claim": CLAIMS.get(o.check.family, ""),
     }
     if isinstance(o.result, OrderResult):
         d["expected_order"] = _number(o.result.expected)
         d["observed_order"] = _number(o.result.fitted)
         d["h"] = [_number(h) for h in o.result.hs]
         d["error"] = [_number(e) for e in o.result.errors]
+        if o.result.acceptance:
+            d["acceptance"] = o.result.acceptance
     return d
 
 
@@ -90,10 +104,12 @@ def to_json(outcomes, source: str = "") -> str:
     from . import __version__
 
     payload = {
+        "schema_version": SCHEMA_VERSION,
         "physverify": __version__,
         "source": source,
         "summary": summary(outcomes),
         "checks": [outcome_to_dict(o) for o in outcomes],
+        "note": NOTE,
     }
     return json.dumps(payload, indent=2)
 
@@ -126,6 +142,7 @@ def to_markdown(outcomes, source: str = "") -> str:
         lines.append(
             f"| {cell(o.check.family)} | {cell(o.result.status)} | {cell(o.check.label)} | {observed} | {cell(o.result.message)} |"
         )
+    lines += ["", f"_{NOTE}_"]
     return "\n".join(lines) + "\n"
 
 
@@ -211,5 +228,5 @@ def to_html(outcomes, title: str = "physverify report", source: str = "") -> str
         '<div class="wrap"><table><thead><tr><th>Status</th><th>Family</th><th>Check</th><th>Message</th>'
         "<th>Observed order</th><th>Convergence</th></tr></thead><tbody>"
         + "".join(rows)
-        + "</tbody></table></div></body></html>\n"
+        + f'</tbody></table></div><p class="meta">{html.escape(NOTE)}</p></body></html>\n'
     )

@@ -57,6 +57,7 @@ nav:
   - Home: index.md
   - Getting started: getting-started.md
   - How it works: how-it-works.md
+  - What a PASS means: assumptions.md
   - Checks with examples:
       - Manufactured solutions: checks/manufactured-solutions.md
       - Order of convergence: checks/order.md

@@ -42,6 +42,7 @@ class OrderResult(Result):
     fitted: float = float("nan")
     hs: tuple = ()
     errors: tuple = ()
+    acceptance: str = ""  # the rule a PASS had to meet, in words (reported in the JSON output)
 
 
 @dataclass

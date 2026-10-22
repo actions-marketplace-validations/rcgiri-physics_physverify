@@ -6,9 +6,17 @@ You need Python 3.10 or newer. physverify depends only on NumPy (SymPy is option
 pip install physverify
 ```
 
-## 1. Run the example
+## 1. Run the demo
 
-The example lives in the repository, so clone it:
+```bash
+physverify demo
+```
+
+It runs the checks on a correct midpoint solver for a damped oscillator (all pass), then on a copy with the damping 10% too large (all fail). No files are needed.
+
+![Error against step size: the correct solver follows the slope-2 line, the broken one levels off](images/convergence.svg)
+
+To see the same example as files you can edit, clone the repository:
 
 ```bash
 git clone https://github.com/rcgiri-physics/physverify.git

@@ -13,6 +13,7 @@ OUTSIDE = re.compile(r"\]\((?:\.\./)+([^)#\s]+)(#[^)\s]*)?\)")
 RELATIVE = re.compile(r"\]\((?!https?://|#|mailto:)([^)\s]+)\)")
 FROM_ROOT = {"changelog.md": "CHANGELOG.md", "roadmap.md": "ROADMAP.md"}  # pages that show a top-level file
 NOT_PUBLISHED = ("plan_ising.md",)
+VERSION = re.search(r'__version__ = "([^"]+)"', (ROOT / "src/physverify/__init__.py").read_text(encoding="utf-8")).group(1)
 
 
 def on_page_markdown(markdown, page, **kwargs):
@@ -20,6 +21,9 @@ def on_page_markdown(markdown, page, **kwargs):
     if src in FROM_ROOT:
         text = (ROOT / FROM_ROOT[src]).read_text(encoding="utf-8")
         return RELATIVE.sub(lambda m: f"]({REPO}{m.group(1)})", text)
+
+    if src == "index.md":  # the version on the home page comes from the package, never by hand
+        markdown = re.sub(r"\(version \d+\.\d+(?:\.\d+)?\)", f"(version {VERSION})", markdown)
 
     depth = src.count("/")  # pages in docs/checks/ are one level deeper
 

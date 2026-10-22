@@ -1,9 +1,9 @@
 | Strategy | Bugs caught | Missed | False alarms on baselines | Runtime (s) |
 |---|---|---|---|---|
-| plain tests | 27 of 37 | 10 | 0 of 5 | 26.3 |
-| reference only | 26 of 37 | 11 | 0 of 5 | 41.5 |
-| convergence only | 27 of 37 | 10 | 0 of 5 | 22.5 |
-| full suite | 35 of 37 | 2 | 0 of 5 | 75.5 |
+| plain tests | 27 of 37 | 10 | 0 of 5 | 10.2 |
+| reference only | 26 of 37 | 11 | 0 of 5 | 16.1 |
+| convergence only | 27 of 37 | 10 | 0 of 5 | 9.3 |
+| full suite | 35 of 37 | 2 | 0 of 5 | 29.6 |
 
 | Problem | Bug | plain tests | reference only | convergence only | full suite |
 |---|---|---|---|---|---|

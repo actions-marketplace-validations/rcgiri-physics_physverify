@@ -44,6 +44,7 @@
 | sod | reflective_boundary | n/a | no | no | n/a | n/a | none (blind spot) |
 
 Bugs seeded: 37. Flagged by at least one check: 35. Missed by all: 2 (sod/wave_speed_without_sound, sod/reflective_boundary).
+Of the 35 flagged: 35 by at least one FAIL, 0 only by INCONCLUSIVE or ERROR.
 Bug-free baselines with a false alarm: 0 of 5.
 Bugs flagged per family: mms 27, reference 26, invariant 22, limit 14, patch 27.
 Bugs flagged by that family alone: mms 0, reference 0, invariant 2, limit 2, patch 3.

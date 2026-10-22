@@ -28,6 +28,30 @@ jobs:
       - run: python -m pytest -q --cov=physverify --cov-report=term-missing:skip-covered --cov-report=markdown-append:$GITHUB_STEP_SUMMARY
         shell: bash
 
+  wheel:
+    # Build the sdist and wheel, install the wheel in a fresh venv with the
+    # source tree off the path, and run the command line: a missing module or
+    # data file fails here instead of on PyPI.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install build
+      - run: python -m build
+      - name: Install the wheel in a clean venv and run it outside the source tree
+        run: |
+          python -m venv /tmp/venv
+          /tmp/venv/bin/pip install dist/*.whl
+          cp -r examples /tmp/examples
+          cd /tmp
+          /tmp/venv/bin/physverify --version
+          /tmp/venv/bin/physverify demo
+          /tmp/venv/bin/physverify run examples/verify_damped_oscillator.py
+          /tmp/venv/bin/physverify init verify_solver.py --solver mysolver
+          test -f verify_solver.py
+
   action:
     # The GitHub Action in action.yml, on the example: it must pass on the
     # correct solver and fail on a broken one.

@@ -24,6 +24,14 @@ taking n_steps fixed steps from t = 0 and adding source(t), an array of
 length {dim}, to the right-hand side wherever the solver evaluates it. If the
 solver has no such hook, write a small wrapper in this file that adds one and
 pass the wrapper to ode_checks instead.
+
+Before trusting a PASS:
+- reference_rhs written from the physics, not copied from the solver?
+- units and signs stated, and matching the solver's conventions?
+- initial and boundary conditions checked separately?
+- the test reaches the states where bugs hide (large amplitudes, boundaries)?
+- a second, independent check (a conserved quantity or a known limit)?
+See https://rcgiri-physics.github.io/physverify/assumptions/
 """
 
 import numpy as np

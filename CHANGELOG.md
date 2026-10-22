@@ -6,6 +6,13 @@
 - The text summary counts skipped checks ("0 of 2 checks passed, 1 skipped").
 - Releases run the full test suite before uploading to PyPI.
 - Citation: DOI 10.5281/zenodo.23534512 (all versions) and ORCID in `CITATION.cff`.
+- **`physverify demo`:** runs the checks on a correct and on a broken example solver shipped in the package, so a first run needs only `pip install physverify`.
+- **What a PASS means:** every report (text, Markdown, HTML, JSON) ends with "A PASS means these checks found nothing wrong; it does not prove the simulation correct." A new docs page lists what each check family assumes, with a worked example in which a reference copied from the code passes and an energy check catches the bug; `physverify init` and the recipes carry a short checklist.
+- **JSON output:** new fields `schema_version` (1), `note`, and per check `claim` and (order studies) `acceptance`, the rule a PASS had to meet. The public API and the JSON layout are documented in `docs/api.md`.
+- **Clearer verdicts on awkward input:** `check_order` reports INCONCLUSIVE, instead of a misleading FAIL or a crash, when all step sizes are equal, when a step size is zero, negative or NaN, or when there are not as many errors as step sizes. `physverify run` exits 2 when a spec's `checks()` returns no checks, instead of reporting "0 of 0 checks passed".
+- **Benchmark as data:** `physverify matrix` also writes `detection_matrix.json` (full status, message, prediction and run time of every check, with the physverify version, git commit, Python, NumPy and platform) and `run_time.md`. The matrix says how many bugs were flagged by a FAIL and how many only by INCONCLUSIVE or ERROR (35 and 0). The bug catalogue links to the lines that switch each bug on. `python scripts/reproduce_all.py` regenerates every table and the README figure; see `results/README.md`.
+- **CI:** builds the wheel and runs `physverify` from it in a clean environment (also before every release); tests Python 3.10 to 3.14 with coverage; runs the slow Monte Carlo tests weekly.
+- Shorter README with the demo and a convergence plot; the docs home page takes its version number from the package.
 
 ## 0.4.1 (2026-10-21)
 

@@ -1,0 +1,4232 @@
+{
+ "provenance": {
+  "physverify": "0.4.1",
+  "git_commit": "8c9dcf4f98635053864b53a1b5ea7b8c260fd86d",
+  "python": "3.14.5",
+  "numpy": "2.5.2",
+  "platform": "Windows-10-10.0.19045-SP0",
+  "date": "2026-10-22T02:06:00+00:00"
+ },
+ "records": [
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0448
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0573
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0261
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0067
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0137
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "mms",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0212
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "reference",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.1948
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "invariant",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0089
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "patch",
+   "check": "vacuum/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0131
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0242
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0641
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0315
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0158
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "mms",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0276
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "reference",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2785
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "patch",
+   "check": "linear/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0185
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0242
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.01 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0635
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0294
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0164
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "mms",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0229
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "reference",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2403
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "patch",
+   "check": "quadratic/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0151
+  },
+  {
+   "problem": "projectile",
+   "bug": null,
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.0067
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0236
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0743
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0274
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 2.72 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.008
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 19.6 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0127
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "mms",
+   "check": "vacuum/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0221
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "reference",
+   "check": "vacuum/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1828
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "invariant",
+   "check": "vacuum/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 2.72 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0055
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "patch",
+   "check": "vacuum/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 19.6 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.018
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.033
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0564
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0285
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 19.4 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0152
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "mms",
+   "check": "linear/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0221
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "reference",
+   "check": "linear/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 19.4 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.2597
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "patch",
+   "check": "linear/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 19.4 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0175
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 16.5 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0254
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 15.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.074
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 16.5 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0321
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 16.5 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0171
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "mms",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 16.5 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.027
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "reference",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 15.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.2596
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "patch",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 16.6 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0163
+  },
+  {
+   "problem": "projectile",
+   "bug": "gravity_sign",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "ERROR",
+   "message": "RuntimeError: projectile never landed within 100 s",
+   "predicted_to_flag": true,
+   "seconds": 0.0043
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0262
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": true,
+   "seconds": 0.057
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0252
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0116
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0152
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "mms",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.0262
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "reference",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.21
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "invariant",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0079
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "patch",
+   "check": "vacuum/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0121
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0389 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0226
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.12 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0557
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0404 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0245
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0182 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0153
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "mms",
+   "check": "linear/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0412 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.0237
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "reference",
+   "check": "linear/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.12 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.2252
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "patch",
+   "check": "linear/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0184 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0203
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0347
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.01 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0811
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0262
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0172
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "mms",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.0239
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "reference",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.2553
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "patch",
+   "check": "quadratic/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0163
+  },
+  {
+   "problem": "projectile",
+   "bug": "linear_drag_missing_mass",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.0053
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0295
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": true,
+   "seconds": 0.069
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0287
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0064
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0198
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "mms",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.023
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "reference",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.2191
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "invariant",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0057
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "patch",
+   "check": "vacuum/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0144
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0225
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0625
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0279
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0189
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "mms",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.0249
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "reference",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.2211
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "patch",
+   "check": "linear/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0142
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.339 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0337
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 1.41 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0737
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.347 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0276
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0581 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0156
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "mms",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.338 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.026
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "reference",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 1.41 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.2375
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "patch",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0591 and shrinks at about order 0.01",
+   "predicted_to_flag": true,
+   "seconds": 0.0155
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_factor_half",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.0072
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0209
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": true,
+   "seconds": 0.0511
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0291
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0068
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0176
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "mms",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.0204
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "reference",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.2296
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "invariant",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0103
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "patch",
+   "check": "vacuum/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0153
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0241
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0632
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0238
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0156
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "mms",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.0309
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "reference",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.2531
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "patch",
+   "check": "linear/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0145
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.354 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0252
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.343 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0751
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.357 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0267
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0344 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0161
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "mms",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.357 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.023
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "reference",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.343 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.5155
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "patch",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0349 and shrinks at about order 0.01",
+   "predicted_to_flag": true,
+   "seconds": 0.0161
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_speed_from_vx",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.0057
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0212
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0741
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0315
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0068
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0138
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "mms",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.024
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "reference",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.1981
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "invariant",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0079
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "patch",
+   "check": "vacuum/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0112
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0327
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0613
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0302
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0184
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "mms",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.0289
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "reference",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2301
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "patch",
+   "check": "linear/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0154
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.000503 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0344
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.01 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0651
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.000503 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.027
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0652 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0209
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "mms",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.0311
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "reference",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2542
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "patch",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0662 and shrinks at about order 0.01",
+   "predicted_to_flag": true,
+   "seconds": 0.0166
+  },
+  {
+   "problem": "projectile",
+   "bug": "quad_drag_abs_vx",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.0072
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0218
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0505
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0282
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0067
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0135
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "mms",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0205
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "reference",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2329
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "invariant",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0064
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "patch",
+   "check": "vacuum/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0135
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0351
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0736
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0234
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0151
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "mms",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0341
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "reference",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2357
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "patch",
+   "check": "linear/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0224
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0382
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.01 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0994
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0271
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0181
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "mms",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0323
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "reference",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2673
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "patch",
+   "check": "quadratic/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0174
+  },
+  {
+   "problem": "projectile",
+   "bug": "landing_no_interp",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 2",
+   "predicted_to_flag": true,
+   "seconds": 0.0065
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.021
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0569
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0293
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0079
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0118
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "mms",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0258
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "reference",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.234
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "invariant",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0057
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "patch",
+   "check": "vacuum/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0128
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0241
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0606
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0301
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0158
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "mms",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0313
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "reference",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2343
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "patch",
+   "check": "linear/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0121
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.026
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.01 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0722
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0266
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0157
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "mms",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0241
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "reference",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.3702
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "patch",
+   "check": "quadratic/euler",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 5.7e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0148
+  },
+  {
+   "problem": "projectile",
+   "bug": "angle_not_converted",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 182 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0072
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0216
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0715
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0277
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "error below 1e-12 at every resolution; order not measurable",
+   "predicted_to_flag": false,
+   "seconds": 0.0067
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0133
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "mms",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0207
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "reference",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.1961
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "invariant",
+   "check": "vacuum/euler",
+   "status": "PASS",
+   "message": "observed order 1.01 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0057
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "patch",
+   "check": "vacuum/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.075 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0158
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0244
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0562
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0311
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0147
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "mms",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0218
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "reference",
+   "check": "linear/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2192
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "patch",
+   "check": "linear/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.075 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0138
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0368
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "PASS",
+   "message": "observed order 4.01 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0812
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0322
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": true,
+   "seconds": 0.0219
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "mms",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0277
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "reference",
+   "check": "quadratic/euler",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2697
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "patch",
+   "check": "quadratic/euler",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.075 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0163
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_extra_step",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.0065
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0114
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0517
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0082
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0017
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0028
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0059
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0638
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0083
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0031
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0056
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0804
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0084
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.4e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0037
+  },
+  {
+   "problem": "projectile",
+   "bug": "euler_instead_of_rk4",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 2",
+   "predicted_to_flag": false,
+   "seconds": 0.0014
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 3.03 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0297
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 3.33 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0623
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 3.03 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0294
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0073
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.9 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0114
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 3.01 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0244
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 3.3 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0663
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 3.01 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0227
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.901 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0156
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 2.91 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0237
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 3.42 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0677
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 2.91 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0272
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.902 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0155
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_weights",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "FAIL",
+   "message": "observed order 1.01 is below the expected 2",
+   "predicted_to_flag": false,
+   "seconds": 0.0068
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0234
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "reference",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0539
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "vacuum/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0236
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "invariant",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": false,
+   "seconds": 0.0088
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "patch",
+   "check": "vacuum/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0167 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0134
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0261
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "reference",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0728
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "linear/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0237
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "patch",
+   "check": "linear/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0165 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0148
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0243
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "reference",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "observed order 1.01 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0921
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "quadratic/rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0383
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "patch",
+   "check": "quadratic/rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0159 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0162
+  },
+  {
+   "problem": "projectile",
+   "bug": "rk4_full_step_stage2",
+   "family": "limit",
+   "check": "vacuum/rk4 range",
+   "status": "FAIL",
+   "message": "observed order 1.01 is below the expected 2",
+   "predicted_to_flag": false,
+   "seconds": 0.0069
+  },
+  {
+   "problem": "pendulum",
+   "bug": null,
+   "family": "mms",
+   "check": "rk4",
+   "status": "PASS",
+   "message": "observed order 3.98 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0703
+  },
+  {
+   "problem": "pendulum",
+   "bug": null,
+   "family": "reference",
+   "check": "rk4",
+   "status": "PASS",
+   "message": "observed order 3.95 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.1539
+  },
+  {
+   "problem": "pendulum",
+   "bug": null,
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.05 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0692
+  },
+  {
+   "problem": "pendulum",
+   "bug": null,
+   "family": "invariant",
+   "check": "rk4",
+   "status": "PASS",
+   "message": "observed order 5.30 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0333
+  },
+  {
+   "problem": "pendulum",
+   "bug": null,
+   "family": "patch",
+   "check": "rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 8.1e-15), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0596
+  },
+  {
+   "problem": "pendulum",
+   "bug": null,
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "PASS",
+   "message": "frequencies match the closed form (relative error 5.8e-13)",
+   "predicted_to_flag": false,
+   "seconds": 0.0004
+  },
+  {
+   "problem": "pendulum",
+   "bug": "coupling_sign",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.02 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0606
+  },
+  {
+   "problem": "pendulum",
+   "bug": "coupling_sign",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.247 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1632
+  },
+  {
+   "problem": "pendulum",
+   "bug": "coupling_sign",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.02 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0645
+  },
+  {
+   "problem": "pendulum",
+   "bug": "coupling_sign",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.00248 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0338
+  },
+  {
+   "problem": "pendulum",
+   "bug": "coupling_sign",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0273 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0568
+  },
+  {
+   "problem": "pendulum",
+   "bug": "coupling_sign",
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "PASS",
+   "message": "frequencies match the closed form (relative error 5.8e-13)",
+   "predicted_to_flag": false,
+   "seconds": 0.0003
+  },
+  {
+   "problem": "pendulum",
+   "bug": "mass_matrix_missing_cos",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.46 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0732
+  },
+  {
+   "problem": "pendulum",
+   "bug": "mass_matrix_missing_cos",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0603 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1437
+  },
+  {
+   "problem": "pendulum",
+   "bug": "mass_matrix_missing_cos",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.46 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0796
+  },
+  {
+   "problem": "pendulum",
+   "bug": "mass_matrix_missing_cos",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.00065 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0481
+  },
+  {
+   "problem": "pendulum",
+   "bug": "mass_matrix_missing_cos",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.883 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0608
+  },
+  {
+   "problem": "pendulum",
+   "bug": "mass_matrix_missing_cos",
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "PASS",
+   "message": "frequencies match the closed form (relative error 3.3e-13)",
+   "predicted_to_flag": false,
+   "seconds": 0.0003
+  },
+  {
+   "problem": "pendulum",
+   "bug": "gravity_mass_missing",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 1.73 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0721
+  },
+  {
+   "problem": "pendulum",
+   "bug": "gravity_mass_missing",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.422 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1615
+  },
+  {
+   "problem": "pendulum",
+   "bug": "gravity_mass_missing",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 1.73 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0738
+  },
+  {
+   "problem": "pendulum",
+   "bug": "gravity_mass_missing",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0203 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0452
+  },
+  {
+   "problem": "pendulum",
+   "bug": "gravity_mass_missing",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 3.34 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.053
+  },
+  {
+   "problem": "pendulum",
+   "bug": "gravity_mass_missing",
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "FAIL",
+   "message": "frequencies [np.float64(2.1219488542025706), np.float64(5.525671664678316)] differ from [2.621396023017722, 6.0009996814048545] (relative error 0.19)",
+   "predicted_to_flag": true,
+   "seconds": 0.0003
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_stage4_time",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 0.98 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0662
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_stage4_time",
+   "family": "reference",
+   "check": "rk4",
+   "status": "PASS",
+   "message": "observed order 3.95 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.1518
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_stage4_time",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 0.97 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0719
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_stage4_time",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "PASS",
+   "message": "observed order 5.30 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0449
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_stage4_time",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0147 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0531
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_stage4_time",
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "PASS",
+   "message": "frequencies match the closed form (relative error 5.8e-13)",
+   "predicted_to_flag": false,
+   "seconds": 0.0003
+  },
+  {
+   "problem": "pendulum",
+   "bug": "swapped_lengths",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0884 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0682
+  },
+  {
+   "problem": "pendulum",
+   "bug": "swapped_lengths",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0381 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1405
+  },
+  {
+   "problem": "pendulum",
+   "bug": "swapped_lengths",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0884 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0703
+  },
+  {
+   "problem": "pendulum",
+   "bug": "swapped_lengths",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.000296 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.0379
+  },
+  {
+   "problem": "pendulum",
+   "bug": "swapped_lengths",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.165 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0503
+  },
+  {
+   "problem": "pendulum",
+   "bug": "swapped_lengths",
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "PASS",
+   "message": "frequencies match the closed form (relative error 5.8e-13)",
+   "predicted_to_flag": false,
+   "seconds": 0.0004
+  },
+  {
+   "problem": "pendulum",
+   "bug": "small_angle_gravity",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0129 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0681
+  },
+  {
+   "problem": "pendulum",
+   "bug": "small_angle_gravity",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.074 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1494
+  },
+  {
+   "problem": "pendulum",
+   "bug": "small_angle_gravity",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0129 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0768
+  },
+  {
+   "problem": "pendulum",
+   "bug": "small_angle_gravity",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.000762 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0363
+  },
+  {
+   "problem": "pendulum",
+   "bug": "small_angle_gravity",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.165 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0615
+  },
+  {
+   "problem": "pendulum",
+   "bug": "small_angle_gravity",
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "PASS",
+   "message": "frequencies match the closed form (relative error 5.3e-13)",
+   "predicted_to_flag": false,
+   "seconds": 0.0003
+  },
+  {
+   "problem": "pendulum",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 1.01 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0155
+  },
+  {
+   "problem": "pendulum",
+   "bug": "euler_instead_of_rk4",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 1.39 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.1198
+  },
+  {
+   "problem": "pendulum",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 1.01 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0171
+  },
+  {
+   "problem": "pendulum",
+   "bug": "euler_instead_of_rk4",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 1.17 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0079
+  },
+  {
+   "problem": "pendulum",
+   "bug": "euler_instead_of_rk4",
+   "family": "patch",
+   "check": "rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 7.4e-15), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0132
+  },
+  {
+   "problem": "pendulum",
+   "bug": "euler_instead_of_rk4",
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "PASS",
+   "message": "frequencies match the closed form (relative error 5.8e-13)",
+   "predicted_to_flag": false,
+   "seconds": 0.0003
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.49 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.0648
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_weights",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 1.1 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.1522
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.49 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.0783
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_weights",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 0.97 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0329
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_weights",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.154 and shrinks at about order 0.01",
+   "predicted_to_flag": true,
+   "seconds": 0.0638
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_weights",
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "PASS",
+   "message": "frequencies match the closed form (relative error 5.8e-13)",
+   "predicted_to_flag": false,
+   "seconds": 0.0003
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 0.93 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0644
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_full_step_stage2",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 1.06 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.1429
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 0.96 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.084
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_full_step_stage2",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 0.95 is below the expected 4",
+   "predicted_to_flag": false,
+   "seconds": 0.0568
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_full_step_stage2",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0258 and shrinks at about order 0.96",
+   "predicted_to_flag": true,
+   "seconds": 0.0699
+  },
+  {
+   "problem": "pendulum",
+   "bug": "rk4_full_step_stage2",
+   "family": "limit",
+   "check": "small-oscillation frequencies",
+   "status": "PASS",
+   "message": "frequencies match the closed form (relative error 5.8e-13)",
+   "predicted_to_flag": false,
+   "seconds": 0.0018
+  },
+  {
+   "problem": "kepler",
+   "bug": null,
+   "family": "mms",
+   "check": "rk4",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0746
+  },
+  {
+   "problem": "kepler",
+   "bug": null,
+   "family": "reference",
+   "check": "rk4",
+   "status": "PASS",
+   "message": "observed order 4.04 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.1767
+  },
+  {
+   "problem": "kepler",
+   "bug": null,
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "PASS",
+   "message": "observed order 4.00 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0766
+  },
+  {
+   "problem": "kepler",
+   "bug": null,
+   "family": "invariant",
+   "check": "rk4",
+   "status": "PASS",
+   "message": "observed order 4.12 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0323
+  },
+  {
+   "problem": "kepler",
+   "bug": null,
+   "family": "patch",
+   "check": "rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.1e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0449
+  },
+  {
+   "problem": "kepler",
+   "bug": null,
+   "family": "invariant",
+   "check": "rk4 angular momentum",
+   "status": "PASS",
+   "message": "observed order 5.03 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0203
+  },
+  {
+   "problem": "kepler",
+   "bug": null,
+   "family": "limit",
+   "check": "orbit closes after one period",
+   "status": "PASS",
+   "message": "observed order 4.14 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.1206
+  },
+  {
+   "problem": "kepler",
+   "bug": "inverse_r_force",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.073 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0993
+  },
+  {
+   "problem": "kepler",
+   "bug": "inverse_r_force",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.735 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1686
+  },
+  {
+   "problem": "kepler",
+   "bug": "inverse_r_force",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.073 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0772
+  },
+  {
+   "problem": "kepler",
+   "bug": "inverse_r_force",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.279 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0242
+  },
+  {
+   "problem": "kepler",
+   "bug": "inverse_r_force",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.165 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0479
+  },
+  {
+   "problem": "kepler",
+   "bug": "inverse_r_force",
+   "family": "invariant",
+   "check": "rk4 angular momentum",
+   "status": "PASS",
+   "message": "observed order 5.01 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0198
+  },
+  {
+   "problem": "kepler",
+   "bug": "inverse_r_force",
+   "family": "limit",
+   "check": "orbit closes after one period",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 1.78 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1381
+  },
+  {
+   "problem": "kepler",
+   "bug": "y_force_sign",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.612 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0858
+  },
+  {
+   "problem": "kepler",
+   "bug": "y_force_sign",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 2.6 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1624
+  },
+  {
+   "problem": "kepler",
+   "bug": "y_force_sign",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.612 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0737
+  },
+  {
+   "problem": "kepler",
+   "bug": "y_force_sign",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 4.09 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0211
+  },
+  {
+   "problem": "kepler",
+   "bug": "y_force_sign",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.577 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0479
+  },
+  {
+   "problem": "kepler",
+   "bug": "y_force_sign",
+   "family": "invariant",
+   "check": "rk4 angular momentum",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.524 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0208
+  },
+  {
+   "problem": "kepler",
+   "bug": "y_force_sign",
+   "family": "limit",
+   "check": "orbit closes after one period",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 16.9 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1144
+  },
+  {
+   "problem": "kepler",
+   "bug": "gm_one_percent",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.00909 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0779
+  },
+  {
+   "problem": "kepler",
+   "bug": "gm_one_percent",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0322 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1786
+  },
+  {
+   "problem": "kepler",
+   "bug": "gm_one_percent",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.00909 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0839
+  },
+  {
+   "problem": "kepler",
+   "bug": "gm_one_percent",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.00952 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0254
+  },
+  {
+   "problem": "kepler",
+   "bug": "gm_one_percent",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.00552 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0549
+  },
+  {
+   "problem": "kepler",
+   "bug": "gm_one_percent",
+   "family": "invariant",
+   "check": "rk4 angular momentum",
+   "status": "PASS",
+   "message": "observed order 5.03 (expected 4)",
+   "predicted_to_flag": true,
+   "seconds": 0.0248
+  },
+  {
+   "problem": "kepler",
+   "bug": "gm_one_percent",
+   "family": "limit",
+   "check": "orbit closes after one period",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.942 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.1256
+  },
+  {
+   "problem": "kepler",
+   "bug": "softening_left_on",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 1.16e-06 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0682
+  },
+  {
+   "problem": "kepler",
+   "bug": "softening_left_on",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 1.37e-05 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.197
+  },
+  {
+   "problem": "kepler",
+   "bug": "softening_left_on",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 1.16e-06 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0766
+  },
+  {
+   "problem": "kepler",
+   "bug": "softening_left_on",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 3.44e-06 at the finest level)",
+   "predicted_to_flag": false,
+   "seconds": 0.0208
+  },
+  {
+   "problem": "kepler",
+   "bug": "softening_left_on",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 4.99e-07 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0395
+  },
+  {
+   "problem": "kepler",
+   "bug": "softening_left_on",
+   "family": "invariant",
+   "check": "rk4 angular momentum",
+   "status": "PASS",
+   "message": "observed order 5.03 (expected 4)",
+   "predicted_to_flag": false,
+   "seconds": 0.0209
+  },
+  {
+   "problem": "kepler",
+   "bug": "softening_left_on",
+   "family": "limit",
+   "check": "orbit closes after one period",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.000331 at the finest level)",
+   "predicted_to_flag": false,
+   "seconds": 0.1049
+  },
+  {
+   "problem": "kepler",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 0.99 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.016
+  },
+  {
+   "problem": "kepler",
+   "bug": "euler_instead_of_rk4",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 0.95 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.1516
+  },
+  {
+   "problem": "kepler",
+   "bug": "euler_instead_of_rk4",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 0.99 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.02
+  },
+  {
+   "problem": "kepler",
+   "bug": "euler_instead_of_rk4",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 0.97 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0045
+  },
+  {
+   "problem": "kepler",
+   "bug": "euler_instead_of_rk4",
+   "family": "patch",
+   "check": "rk4",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 1.1e-14), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0172
+  },
+  {
+   "problem": "kepler",
+   "bug": "euler_instead_of_rk4",
+   "family": "invariant",
+   "check": "rk4 angular momentum",
+   "status": "FAIL",
+   "message": "observed order 0.99 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0108
+  },
+  {
+   "problem": "kepler",
+   "bug": "euler_instead_of_rk4",
+   "family": "limit",
+   "check": "orbit closes after one period",
+   "status": "FAIL",
+   "message": "observed order 0.49 is below the expected 4",
+   "predicted_to_flag": false,
+   "seconds": 0.0306
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.326 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0716
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_weights",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.418 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.1533
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_weights",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.326 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0707
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_weights",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0269
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_weights",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.147 and shrinks at about order -0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0404
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_weights",
+   "family": "invariant",
+   "check": "rk4 angular momentum",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0209
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_weights",
+   "family": "limit",
+   "check": "orbit closes after one period",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 2.19 at the finest level)",
+   "predicted_to_flag": false,
+   "seconds": 0.105
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 0.99 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0749
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_full_step_stage2",
+   "family": "reference",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 0.99 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.1784
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_full_step_stage2",
+   "family": "mms",
+   "check": "rk4 (whole trajectory)",
+   "status": "FAIL",
+   "message": "observed order 0.99 is below the expected 4",
+   "predicted_to_flag": true,
+   "seconds": 0.0772
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_full_step_stage2",
+   "family": "invariant",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": false,
+   "seconds": 0.0287
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_full_step_stage2",
+   "family": "patch",
+   "check": "rk4",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.00337 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0469
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_full_step_stage2",
+   "family": "invariant",
+   "check": "rk4 angular momentum",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 4",
+   "predicted_to_flag": false,
+   "seconds": 0.0298
+  },
+  {
+   "problem": "kepler",
+   "bug": "rk4_full_step_stage2",
+   "family": "limit",
+   "check": "orbit closes after one period",
+   "status": "FAIL",
+   "message": "observed order 0.62 is below the expected 4",
+   "predicted_to_flag": false,
+   "seconds": 0.106
+  },
+  {
+   "problem": "heat1d",
+   "bug": null,
+   "family": "mms",
+   "check": "FTCS coupled dt ~ dx^2",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.233
+  },
+  {
+   "problem": "heat1d",
+   "bug": null,
+   "family": "mms",
+   "check": "FTCS time-only refinement",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.1029
+  },
+  {
+   "problem": "heat1d",
+   "bug": null,
+   "family": "mms",
+   "check": "FTCS space-only refinement",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.1978
+  },
+  {
+   "problem": "heat1d",
+   "bug": null,
+   "family": "reference",
+   "check": "FTCS eigenmode decay",
+   "status": "PASS",
+   "message": "observed order 1.99 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.0473
+  },
+  {
+   "problem": "heat1d",
+   "bug": null,
+   "family": "patch",
+   "check": "FTCS cubic in x, linear in t",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 2.8e-16), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0167
+  },
+  {
+   "problem": "heat1d",
+   "bug": "dx_off_by_one",
+   "family": "mms",
+   "check": "FTCS coupled dt ~ dx^2",
+   "status": "FAIL",
+   "message": "observed order 0.91 is below the expected 2",
+   "predicted_to_flag": true,
+   "seconds": 0.2425
+  },
+  {
+   "problem": "heat1d",
+   "bug": "dx_off_by_one",
+   "family": "mms",
+   "check": "FTCS time-only refinement",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0117 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0923
+  },
+  {
+   "problem": "heat1d",
+   "bug": "dx_off_by_one",
+   "family": "mms",
+   "check": "FTCS space-only refinement",
+   "status": "FAIL",
+   "message": "observed order 0.91 is below the expected 2",
+   "predicted_to_flag": true,
+   "seconds": 0.2103
+  },
+  {
+   "problem": "heat1d",
+   "bug": "dx_off_by_one",
+   "family": "reference",
+   "check": "FTCS eigenmode decay",
+   "status": "FAIL",
+   "message": "observed order 1.00 is below the expected 2",
+   "predicted_to_flag": true,
+   "seconds": 0.042
+  },
+  {
+   "problem": "heat1d",
+   "bug": "dx_off_by_one",
+   "family": "patch",
+   "check": "FTCS cubic in x, linear in t",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0515 and shrinks at about order 0.34",
+   "predicted_to_flag": true,
+   "seconds": 0.014
+  },
+  {
+   "problem": "heat1d",
+   "bug": "alpha_ignored",
+   "family": "mms",
+   "check": "FTCS coupled dt ~ dx^2",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.235 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.2374
+  },
+  {
+   "problem": "heat1d",
+   "bug": "alpha_ignored",
+   "family": "mms",
+   "check": "FTCS time-only refinement",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0698 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.1503
+  },
+  {
+   "problem": "heat1d",
+   "bug": "alpha_ignored",
+   "family": "mms",
+   "check": "FTCS space-only refinement",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.272 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.2043
+  },
+  {
+   "problem": "heat1d",
+   "bug": "alpha_ignored",
+   "family": "reference",
+   "check": "FTCS eigenmode decay",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.128 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.0555
+  },
+  {
+   "problem": "heat1d",
+   "bug": "alpha_ignored",
+   "family": "patch",
+   "check": "FTCS cubic in x, linear in t",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0789 and shrinks at about order 0.00",
+   "predicted_to_flag": true,
+   "seconds": 0.0143
+  },
+  {
+   "problem": "heat1d",
+   "bug": "extra_time_step",
+   "family": "mms",
+   "check": "FTCS coupled dt ~ dx^2",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.2256
+  },
+  {
+   "problem": "heat1d",
+   "bug": "extra_time_step",
+   "family": "mms",
+   "check": "FTCS time-only refinement",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.0953
+  },
+  {
+   "problem": "heat1d",
+   "bug": "extra_time_step",
+   "family": "mms",
+   "check": "FTCS space-only refinement",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.2186
+  },
+  {
+   "problem": "heat1d",
+   "bug": "extra_time_step",
+   "family": "reference",
+   "check": "FTCS eigenmode decay",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.0448
+  },
+  {
+   "problem": "heat1d",
+   "bug": "extra_time_step",
+   "family": "patch",
+   "check": "FTCS cubic in x, linear in t",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.00212 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.013
+  },
+  {
+   "problem": "heat1d",
+   "bug": "unstable_dt",
+   "family": "mms",
+   "check": "FTCS coupled dt ~ dx^2",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 4.31e+261 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.093
+  },
+  {
+   "problem": "heat1d",
+   "bug": "unstable_dt",
+   "family": "mms",
+   "check": "FTCS time-only refinement",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.1036
+  },
+  {
+   "problem": "heat1d",
+   "bug": "unstable_dt",
+   "family": "mms",
+   "check": "FTCS space-only refinement",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 3.09e+261 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.1099
+  },
+  {
+   "problem": "heat1d",
+   "bug": "unstable_dt",
+   "family": "reference",
+   "check": "FTCS eigenmode decay",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 2.16e+261 at the finest level)",
+   "predicted_to_flag": true,
+   "seconds": 0.0191
+  },
+  {
+   "problem": "heat1d",
+   "bug": "unstable_dt",
+   "family": "patch",
+   "check": "FTCS cubic in x, linear in t",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.349",
+   "predicted_to_flag": true,
+   "seconds": 0.0094
+  },
+  {
+   "problem": "heat1d",
+   "bug": "source_time_shift",
+   "family": "mms",
+   "check": "FTCS coupled dt ~ dx^2",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.2209
+  },
+  {
+   "problem": "heat1d",
+   "bug": "source_time_shift",
+   "family": "mms",
+   "check": "FTCS time-only refinement",
+   "status": "PASS",
+   "message": "observed order 1.00 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.1077
+  },
+  {
+   "problem": "heat1d",
+   "bug": "source_time_shift",
+   "family": "mms",
+   "check": "FTCS space-only refinement",
+   "status": "PASS",
+   "message": "observed order 2.00 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.2279
+  },
+  {
+   "problem": "heat1d",
+   "bug": "source_time_shift",
+   "family": "reference",
+   "check": "FTCS eigenmode decay",
+   "status": "PASS",
+   "message": "observed order 1.99 (expected 2)",
+   "predicted_to_flag": false,
+   "seconds": 0.0419
+  },
+  {
+   "problem": "heat1d",
+   "bug": "source_time_shift",
+   "family": "patch",
+   "check": "FTCS cubic in x, linear in t",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.00111 and shrinks at about order 1.00",
+   "predicted_to_flag": true,
+   "seconds": 0.019
+  },
+  {
+   "problem": "sod",
+   "bug": null,
+   "family": "reference",
+   "check": "Sod shock tube, density L1",
+   "status": "PASS",
+   "message": "observed order 0.63 (expected 0.5)",
+   "predicted_to_flag": false,
+   "seconds": 0.3054
+  },
+  {
+   "problem": "sod",
+   "bug": null,
+   "family": "reference",
+   "check": "smooth density wave, periodic",
+   "status": "PASS",
+   "message": "observed order 0.98 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.1594
+  },
+  {
+   "problem": "sod",
+   "bug": null,
+   "family": "invariant",
+   "check": "discrete conservation of mass, momentum, energy",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 4.4e-16), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0042
+  },
+  {
+   "problem": "sod",
+   "bug": "gamma_wrong",
+   "family": "reference",
+   "check": "Sod shock tube, density L1",
+   "status": "FAIL",
+   "message": "error does not decrease with resolution (about 0.0605 at the finest level); the error is the same at every resolution, which points to something independent of the step (a jump in the model such as a potential cutoff crossing, a wrong constant, or a reference for a different problem) rather than to the integrator",
+   "predicted_to_flag": true,
+   "seconds": 0.426
+  },
+  {
+   "problem": "sod",
+   "bug": "gamma_wrong",
+   "family": "reference",
+   "check": "smooth density wave, periodic",
+   "status": "PASS",
+   "message": "observed order 0.98 (expected 1)",
+   "predicted_to_flag": true,
+   "seconds": 0.2178
+  },
+  {
+   "problem": "sod",
+   "bug": "gamma_wrong",
+   "family": "invariant",
+   "check": "discrete conservation of mass, momentum, energy",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.03 and shrinks at about order -0.00",
+   "predicted_to_flag": false,
+   "seconds": 0.0053
+  },
+  {
+   "problem": "sod",
+   "bug": "nonconservative_momentum",
+   "family": "reference",
+   "check": "Sod shock tube, density L1",
+   "status": "PASS",
+   "message": "observed order 0.43 (expected 0.5)",
+   "predicted_to_flag": false,
+   "seconds": 0.4273
+  },
+  {
+   "problem": "sod",
+   "bug": "nonconservative_momentum",
+   "family": "reference",
+   "check": "smooth density wave, periodic",
+   "status": "PASS",
+   "message": "observed order 0.98 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.2251
+  },
+  {
+   "problem": "sod",
+   "bug": "nonconservative_momentum",
+   "family": "invariant",
+   "check": "discrete conservation of mass, momentum, energy",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.0113 and shrinks at about order 0.80",
+   "predicted_to_flag": true,
+   "seconds": 0.0057
+  },
+  {
+   "problem": "sod",
+   "bug": "wave_speed_without_sound",
+   "family": "reference",
+   "check": "Sod shock tube, density L1",
+   "status": "PASS",
+   "message": "observed order 0.59 (expected 0.5)",
+   "predicted_to_flag": false,
+   "seconds": 0.3328
+  },
+  {
+   "problem": "sod",
+   "bug": "wave_speed_without_sound",
+   "family": "reference",
+   "check": "smooth density wave, periodic",
+   "status": "PASS",
+   "message": "observed order 0.99 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.1667
+  },
+  {
+   "problem": "sod",
+   "bug": "wave_speed_without_sound",
+   "family": "invariant",
+   "check": "discrete conservation of mass, momentum, energy",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 4.4e-16), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0057
+  },
+  {
+   "problem": "sod",
+   "bug": "last_step_not_clipped",
+   "family": "reference",
+   "check": "Sod shock tube, density L1",
+   "status": "PASS",
+   "message": "observed order 0.63 (expected 0.5)",
+   "predicted_to_flag": false,
+   "seconds": 0.3288
+  },
+  {
+   "problem": "sod",
+   "bug": "last_step_not_clipped",
+   "family": "reference",
+   "check": "smooth density wave, periodic",
+   "status": "PASS",
+   "message": "observed order 0.98 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.1612
+  },
+  {
+   "problem": "sod",
+   "bug": "last_step_not_clipped",
+   "family": "invariant",
+   "check": "discrete conservation of mass, momentum, energy",
+   "status": "FAIL",
+   "message": "expected an exact solution to round-off, but the error reaches 0.00208 and shrinks at about order 1.33",
+   "predicted_to_flag": true,
+   "seconds": 0.0042
+  },
+  {
+   "problem": "sod",
+   "bug": "reflective_boundary",
+   "family": "reference",
+   "check": "Sod shock tube, density L1",
+   "status": "PASS",
+   "message": "observed order 0.63 (expected 0.5)",
+   "predicted_to_flag": false,
+   "seconds": 0.2981
+  },
+  {
+   "problem": "sod",
+   "bug": "reflective_boundary",
+   "family": "reference",
+   "check": "smooth density wave, periodic",
+   "status": "PASS",
+   "message": "observed order 0.98 (expected 1)",
+   "predicted_to_flag": false,
+   "seconds": 0.1404
+  },
+  {
+   "problem": "sod",
+   "bug": "reflective_boundary",
+   "family": "invariant",
+   "check": "discrete conservation of mass, momentum, energy",
+   "status": "EXACT",
+   "message": "reproduced to round-off (largest error 4.4e-16), as designed",
+   "predicted_to_flag": false,
+   "seconds": 0.0056
+  }
+ ]
+}
