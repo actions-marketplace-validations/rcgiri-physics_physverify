@@ -2,6 +2,15 @@
 
 What may come after 0.4.1. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
 
+
+## Principles
+
+- **Evidence before features.** Independent trial reports (see CONTRIBUTING.md) come before new check families.
+- **Independence of the reference is the first concern.** Every recipe and template asks for equations written from the physics, and for a second, independent check.
+- **A PASS is a bounded claim.** Every output says what was tested; [What a PASS means](docs/assumptions.md) says what was not.
+- **Deepen before widening.** Numerical-method coverage grows only when it adds value for ODE/PDE time integration, convergence or conservation. Statistical (Monte Carlo) checks grow carefully: each new one with its false-alarm rate and power measured over repeated seeds.
+- **Every published number is regenerable** with `python scripts/reproduce_all.py`, or says why not.
+
 ## Next (0.5.0): checking code without writing a wrapper
 
 Today every check needs a short spec file, and for most codes a small adapter that adds a source term. That is the biggest barrier to trying physverify. Several checks need no adapter at all, because they ask the code only to run, not to solve a different problem:

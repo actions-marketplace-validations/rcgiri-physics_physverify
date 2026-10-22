@@ -19,6 +19,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: The release tag must match the package version
+        run: |
+          version=$(grep -m1 '^version = ' pyproject.toml | cut -d'"' -f2)
+          test "${{ github.event.release.tag_name }}" = "v$version" || { echo "tag ${{ github.event.release.tag_name }} != v$version"; exit 1; }
       - run: python -m pip install build
       - run: python -m build
       - uses: actions/upload-artifact@v4

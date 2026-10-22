@@ -2,6 +2,9 @@
 
 physverify does not need to know the right answer for your simulation. It uses a few standard ideas from numerical analysis, each of which turns "is this correct?" into a question with a definite answer.
 
+
+![The check loop](images/check-loop.svg)
+
 ## 1. Make up an answer, then check the code finds it
 
 Pick a smooth function u(t), say u(t) = sin(1.3 t). It is not a solution of your equation y' = f(t, y), but it becomes one if you add the "missing push"

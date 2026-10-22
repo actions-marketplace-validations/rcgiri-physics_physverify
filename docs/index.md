@@ -6,7 +6,20 @@ A simulation can run, draw nice plots and still be wrong: a minus sign in the wr
 
 ```bash
 pip install physverify
+physverify demo
 ```
+
+![The check loop: your solver and an independent description of the physics go in; physverify runs it at several resolutions, measures the error and reports a verdict with a reason](images/check-loop.svg)
+
+**Run it on every push:** add the [GitHub Action](ci.md) to your workflow; a failed check fails the job.
+
+```yaml
+      - uses: rcgiri-physics/physverify@v0.4.1
+        with:
+          specs: tests/verify_*.py
+```
+
+**Before trusting a PASS**, read [What a PASS means](assumptions.md): the checks are only as independent as the reference equations you write.
 
 ## What it checks
 
@@ -50,4 +63,4 @@ Each check reports **PASS**, **FAIL**, **EXACT** (reproduced to round-off), **IN
 
 If physverify helps your work, please cite it: [doi:10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) (all versions; each release also has its own DOI on Zenodo).
 
-physverify is an early, one-person project (version 0.4.1). Feedback and issues are very welcome on [GitHub](https://github.com/rcgiri-physics/physverify/issues).
+physverify is actively evolving (version 0.4.1), welcoming contributions and test cases from the computational physics community: see [how to help](https://github.com/rcgiri-physics/physverify/blob/main/CONTRIBUTING.md) and [GitHub issues](https://github.com/rcgiri-physics/physverify/issues).

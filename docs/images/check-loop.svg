@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 250" width="720" height="250" font-family="system-ui, sans-serif" font-size="13" role="img" aria-label="The physverify check loop: your solver and an independent description of the physics go in; physverify runs the solver at several resolutions, measures the error, compares it with the claim and reports PASS, FAIL or INCONCLUSIVE with a reason">
+<rect width="720" height="250" fill="#ffffff"/>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6b6b70"/></marker></defs>
+<g fill="#eef2fd" stroke="#2f5bd3" stroke-width="1.5">
+<rect x="16" y="30" width="150" height="62" rx="8"/>
+<rect x="16" y="150" width="150" height="62" rx="8" fill="#eaf6ee" stroke="#1a7f37"/>
+</g>
+<g fill="#f6f6f8" stroke="#8a8a93" stroke-width="1.5">
+<rect x="220" y="90" width="140" height="62" rx="8"/>
+<rect x="400" y="90" width="130" height="62" rx="8"/>
+</g>
+<rect x="570" y="62" width="134" height="118" rx="8" fill="#ffffff" stroke="#1d1d1f" stroke-width="1.5"/>
+<g fill="#1d1d1f" text-anchor="middle">
+<text x="91" y="56" font-weight="600">Your solver</text>
+<text x="91" y="76" fill="#4a4a50">the code under test</text>
+<text x="91" y="176" font-weight="600">The physics</text>
+<text x="91" y="196" fill="#4a4a50">equations, exact cases,</text>
+<text x="91" y="210" fill="#4a4a50">conserved quantities</text>
+<text x="290" y="116" font-weight="600">Run at several</text>
+<text x="290" y="134" font-weight="600">resolutions</text>
+<text x="465" y="116" font-weight="600">Measure error,</text>
+<text x="465" y="134" font-weight="600">compare with claim</text>
+<text x="637" y="86" font-weight="600">Verdict</text>
+<text x="637" y="110" fill="#1a7f37" font-weight="700">PASS / EXACT</text>
+<text x="637" y="130" fill="#b42318" font-weight="700">FAIL</text>
+<text x="637" y="150" fill="#9a6700" font-weight="700">INCONCLUSIVE</text>
+<text x="637" y="170" fill="#4a4a50" font-size="12">with a reason</text>
+</g>
+<g stroke="#6b6b70" stroke-width="1.6" fill="none" marker-end="url(#a)">
+<path d="M166,61 C195,61 195,105 218,108"/>
+<path d="M166,181 C195,181 195,138 218,135"/>
+<path d="M360,121 L398,121"/>
+<path d="M530,121 L568,121"/>
+</g>
+<text x="16" y="20" fill="#6b6b70" font-size="12">Written independently of each other: a reference copied from the code shares its bugs.</text>
+<text x="16" y="238" fill="#6b6b70" font-size="12">A PASS means these checks found nothing wrong; it does not prove the simulation correct.</text>
+</svg>

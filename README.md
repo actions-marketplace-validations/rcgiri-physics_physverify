@@ -4,7 +4,9 @@
 
 **Checks that a simulation solves the equations it claims, at the order of accuracy it claims, not just that it runs.**
 
-Scope: numerical solutions of ODEs and PDEs (time integration, convergence, conservation), plus a few Monte Carlo checks. It needs only NumPy. Early version: nobody besides the author has used it yet, so feedback is very welcome.
+physverify is actively evolving (v0.4.1), welcoming contributions and test cases from the computational physics community. Scope: numerical solutions of ODEs and PDEs (time integration, convergence, conservation), plus a few Monte Carlo checks. It needs only NumPy.
+
+![The check loop: your solver and an independent description of the physics go in; physverify runs the solver at several resolutions, measures the error and reports a verdict with a reason](https://raw.githubusercontent.com/rcgiri-physics/physverify/main/docs/images/check-loop.svg)
 
 ```bash
 pip install physverify
@@ -20,9 +22,18 @@ The demo checks a correct solver (all checks pass), then the same solver with th
 - **An ODE solver:** `physverify init verify_solver.py --solver mysolver --order 4` writes a spec; fill in the equations (from the physics, not from your code) and run `physverify run verify_solver.py`.
 - **A Runge-Kutta table:** `check_tableau(A, b, c, claimed=3)` from `physverify.butcher` checks its order, stage order and stability from the coefficients alone.
 - **Errors you already have:** `check_order(hs, errors, expected=2)` gives PASS, FAIL or INCONCLUSIVE with a reason.
-- **On every push:** `uses: rcgiri-physics/physverify@v0.4.1` in GitHub Actions, or `pytest my_spec.py`.
 
-[Getting started](https://rcgiri-physics.github.io/physverify/getting-started/) · [Recipes](https://rcgiri-physics.github.io/physverify/recipes/) · [What a PASS means](https://rcgiri-physics.github.io/physverify/assumptions/) · [API](https://rcgiri-physics.github.io/physverify/api/)
+## Run it in CI
+
+A failed check fails the job, like a broken unit test ([CI guide](https://rcgiri-physics.github.io/physverify/ci/): options, pre-commit, pytest):
+
+```yaml
+      - uses: rcgiri-physics/physverify@v0.4.1
+        with:
+          specs: tests/verify_*.py
+```
+
+[Getting started](https://rcgiri-physics.github.io/physverify/getting-started/) · [Recipes](https://rcgiri-physics.github.io/physverify/recipes/) · [What a PASS means](https://rcgiri-physics.github.io/physverify/assumptions/) · [Troubleshooting](https://rcgiri-physics.github.io/physverify/troubleshooting/) · [API](https://rcgiri-physics.github.io/physverify/api/)
 
 ## Does it catch bugs?
 
@@ -30,8 +41,8 @@ Of 37 bugs seeded into five small solvers, it flagged 35 (plain "compare with on
 
 ## Limits
 
-Works best for ODEs; PDEs only in 1D so far. Your code needs a way to add a source term, or a small wrapper that can itself be wrong. A PASS means these checks found nothing wrong; it does not prove the simulation correct.
+Works best for ODEs; PDEs only in 1D so far. Your code needs a way to add a source term, or a small wrapper that can itself be wrong. A PASS means these checks found nothing wrong; it does not prove the simulation correct, and it is only as independent as the reference you wrote: see [What a PASS means](https://rcgiri-physics.github.io/physverify/assumptions/).
 
 ## Contributing, citing, licence
 
-Help is welcome, especially trying it on your own solver: see [CONTRIBUTING.md](https://github.com/rcgiri-physics/physverify/blob/main/CONTRIBUTING.md). To cite, use [doi:10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) or [CITATION.cff](https://github.com/rcgiri-physics/physverify/blob/main/CITATION.cff). Changes: [CHANGELOG.md](https://github.com/rcgiri-physics/physverify/blob/main/CHANGELOG.md); plans: [ROADMAP.md](https://github.com/rcgiri-physics/physverify/blob/main/ROADMAP.md). MIT licence, copyright (c) 2026 Ram Chandra Giri.
+Help is welcome: a trial report on your own solver, seeded bugs written by someone other than the author, adapters, documentation. See [CONTRIBUTING.md](https://github.com/rcgiri-physics/physverify/blob/main/CONTRIBUTING.md). To cite, use [doi:10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) or [CITATION.cff](https://github.com/rcgiri-physics/physverify/blob/main/CITATION.cff). Changes: [CHANGELOG.md](https://github.com/rcgiri-physics/physverify/blob/main/CHANGELOG.md); plans: [ROADMAP.md](https://github.com/rcgiri-physics/physverify/blob/main/ROADMAP.md). MIT licence, copyright (c) 2026 Ram Chandra Giri.

@@ -12,7 +12,10 @@
 - **Clearer verdicts on awkward input:** `check_order` reports INCONCLUSIVE, instead of a misleading FAIL or a crash, when all step sizes are equal, when a step size is zero, negative or NaN, or when there are not as many errors as step sizes. `physverify run` exits 2 when a spec's `checks()` returns no checks, instead of reporting "0 of 0 checks passed".
 - **Benchmark as data:** `physverify matrix` also writes `detection_matrix.json` (full status, message, prediction and run time of every check, with the physverify version, git commit, Python, NumPy and platform) and `run_time.md`. The matrix says how many bugs were flagged by a FAIL and how many only by INCONCLUSIVE or ERROR (35 and 0). The bug catalogue links to the lines that switch each bug on. `python scripts/reproduce_all.py` regenerates every table and the README figure; see `results/README.md`.
 - **CI:** builds the wheel and runs `physverify` from it in a clean environment (also before every release); tests Python 3.10 to 3.14 with coverage; runs the slow Monte Carlo tests weekly.
-- Shorter README with the demo and a convergence plot; the docs home page takes its version number from the package.
+- Shorter README with the demo, a convergence plot, a diagram of the check loop and the GitHub Action snippet near the top; the docs home page takes its version number from the package.
+- **Help wanted:** CONTRIBUTING.md lists what help is most useful (trial reports, blind tests, seeded bugs written by others, adapters), with a trial-report issue template. New Troubleshooting page: "is it my code or my spec?", common messages, and the adapter mistakes recorded in practice.
+- **Release gates:** the docs must build with `--strict` in CI; a release fails if its tag does not match the package version; a test requires the version to agree in `pyproject.toml`, `CITATION.cff`, the README and the docs.
+- ROADMAP.md states the project's principles: evidence before features, independence of the reference first, deepen before widening.
 
 ## 0.4.1 (2026-10-21)
 

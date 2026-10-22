@@ -69,6 +69,7 @@ nav:
       - Statistics and Monte Carlo: checks/statistics.md
   - Convergence-study pitfalls: pitfalls.md
   - Recipes: recipes.md
+  - Troubleshooting: troubleshooting.md
   - Running physverify:
       - Command line: running/cli.md
       - Continuous integration: ci.md

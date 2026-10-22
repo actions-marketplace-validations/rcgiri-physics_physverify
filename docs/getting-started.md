@@ -67,3 +67,7 @@ pytest my_spec.py                              # each check becomes a pytest tes
 ## What if my code has no source-term hook?
 
 Write a small wrapper in the spec that adds one; [Recipes](recipes.md#a-code-with-no-source-term-hook) shows how. If even that is hard, start with the checks that need no hook: [reference solutions](checks/reference.md), [conserved quantities](checks/conservation.md), [exact references](checks/exact-references.md) and the [Runge-Kutta table check](checks/runge-kutta.md).
+
+## If a check fails
+
+See [Troubleshooting](troubleshooting.md): it may be the spec or the adapter rather than your code.
