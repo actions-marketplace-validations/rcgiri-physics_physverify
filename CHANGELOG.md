@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.4.2 (2026-10-22)
 
 - **Documentation site** (MkDocs, published on GitHub Pages): a page per kind of check built around a small runnable example, recipes, convergence-study pitfalls, the command line and an API overview. `tests/test_docs_examples.py` re-runs every example and fails if its output no longer matches the page. `pip install physverify[docs]` installs the tools to build it.
 - The text summary counts skipped checks ("0 of 2 checks passed, 1 skipped").
