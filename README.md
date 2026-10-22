@@ -1,10 +1,22 @@
 # physverify
 
-[![PyPI](https://img.shields.io/pypi/v/physverify)](https://pypi.org/project/physverify/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23534512.svg)](https://doi.org/10.5281/zenodo.23534512) [![Docs](https://img.shields.io/badge/docs-site-blue)](https://rcgiri-physics.github.io/physverify/)
+[![tests](https://github.com/rcgiri-physics/physverify/actions/workflows/ci.yml/badge.svg)](https://github.com/rcgiri-physics/physverify/actions/workflows/ci.yml) [![PyPI](https://img.shields.io/pypi/v/physverify)](https://pypi.org/project/physverify/) [![Python](https://img.shields.io/pypi/pyversions/physverify)](https://pypi.org/project/physverify/) [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23534512.svg)](https://doi.org/10.5281/zenodo.23534512) [![Docs](https://img.shields.io/badge/docs-site-blue)](https://rcgiri-physics.github.io/physverify/)
 
 **A tool that checks whether a physics simulation is solving the right equations correctly, not just running without errors.**
 
 Status: early version (0.4.1). Documentation with many examples: https://rcgiri-physics.github.io/physverify/. It has been tried on 250 public physics repositories (see below), but nobody besides the author has used it yet, so feedback is very welcome.
+
+Scope: numerical solutions of ODEs and PDEs (time integration, convergence, conservation), plus a small set of Monte Carlo checks. Most features need only NumPy.
+
+```python
+from physverify.butcher import check_tableau
+check_tableau(A, b, c, claimed=3)   # does this Runge-Kutta table really have order 3?
+```
+
+```bash
+pip install physverify
+physverify init verify_solver.py --solver mysolver --order 4   # starter spec for your own solver
+```
 
 ## Who it is for
 
@@ -13,6 +25,42 @@ Status: early version (0.4.1). Documentation with many examples: https://rcgiri-
 - Anyone reviewing someone else's simulation code.
 
 You do not need to know numerical analysis to read the results: each check says in plain words what it measured and what it expected.
+
+## Try it
+
+You need Python 3.10 or newer.
+
+```bash
+pip install physverify
+```
+
+The example below lives in the repository, so clone it to follow along:
+
+```bash
+git clone https://github.com/rcgiri-physics/physverify.git
+cd physverify
+physverify run examples/verify_damped_oscillator.py
+```
+
+You should see a list of checks, all passing. Now open `examples/damped_oscillator.py`, change the damping by 10%, and run the same command again: the checks fail.
+
+To check your own code you write a short "spec" file. It tells physverify two things: the equations your code is meant to solve (written independently of your code), and how to run your code. [examples/verify_damped_oscillator.py](https://github.com/rcgiri-physics/physverify/blob/main/examples/verify_damped_oscillator.py) is a complete example to copy.
+
+To start a spec for your own ODE solver, let physverify write one:
+
+```bash
+physverify init verify_solver.py --solver mysolver --order 4
+```
+
+Then fill in the two places marked TODO: the equations, written from the physics, and a starting state.
+
+Other ways to run it:
+
+```bash
+physverify run my_spec.py --html report.html   # a web page with convergence plots
+physverify run my_spec.py --json -             # machine-readable output
+pytest my_spec.py                              # each check becomes a pytest test
+```
 
 ## The problem it addresses
 
@@ -66,56 +114,6 @@ For the Monte Carlo checks, all 21 seeded bugs were caught with no false alarms.
 
 The bugs and the checks were written by the same person, so these numbers show the tool works as designed. They are not a promise about bugs in other people's code.
 
-## Trying it on other people's code
-
-To see what it does on code it was not written for, public Python physics repositories from GitHub were run in a locked-down container (October 2026): no network, the repository read-only, nothing from it run on the author's computer. 40 were drawn at random from topic searches (batches 1 to 4); another 60 were the newest small repositories whose README says the work is complete (batch 5), and 20 more were picked because they are quick to test (batch 6); batches 5 and 6 are not random. Batch 7 was a larger queue of 450 recently active small repositories from 61 topic searches, ordered by stars (not random either).
-
-- **68 of the 120 could be tested.** Most of the others were not numerical solvers (neural networks, apps and games, analysis tools, finance), one needed a recent NVIDIA GPU, and a few need more set-up.
-- **16 confirmed bugs in 12 of the 68.** For example: a measured energy that counts the magnetic-field term twice; backward time-stepping that is only first-order accurate; Runge-Kutta coefficient tables labelled with a higher order than they have; a spectral derivative that crashes for an odd number of grid points; boundary values applied after the linear solve instead of inside it; an insulated wall that leaks heat; a grid spacing off by one interval; a Kepler solver that fails for negative angles.
-- **Batch 7: 182 of 450 tested, at least one confirmed defect in 41.** For example: a "Regge-Wheeler" ringdown code that uses the scalar-field potential; MHD shock jump ratios that break the Rankine-Hugoniot conditions; a reactor period for negative reactivity off by a factor of several thousand; a pressure solver that stops after one sweep; gravitational accelerations with the wrong sign; three files that do not parse. Some of the 41 are minor (a label, an optional viewer that crashes).
-- **The rest had no confirmed bug.** Most passed every check that applied, often to 1e-13 or better.
-- **Our own adapters were wrong about 28 times** before checking (a wrong constant, too-coarse steps, a wrong sign convention, and so on). Every FAIL was checked by hand before being called a bug, and these mistakes are recorded, not hidden.
-
-These counts describe the repositories that were drawn; they are not a bug rate for physics code in general.
-
-Each lesson became a new check or a clearer message in physverify. The testing and write-ups were done with help from an AI assistant; every number comes from running the code. Authors are told about a finding before their project is named, so the repositories are listed by ID: [results/corpus/SUMMARY.md](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/SUMMARY.md) (batches 1 to 6) and [results/corpus/BATCH7.md](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/BATCH7.md).
-
-## Try it
-
-You need Python 3.10 or newer.
-
-```bash
-pip install physverify
-```
-
-The example below lives in the repository, so clone it to follow along:
-
-```bash
-git clone https://github.com/rcgiri-physics/physverify.git
-cd physverify
-physverify run examples/verify_damped_oscillator.py
-```
-
-You should see a list of checks, all passing. Now open `examples/damped_oscillator.py`, change the damping by 10%, and run the same command again: the checks fail.
-
-To check your own code you write a short "spec" file. It tells physverify two things: the equations your code is meant to solve (written independently of your code), and how to run your code. [examples/verify_damped_oscillator.py](https://github.com/rcgiri-physics/physverify/blob/main/examples/verify_damped_oscillator.py) is a complete example to copy.
-
-To start a spec for your own ODE solver, let physverify write one:
-
-```bash
-physverify init verify_solver.py --solver mysolver --order 4
-```
-
-Then fill in the two places marked TODO: the equations, written from the physics, and a starting state.
-
-Other ways to run it:
-
-```bash
-physverify run my_spec.py --html report.html   # a web page with convergence plots
-physverify run my_spec.py --json -             # machine-readable output
-pytest my_spec.py                              # each check becomes a pytest test
-```
-
 ## Run it on every push
 
 Add physverify to your GitHub Actions workflow. The job fails when a check fails, just like a broken unit test:
@@ -130,6 +128,27 @@ Add physverify to your GitHub Actions workflow. The job fails when a check fails
 
 The results table appears on the run's summary page. [docs/ci.md](https://github.com/rcgiri-physics/physverify/blob/main/docs/ci.md) covers the options, pre-commit and pytest.
 
+## What it can and cannot do
+
+- Works best for ordinary differential equations (orbits, pendulums, projectiles).
+- Partial differential equations: only 1D examples so far (heat equation, shock tube).
+- Your code needs a way to accept an extra source term, or a small wrapper ("adapter") around it. The wrapper can itself contain mistakes.
+- Passing all checks does not prove the code is correct, only that these tests found nothing wrong.
+
+## Trying it on other people's code
+
+To see what it does on code it was not written for, public Python physics repositories from GitHub were run in a locked-down container (October 2026): no network, the repository read-only, nothing from it run on the author's computer. 40 were drawn at random from topic searches (batches 1 to 4); another 60 were the newest small repositories whose README says the work is complete (batch 5), and 20 more were picked because they are quick to test (batch 6); batches 5 and 6 are not random. Batch 7 was a larger queue of 450 recently active small repositories from 61 topic searches, ordered by stars (not random either).
+
+- **68 of the 120 could be tested.** Most of the others were not numerical solvers (neural networks, apps and games, analysis tools, finance), one needed a recent NVIDIA GPU, and a few need more set-up.
+- **16 confirmed bugs in 12 of the 68.** For example: a measured energy that counts the magnetic-field term twice; backward time-stepping that is only first-order accurate; Runge-Kutta coefficient tables labelled with a higher order than they have; a spectral derivative that crashes for an odd number of grid points; boundary values applied after the linear solve instead of inside it; an insulated wall that leaks heat; a grid spacing off by one interval; a Kepler solver that fails for negative angles.
+- **Batch 7: 182 of 450 tested, at least one confirmed defect in 41.** For example: a "Regge-Wheeler" ringdown code that uses the scalar-field potential; MHD shock jump ratios that break the Rankine-Hugoniot conditions; a reactor period for negative reactivity off by a factor of several thousand; a pressure solver that stops after one sweep; gravitational accelerations with the wrong sign; three files that do not parse. Some of the 41 are minor (a label, an optional viewer that crashes).
+- **The rest had no confirmed bug.** Most passed every check that applied, often to 1e-13 or better.
+- **Our own adapters were wrong about 28 times** before checking (a wrong constant, too-coarse steps, a wrong sign convention, and so on). Every FAIL was checked by hand before being called a bug, and these mistakes are recorded, not hidden.
+
+These counts describe the repositories that were drawn; they are not a bug rate for physics code in general.
+
+Each lesson became a new check or a clearer message in physverify. The testing and write-ups were done with help from an AI assistant; every number comes from running the code. Authors are told about a finding before their project is named, so the repositories are listed by ID: [results/corpus/SUMMARY.md](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/SUMMARY.md) (batches 1 to 6) and [results/corpus/BATCH7.md](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/BATCH7.md).
+
 ## What's new in 0.4.0
 
 - **Runge-Kutta tables:** besides the order, it now checks the "linear" order (what a test on y' = lambda*y measures), the stage order, A- and L-stability and stiff accuracy, and fails when the nodes `c` do not match the table.
@@ -140,13 +159,6 @@ The results table appears on the run's summary page. [docs/ci.md](https://github
 - **Continuous integration:** a GitHub Action, `physverify init` to write a starter spec, and a pre-commit hook.
 
 The full list is in [CHANGELOG.md](https://github.com/rcgiri-physics/physverify/blob/main/CHANGELOG.md).
-
-## What it can and cannot do
-
-- Works best for ordinary differential equations (orbits, pendulums, projectiles).
-- Partial differential equations: only 1D examples so far (heat equation, shock tube).
-- Your code needs a way to accept an extra source term, or a small wrapper ("adapter") around it. The wrapper can itself contain mistakes.
-- Passing all checks does not prove the code is correct, only that these tests found nothing wrong.
 
 ## Questions
 
