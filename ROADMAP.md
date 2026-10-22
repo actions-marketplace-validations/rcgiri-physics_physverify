@@ -11,6 +11,16 @@ What may come after 0.4.2. Nothing here is promised or scheduled; the order is a
 - **Deepen before widening.** Numerical-method coverage grows only when it adds value for ODE/PDE time integration, convergence or conservation. Statistical (Monte Carlo) checks grow carefully: each new one with its false-alarm rate and power measured over repeated seeds.
 - **Every published number is regenerable** with `python scripts/reproduce_all.py`, or says why not.
 
+## First for 0.5.0: keep the installed package to the checks
+
+The package installs only NumPy and is about 1 MB, so installing it for one feature (for example `check_tableau`) is cheap. But code that users never call ships with it and blurs what physverify is:
+
+- Move the seeded-bug benchmark (`problems/`, `matrix.py`, `compare.py`, `method_bugs.py`) and the adapters written for single corpus repositories (for example `adapters/three_body.py`) out of `src/physverify/` into a folder that is in the repository but not installed. They stay reproducible with `python scripts/reproduce_all.py`.
+- Make the AI-assistant parts (`physverify hook`, `physverify mcp`) an optional extra, `pip install physverify[agent]`.
+- Then the installed package holds only the checks: order studies, manufactured solutions, references, conserved quantities, patch tests, Runge-Kutta tables, exact references and statistics.
+
+Done when the wheel no longer contains the moved code, `physverify demo` still works from it, and the committed tables are unchanged.
+
 ## Next (0.5.0): checking code without writing a wrapper
 
 Today every check needs a short spec file, and for most codes a small adapter that adds a source term. That is the biggest barrier to trying physverify. Several checks need no adapter at all, because they ask the code only to run, not to solve a different problem:
