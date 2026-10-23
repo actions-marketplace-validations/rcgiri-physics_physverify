@@ -5,8 +5,11 @@ FROM python@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc1
 # System libraries some scientific wheels link against (Taichi needs libX11 even when headless).
 RUN apt-get update && apt-get install -y --no-install-recommends libx11-6 libgl1 && rm -rf /var/lib/apt/lists/*
 
-# Common scientific stack, so most repositories need no extra installs.
-RUN pip install --no-cache-dir numpy==2.3.3 scipy==1.16.2 sympy==1.14.0 matplotlib==3.10.6 pytest==8.4.2
+# Common scientific stack, so most repositories need no extra installs. `sandbox.py build --stack latest`
+# passes the unpinned names instead, for repositories that need a newer NumPy or SciPy than the pinned set;
+# its versions are recorded in /opt/constraints.txt like the pinned ones.
+ARG STACK="numpy==2.3.3 scipy==1.16.2 sympy==1.14.0 matplotlib==3.10.6 pytest==8.4.2"
+RUN pip install --no-cache-dir $STACK
 
 # physverify itself, from the build context (the repository root).
 COPY pyproject.toml README.md LICENSE /opt/physverify/

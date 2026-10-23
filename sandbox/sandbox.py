@@ -1,6 +1,6 @@
 """Run untrusted repositories inside the locked-down container.
 
-    python -I sandbox/sandbox.py build
+    python -I sandbox/sandbox.py build [--stack latest]                 # --stack latest: newest NumPy/SciPy, tag :latest-stack
     python -I sandbox/sandbox.py fetch  <id> <git-url> <commit>   # clone on the host, no hooks, no checkout of LFS
     python -I sandbox/sandbox.py deps   <id> [package ...]        # optional: wheels-only install, network on
     python -I sandbox/sandbox.py run    [--read-only-repo] [--py314-shim] <id> <script> [args ...]  # network off
@@ -14,6 +14,11 @@ Folders (under %LOCALAPPDATA%/physverify-corpus or $PHYSVERIFY_CORPUS):
 The folder holding the script given to `run` is mounted read-only at /work; it is ours (adapters), never the repo's.
 --py314-shim adds `from __future__ import annotations` to every file of the copy, for code written for
 Python 3.14's lazy annotations (the image has an older Python); it needs the copy.
+A missing version file that setuptools-scm or hatch-vcs would generate from git (pkg/_version.py) is written
+as a placeholder in the copy, and reported; set PHYSVERIFY_NO_VERSION_STUB=1 to turn that off.
+
+PHYSVERIFY_IMAGE=physverify-sandbox:latest-stack selects the newer-stack image for deps and run. Its
+packages go to deps-latest-stack/<id>, so wheels built against two NumPy versions never share a folder.
 """
 
 import os
@@ -21,7 +26,9 @@ import subprocess
 import sys
 from pathlib import Path
 
-IMAGE = "physverify-sandbox:1"
+DEFAULT_IMAGE = "physverify-sandbox:1"
+LATEST_IMAGE = "physverify-sandbox:latest-stack"
+IMAGE = os.environ.get("PHYSVERIFY_IMAGE", DEFAULT_IMAGE)
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = Path(os.environ.get("PHYSVERIFY_CORPUS") or Path(os.environ.get("LOCALAPPDATA", Path.home())) / "physverify-corpus")
 TIME_LIMIT = int(os.environ.get("PHYSVERIFY_TIME_LIMIT", "900"))  # seconds per run
@@ -45,6 +52,8 @@ LOCKDOWN = [
 
 
 def folder(kind, repo_id):
+    if kind == "deps" and IMAGE != DEFAULT_IMAGE:
+        kind = "deps-" + IMAGE.rsplit(":", 1)[-1]
     path = CORPUS / kind / repo_id
     path.mkdir(parents=True, exist_ok=True)
     return path
@@ -73,8 +82,19 @@ def timed(args, name, limit):
         return 124
 
 
-def build():
-    return docker(["build", "-t", IMAGE, "-f", str(ROOT / "sandbox" / "Dockerfile"), str(ROOT)])
+def build(stack=None):
+    if stack == "latest":
+        args = ["--build-arg", "STACK=numpy scipy sympy matplotlib pytest"]
+        tag = LATEST_IMAGE
+    elif stack is None:
+        args, tag = [], DEFAULT_IMAGE
+    else:
+        sys.exit(f"unknown stack {stack!r}; use --stack latest")
+    rc = docker(["build", "-t", tag, *args, "-f", str(ROOT / "sandbox" / "Dockerfile"), str(ROOT)])
+    if rc == 0 and stack:
+        subprocess.run(["docker", "run", "--rm", tag, "pip", "freeze", "--exclude", "physverify"])
+        print(f"built {tag}; select it with PHYSVERIFY_IMAGE={tag}")
+    return rc
 
 
 def fetch(repo_id, url, commit):
@@ -155,7 +175,7 @@ def run(repo_id, script, extra, *, read_only_repo=False, py314_shim=False):
                       *(["-e", "PHYSVERIFY_PY314_SHIM=1"] if py314_shim else [])]
         start = ["python", "/pv/runner.py"]
     args = ["run", *LOCKDOWN, "--network=none", "--name", name, *preload, *repo_mount,
-            "-v", f"{folder('deps', repo_id)}:/deps:ro",
+            "-v", f"{deps_dir}:/deps:ro",
             "-v", f"{script.parent}:/work:ro", "-v", f"{folder('out', repo_id)}:/out:rw",
             *[a for k in os.environ.get("PHYSVERIFY_PASS_ENV", "").split(",") if k for a in ("-e", f"{k}={os.environ[k]}")], "-e", f"PHYSVERIFY_REPO_COMMIT={head(repo)}", IMAGE, *start, f"/work/{script.name}", *extra]
     return timed(args, name, TIME_LIMIT)
@@ -166,7 +186,10 @@ def main(argv):
         sys.exit(__doc__)
     cmd, rest = argv[0], argv[1:]
     if cmd == "build":
-        return build()
+        if rest[:1] == ["--stack"] and len(rest) == 2:
+            return build(rest[1])
+        if not rest:
+            return build()
     if cmd == "fetch" and len(rest) == 3:
         return fetch(*rest)
     if cmd == "deps" and len(rest) >= 1:

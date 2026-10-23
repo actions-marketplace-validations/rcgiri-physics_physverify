@@ -190,3 +190,75 @@ def load_definitions_from_path(name: str, path, *, keep=(), inner=(), namespace=
     module.__dict__.update(namespace or {})
     exec(compile(ast.Module(body=body, type_ignores=[]), str(path), "exec"), module.__dict__)
     return module
+
+
+def _top_level_names(node) -> list[str]:
+    if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+        return [node.name]
+    if isinstance(node, ast.Assign):
+        return [t.id for t in node.targets if isinstance(t, ast.Name)]
+    if isinstance(node, ast.AnnAssign) and isinstance(node.target, ast.Name):
+        return [node.target.id]
+    return []
+
+
+def _used_names(node) -> set[str]:
+    return {n.id for n in ast.walk(node) if isinstance(n, ast.Name)}
+
+
+def extract_functions(path, names, *, namespace=None, stubs=()) -> types.ModuleType:
+    """Load the named top-level functions or classes of one file, plus the same-file definitions they use.
+
+    For a package that cannot be installed or imported as a whole (a compiled extension, a dependency
+    that needs a newer NumPy, an import of a GUI toolkit), when the function under test is plain Python.
+    The named definitions are taken with every top-level function, class or simple assignment they
+    refer to, followed transitively (a `curvature` that calls `centered_diff` brings it along). Each
+    top-level import is run on its own; one that fails is skipped and listed in the returned module's
+    `__skipped_imports__`, so a NameError later points at it. Names the code needs from other files of
+    the package can be passed in `namespace` (for example a stub `gf` object with the one function used).
+
+    Nothing else in the file runs. The returned module records what was loaded in `__extracted__`.
+    """
+    path = Path(path)
+    tree = ast.parse(path.read_text(encoding="utf-8"), str(path))
+    defs: dict[str, list] = {}
+    for node in tree.body:
+        for n in _top_level_names(node):
+            defs.setdefault(n, []).append(node)
+    missing = [n for n in names if n not in defs]
+    if missing:
+        raise KeyError(f"not defined at the top level of {path.name}: {', '.join(missing)}")
+    wanted: set = set()
+    todo = list(names)
+    while todo:
+        n = todo.pop()
+        if n in wanted:
+            continue
+        wanted.add(n)
+        for node in defs.get(n, ()):
+            todo += [m for m in _used_names(node) if m in defs and m not in wanted]
+    future = [node for node in tree.body if isinstance(node, ast.ImportFrom) and node.module == "__future__"]
+    chosen = future + [node for node in tree.body if set(_top_level_names(node)) & wanted]
+    stub_modules(stubs)
+    module = types.ModuleType(path.stem)
+    module.__file__ = str(path)
+    module.__dict__.update(namespace or {})
+    skipped = []
+    old_flag = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    try:
+        for node in tree.body:
+            if isinstance(node, (ast.Import, ast.ImportFrom)) and node not in future:
+                if isinstance(node, ast.ImportFrom) and node.level:
+                    skipped.append(ast.unparse(node) + "  (relative import)")
+                    continue
+                try:
+                    exec(compile(ast.Module(body=[node], type_ignores=[]), str(path), "exec"), module.__dict__)
+                except Exception as exc:  # noqa: BLE001 - any failing import is skipped and reported
+                    skipped.append(f"{ast.unparse(node)}  ({type(exc).__name__}: {exc})")
+        exec(compile(ast.Module(body=chosen, type_ignores=[]), str(path), "exec"), module.__dict__)
+    finally:
+        sys.dont_write_bytecode = old_flag
+    module.__skipped_imports__ = skipped
+    module.__extracted__ = sorted(wanted)
+    return module

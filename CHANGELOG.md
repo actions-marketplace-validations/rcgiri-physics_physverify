@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+From batch 8 of the corpus study (50 widely used libraries, tested in the sandbox). Each item has a test in `tests/test_batch8_lessons.py`.
+
+- **`physverify.identities`:** checks that need no exact solution. `check_agree` (two code paths that must give the same answer), `check_roundtrip` (`inverse(forward(x)) == x`), `check_derivative` (an analytic derivative against finite differences, with one Richardson step), `check_identity` and `check_unitary`, plus `fd_derivative` and `laplacian_fd`. They handle complex values and report non-finite values as FAIL. New docs page: Identities and round trips.
+- **`loaders.extract_functions(path, names)`:** loads named functions from a file that cannot be imported as a whole, together with the same-file helpers they use (followed transitively); each failing import is skipped and listed.
+- **Sandbox:** the runner writes a placeholder for a missing setuptools-scm / hatch-vcs version file (`pkg/_version.py`) in the copy and reports it (`PHYSVERIFY_NO_VERSION_STUB=1` turns it off). `sandbox.py build --stack latest` builds a second image with the newest NumPy and SciPy; select it with `PHYSVERIFY_IMAGE=physverify-sandbox:latest-stack`, and its packages go to their own deps folder.
+- **Troubleshooting:** the reference mistakes made while testing libraries (units, coordinate origins, deliberate standards, limits, remembered constants, operator precedence), and the rule that a suspicion from reading code is reported only after a run confirms it.
+
 ## 0.4.2 (2026-10-22)
 
 - **Documentation site** (MkDocs, published on GitHub Pages): a page per kind of check built around a small runnable example, recipes, convergence-study pitfalls, the command line and an API overview. `tests/test_docs_examples.py` re-runs every example and fails if its output no longer matches the page. `pip install physverify[docs]` installs the tools to build it.

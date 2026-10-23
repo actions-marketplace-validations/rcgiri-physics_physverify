@@ -66,6 +66,7 @@ nav:
       - Exact patch tests: checks/patch.md
       - Runge-Kutta tables: checks/runge-kutta.md
       - Exact references: checks/exact-references.md
+      - Identities and round trips: checks/identities.md
       - Statistics and Monte Carlo: checks/statistics.md
   - Convergence-study pitfalls: pitfalls.md
   - Recipes: recipes.md

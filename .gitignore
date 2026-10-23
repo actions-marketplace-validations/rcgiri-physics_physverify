@@ -8,3 +8,6 @@ dist/
 
 # MkDocs output
 site/
+.coverage
+.coverage.*
+.hypothesis/

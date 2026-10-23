@@ -1,6 +1,6 @@
 # Roadmap
 
-What may come after 0.4.2. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
+What may come after 0.4.2. The unreleased changes (identity checks, `extract_functions`, sandbox version stubs and latest-stack image) are in the changelog. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
 
 
 ## Principles
@@ -40,7 +40,9 @@ Today every check needs a short spec file, and for most codes a small adapter th
 - **"Was any work done?" probe.** Count iterations or call every public function once; two real bugs were functions that silently did almost nothing (one Jacobi sweep in a pressure solver).
 - **Stochastic checks that stop early.** Stop sampling as soon as the result is decisive, so slow Monte Carlo codes fit inside a time budget.
 - **Clearer messages** when only an absolute tolerance fails while the observed order is exact, and a helper that skips the start-up transient before fitting a decay rate.
-- **Sandbox speed.** A shared wheel cache across repositories (installing astropy or pandas took 15-25 minutes per repository).
+- **Sandbox: pick the image automatically.** When `deps` fails because a dependency needs a newer NumPy or SciPy than the pinned image, say so and suggest the latest-stack image, instead of a bare pip resolution error. (The shared wheel cache and the latest-stack image are done.)
+- **Identity probes in `physverify scan`.** Run the cheap identity checks that need no knowledge of the equations: pairs of functions whose names say they are inverses (`x_to_y` / `y_to_x`, `s2z` / `z2s`) as round trips, and `min_*` / `max_*` or 2D / 3D siblings called with the same arguments.
+- **Units in comparisons.** Most adapter mistakes in batch 8 were units or coordinate origins. An optional units-aware comparison (via pint, when installed) that refuses to compare quantities of different dimension.
 
 ## Documentation website
 

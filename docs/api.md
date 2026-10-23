@@ -37,6 +37,19 @@ The functions most specs need. Each has a docstring with the details: `help(phys
 | `coverage_check(simulate, interval, prior_sampler, level=...)` | Coverage of stated intervals. |
 | `damped_sinusoid_fit(t, y, t_start, t_stop)` | Complex frequency of a ringdown. |
 
+## Identities and round trips (`physverify.identities`)
+
+| Name | What it does |
+|---|---|
+| `check_agree(a, b, inputs, rtol, atol)` | Two code paths give the same answer. |
+| `check_roundtrip(forward, inverse, inputs)` | `inverse(forward(x)) == x`. |
+| `check_derivative(f, df, points, order=1)` | An analytic derivative against finite differences. |
+| `check_identity([(label, lhs, rhs), ...])` | Identities computed from the physics. |
+| `check_unitary(M)` | `M^H M = I`. |
+| `fd_derivative`, `laplacian_fd` | Finite-difference helpers. |
+
+See [Identities and round trips](checks/identities.md).
+
 ## Runge-Kutta tables (`physverify.butcher`)
 
 `check_tableau`, `tableau_order`, `order_residuals`, `linear_order`, `stage_order`, `stability_function`, `stability_polynomials`, `r_infinity`, `a_stability_margin`, `is_stiffly_accurate`. See [Runge-Kutta tables](checks/runge-kutta.md).
@@ -47,6 +60,7 @@ The functions most specs need. Each has a docstring with the details: `help(phys
 |---|---|
 | `load_module_from_path(path, stubs=None)` | Import a file as a module. |
 | `load_definitions_from_path(path, stubs=None)` | Only its functions and classes, without running the script. |
+| `extract_functions(path, names, namespace=None)` | Named functions plus the same-file helpers they use, for a package that will not import. |
 | `run_script(path, argv=(), inputs=None)` | Run a whole script; returns (globals, printed text). |
 | `stub_modules({...})` | Stand-ins for imports the tested code does not use. |
 
@@ -63,7 +77,7 @@ Listed by `physverify references`; see [Exact references](checks/exact-reference
 The public API is:
 
 - the names in `physverify.__all__` (`Check`, `Result`, `OrderResult`, `SkipCheck`, `requires`, `ManufacturedODE`, `mms_order_study`, `zero_source`, `check_order`, `check_exact`, `fit_order`, `pairwise_orders`, `ode_checks`, `invariant_study`, `patch_study`, `reference_study`);
-- the functions listed on this page in `physverify.studies`, `physverify.butcher` and `physverify.references`;
+- the functions listed on this page in `physverify.studies`, `physverify.butcher`, `physverify.identities`, `physverify.loaders` and `physverify.references`;
 - the command line (`physverify run`, `init`, `demo`, `smoke`, `references`) and its exit codes: 0 when no check fails, 1 when one does, 2 when a spec cannot be loaded or defines no checks;
 - the JSON output below.
 
