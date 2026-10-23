@@ -97,7 +97,7 @@ The benchmark has the 20 bugs of the plan plus the equivalent mutant, with predi
 The suite does not force predictions to come true. Wrong predictions stay in the scorecard. One check was changed after a result was seen, and the scorecard says which one and why.
 
 ```bash
-python -m physverify.stochastic.matrix results/ising_matrix.md        # about 20 to 30 minutes
+PYTHONPATH=src:benchmark python -m pvbench.ising_matrix results/ising_matrix.md        # about 20 to 30 minutes
 python -m physverify.stochastic.calibrate results/ising_calibration.md
 ```
 

@@ -89,9 +89,13 @@ def version_files(root: Path) -> list:
     found = []
     pp = root / "pyproject.toml"
     if pp.is_file():
+        text = pp.read_text(encoding="utf-8", errors="replace")
         try:
             import tomllib
-            data = tomllib.loads(pp.read_text(encoding="utf-8"))
+            data = tomllib.loads(text)
+        except ModuleNotFoundError:  # Python 3.10: read the three keys directly
+            data = {}
+            found += re.findall(r"""^\s*(?:version_file|write_to|version-file)\s*=\s*["']([^"']+)["']""", text, re.M)
         except Exception:  # noqa: BLE001 - an unreadable pyproject just gives no stub
             data = {}
         tool = data.get("tool", {})

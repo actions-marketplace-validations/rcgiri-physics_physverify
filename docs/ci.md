@@ -15,7 +15,7 @@ This writes `verify_solver.py`. It needs two things from you, both marked TODO:
 - `reference_rhs(t, y)`: the equations the solver is meant to solve, written from the physics, not copied from the solver. A copied mistake passes every check.
 - `Y0`: a typical initial state.
 
-The solver function must have the form `integrate(source, y0, t_end, n_steps)`, take fixed steps from t = 0, and add `source(t)` to the right-hand side wherever it evaluates it. If it has no such hook, write a small wrapper in the spec that adds one (see [`src/physverify/adapters/projectile_v2.py`](../src/physverify/adapters/projectile_v2.py)).
+The solver function must have the form `integrate(source, y0, t_end, n_steps)`, take fixed steps from t = 0, and add `source(t)` to the right-hand side wherever it evaluates it. If it has no such hook, write a small wrapper in the spec that adds one (see [`benchmark/pvbench/adapters/projectile_v2.py`](https://github.com/rcgiri-physics/physverify/blob/main/benchmark/pvbench/adapters/projectile_v2.py)).
 
 The spec checks the claimed order with a manufactured solution and against an independent solution of `reference_rhs`, and runs the exactness (`patch`) check, which holds for explicit Runge-Kutta methods; remove that check for other kinds of stepper. Until `reference_rhs` is written, every check reports ERROR.
 

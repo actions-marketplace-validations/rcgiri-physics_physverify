@@ -3,7 +3,7 @@
 import numpy as np
 import pytest
 
-from physverify.problems import pendulum
+from pvbench.problems import pendulum
 
 hypothesis = pytest.importorskip("hypothesis")
 from hypothesis import given, settings  # noqa: E402
@@ -44,7 +44,7 @@ def test_pendulum_energy_is_conserved_by_the_reference_flow(state):
     slope=st.tuples(*[st.floats(-1, 1)] * 4),
 )
 def test_patch_is_exact_for_any_line_on_the_bug_free_pendulum(y0, slope):
-    from physverify.problems._common import make_integrate
+    from pvbench.problems._common import make_integrate
     from physverify.studies import patch_study
 
     integrate = make_integrate(pendulum.rhs_seeded(frozenset()), frozenset())

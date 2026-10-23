@@ -26,7 +26,7 @@ pip install -e .            # add [symbolic] for the SymPy helpers, [dev] for th
 
 It is not on PyPI yet. A wheel built from this folder installs and runs on a clean Python 3.14 environment.
 
-Write a spec file that defines `checks()`; [examples/verify_damped_oscillator.py](../examples/verify_damped_oscillator.py) checks the solver in [examples/damped_oscillator.py](../examples/damped_oscillator.py). You provide an independent reference right-hand side and an `integrate(source, y0, t_end, n_steps)` function that advances your code with an additive source term `source(t)`. Codes with no source hook can still be wrapped; see `src/physverify/adapters/projectile_v2.py` for one that has no time argument either.
+Write a spec file that defines `checks()`; [examples/verify_damped_oscillator.py](../examples/verify_damped_oscillator.py) checks the solver in [examples/damped_oscillator.py](../examples/damped_oscillator.py). You provide an independent reference right-hand side and an `integrate(source, y0, t_end, n_steps)` function that advances your code with an additive source term `source(t)`. Codes with no source hook can still be wrapped; see `benchmark/pvbench/adapters/projectile_v2.py` for one that has no time argument either.
 
 Then any of:
 
@@ -44,8 +44,7 @@ For an AI coding assistant there is a Claude Code hook (`physverify hook`, runs 
 The benchmark and the test suite:
 
 ```bash
-physverify matrix results/detection_matrix.md   # the seeded-bug tables below
-physverify compare results/comparison.md        # the same bugs against plain unit tests
+python scripts/reproduce_all.py                 # the seeded-bug tables below, and the comparison with plain unit tests
 python -m pytest -q                             # about 1.5 minutes
 ```
 
@@ -70,8 +69,8 @@ python -m pytest -q                             # about 1.5 minutes
 **Reproducing it.** The checks are deterministic. `tests/test_seeded_bugs.py` reruns every check and requires that `detection_matrix.md` and `bug_catalogue.md` match the committed files exactly. Two commands regenerate the tables:
 
 ```bash
-PYTHONPATH=src python -m physverify.matrix results/detection_matrix.md
-PYTHONPATH=src python -m physverify.compare results/comparison.md
+PYTHONPATH=src:benchmark python -m pvbench.matrix results/detection_matrix.md
+PYTHONPATH=src:benchmark python -m pvbench.compare results/comparison.md
 ```
 
 **Against ordinary tests.** [results/comparison.md](../results/comparison.md) runs the same 37 bugs through four strategies. "Plain tests" means one run per case, compared with a reference or a known value within a tolerance: 0.1% for the ODE problems, 1% for the heat solver, and 5% in L1 for Sod.

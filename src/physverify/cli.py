@@ -3,8 +3,6 @@
     physverify run SPEC.py [SPEC.py ...] [--json FILE|-] [--html FILE] [--markdown FILE] [--quiet]
     physverify demo        (a correct and a broken solver, no files needed)
     physverify init [SPEC.py] [--solver MODULE] [--function NAME] [--dim N] [--order P]
-    physverify matrix [OUT.md]
-    physverify compare [OUT.md]
     physverify hook        (Claude Code PostToolUse hook; see docs/agent.md)
     physverify mcp         (MCP server on stdio; see docs/agent.md)
 
@@ -98,18 +96,6 @@ def _cmd_demo(args) -> int:
     return demo_main()
 
 
-def _cmd_matrix(args) -> int:
-    from . import matrix
-
-    return matrix.main([args.out] if args.out else [])
-
-
-def _cmd_compare(args) -> int:
-    from . import compare
-
-    return compare.main([args.out] if args.out else [])
-
-
 def _cmd_hook(args) -> int:
     from .agent import hook_main
 
@@ -172,14 +158,6 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("--t-end", type=float, default=1.0, help="end time of the test runs (default 1)")
     i.add_argument("--force", action="store_true", help="overwrite an existing file")
     i.set_defaults(func=_cmd_init)
-
-    m = sub.add_parser("matrix", help="run the seeded-bug benchmark")
-    m.add_argument("out", nargs="?", help="also write the tables next to this Markdown file")
-    m.set_defaults(func=_cmd_matrix)
-
-    c = sub.add_parser("compare", help="compare the families with plain tests on the seeded bugs")
-    c.add_argument("out", nargs="?", help="also write the table to this Markdown file")
-    c.set_defaults(func=_cmd_compare)
 
     h = sub.add_parser("hook", help="Claude Code PostToolUse hook: reads the event on stdin, exits 2 on a failed check")
     h.set_defaults(func=_cmd_hook)

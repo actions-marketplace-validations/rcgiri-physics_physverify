@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+**Changed: the installed package holds only the checks.** The seeded-bug benchmark (`problems`, `matrix`, `compare`, `method_bugs`, the Ising matrix) and the adapters written for single corpus repositories moved from `src/physverify/` to `benchmark/pvbench/`, which is in the repository but not installed; the wheel shrank to 34 files (80 KB). The `physverify matrix` and `physverify compare` commands are removed: regenerate the tables with `python scripts/reproduce_all.py`, or run `PYTHONPATH=src:benchmark python -m pvbench.matrix` from a checkout. The tables are unchanged except for the source paths in the bug catalogue. Imports of `physverify.problems`, `physverify.adapters`, `physverify.matrix`, `physverify.compare`, `physverify.method_bugs` and `physverify.stochastic.matrix` become `pvbench.*`; none of them was public API.
+
 From batch 8 of the corpus study (50 widely used libraries, tested in the sandbox). Each item has a test in `tests/test_batch8_lessons.py`.
 
 - **`physverify.identities`:** checks that need no exact solution. `check_agree` (two code paths that must give the same answer), `check_roundtrip` (`inverse(forward(x)) == x`), `check_derivative` (an analytic derivative against finite differences, with one Richardson step), `check_identity` and `check_unitary`, plus `fd_derivative` and `laplacian_fd`. They handle complex values and report non-finite values as FAIL. New docs page: Identities and round trips.

@@ -82,7 +82,7 @@ def smoke_check(label, integrate, rhs_ref, y0, t_end, n, *, rtol=1e-3) -> Check:
     """What an ordinary unit test would do: one run, compared with a reference within a tolerance.
 
     Not one of the verification families. It is here so that the benchmark can
-    report what a plain test would have caught (see physverify.compare).
+    report what a plain test would have caught (see the benchmark comparison, pvbench.compare).
     """
 
     def run():

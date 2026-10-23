@@ -5,7 +5,6 @@ physverify run SPEC [SPEC ...]   run the checks in spec files (glob patterns are
 physverify init [SPEC]           write a starter spec for a fixed-step ODE solver
 physverify smoke PATH            compile and run each script; report crashes, hangs and NaNs
 physverify references            list the exact references
-physverify matrix | compare      the seeded-bug benchmarks
 physverify hook | mcp            for AI coding assistants (see that page)
 ```
 

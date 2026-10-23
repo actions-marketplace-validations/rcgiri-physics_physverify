@@ -5,7 +5,7 @@ import math
 import numpy as np
 import pytest
 
-from physverify.problems import heat1d, kepler, pendulum, sod
+from pvbench.problems import heat1d, kepler, pendulum, sod
 
 
 # --- Sod: the exact Riemann solver against published values (Toro, table 4.3, test 1) ---

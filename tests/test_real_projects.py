@@ -6,7 +6,7 @@ PHYSVERIFY_PROJECTILE_DIR / PHYSVERIFY_PENDULUM_DIR to point somewhere else.
 
 import pytest
 
-from physverify.adapters import double_pendulum, projectile_v2
+from pvbench.adapters import double_pendulum, projectile_v2
 from physverify.checks import run_check
 
 projectile_missing = not projectile_v2.source_path().is_file()
@@ -72,7 +72,7 @@ def test_projectile_v2_reproduces_the_linear_patch_solution_and_whole_trajectory
 
 
 # Audit of the author's own projects.
-from physverify.adapters import lorenz, projectile_v1, three_body  # noqa: E402
+from pvbench.adapters import lorenz, projectile_v1, three_body  # noqa: E402
 
 lorenz_missing = not lorenz.source_path().is_file()
 three_body_missing = not three_body.source_path().is_file()

@@ -165,7 +165,7 @@ def test_checks_without_white_box_methods_are_inconclusive_not_errors():
 
 @slow
 def test_committed_ising_matrix_matches_a_fresh_run():
-    from physverify.stochastic.matrix import run_all, to_markdown
+    from pvbench.ising_matrix import run_all, to_markdown
 
     committed = (Path(__file__).resolve().parents[1] / "results" / "ising_matrix.md").read_text(encoding="utf-8")
     assert to_markdown(run_all()) == committed

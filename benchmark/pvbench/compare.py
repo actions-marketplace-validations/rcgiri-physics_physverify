@@ -1,6 +1,6 @@
 """How the verification families compare with ordinary unit tests on the seeded bugs.
 
-    python -m physverify.compare results/comparison.md
+    python -m pvbench.compare results/comparison.md
 
 Strategies, each a set of checks run on every bug:
 
@@ -25,7 +25,7 @@ import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from .checks import run_check
+from physverify.checks import run_check
 from .matrix import PROBLEMS
 
 STRATEGIES = {

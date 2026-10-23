@@ -1,6 +1,6 @@
 """Run physverify's checks on the sibling projects and print one line per check.
 
-    PYTHONPATH=src python scripts/audit_projects.py [--jsonl FILE] [projectile|projectile_v1|pendulum|lorenz|three_body ...]
+    PYTHONPATH=src:benchmark python scripts/audit_projects.py [--jsonl FILE] [projectile|projectile_v1|pendulum|lorenz|three_body ...]
 
 With --jsonl, one JSON record per check is also written to FILE. The three-body Verlet checks and the solve_ivp
 check need SciPy; without it only physics.py is tested.
@@ -13,7 +13,7 @@ import sys
 import time
 from pathlib import Path
 
-from physverify.adapters import double_pendulum, lorenz, projectile_v1, projectile_v2, three_body
+from pvbench.adapters import double_pendulum, lorenz, projectile_v1, projectile_v2, three_body
 from physverify.checks import run_check
 
 ADAPTERS = {

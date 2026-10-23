@@ -6,7 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from ..steppers import euler, rk4
+from physverify.steppers import euler, rk4
 
 
 @dataclass(frozen=True)
