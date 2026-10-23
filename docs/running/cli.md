@@ -46,6 +46,9 @@ Call `requires("package")` at the start of a check (or `raise SkipCheck(reason)`
 
 ## `physverify scan`
 
+!!! note "Planned for 0.5.0"
+    `physverify scan` is planned for the next release, 0.5.0. Until then it is only in the development version: `pip install git+https://github.com/rcgiri-physics/physverify`.
+
 ```bash
 physverify scan path/to/project
 physverify scan path/to/project --only tables,grid --json scan.json

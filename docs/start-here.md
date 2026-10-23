@@ -46,6 +46,9 @@ It checks a correct solver (every check passes) and a copy with one wrong number
 
 ## 3. Scan a project without writing anything
 
+!!! note "Planned for 0.5.0"
+    `physverify scan` is planned for the next release, 0.5.0. Until then it is only in the development version: `pip install git+https://github.com/rcgiri-physics/physverify`.
+
 ```bash
 physverify scan path/to/the/project
 ```
@@ -91,7 +94,8 @@ physverify run verify_solver.py
 If you use Claude Code, Cursor, Copilot or another assistant that can run commands, you can paste this prompt into it, in the folder of the project:
 
 ```text
-Install physverify in a virtual environment (pip install physverify) and check this project with it.
+Install physverify in a virtual environment and check this project with it. Until 0.5.0 is released, install
+the development version, which has `physverify scan`: pip install git+https://github.com/rcgiri-physics/physverify
 1. Run `physverify scan .` and explain each WARN and NOTE in plain words; say which you think are real.
 2. Find the main solver. Write a spec with `physverify init`, filling in the equations from the physics
    (the README, the paper or the textbook), NOT from the solver's code. Tell me where you took them from.

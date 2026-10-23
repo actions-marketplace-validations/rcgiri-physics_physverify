@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Unreleased (planned as 0.5.0)
 
 **New: `physverify scan PATH`**, checks that need no spec file and run nothing (the source is only parsed). Stages: near-miss constants; Runge-Kutta tables written as literals (true order from the order conditions, row sums against `c`, error weights that must sum to 0, embedded weights, and the order a name or docstring claims); grid spacings that do not match their `linspace` grid, compared by substitution so `W/(N-1)` with `linspace(0, W, N+1)` is caught, within a file (WARN) and across files (NOTE); and inverse function pairs to round-trip. `--only`, `--json`; exit 1 on any WARN. Order claims are read from names (`rk4`, `heun3`), docstrings (`3rd order`) and `order = N` / `def order(self): return N`. Runge-Kutta stages written as code are read back into a table (each call of the right-hand side is a stage, every other expression a linear combination) and checked for order, stage times, a missing `h`, weights that sum to neither 1 nor 0, and against a Butcher table drawn in the docstring. Tables are also read from constructor keywords (`ButcherTableau(a=..., b=..., b_error=..., order=5)`), dicts, `torch.tensor`, classes that inherit their table from a base class, `A = np.zeros((s, s))` with `A[i, :k] = [...]`, and `b = A[-1]`; a stated `orderEmbedded` is checked against the embedded weights. On the corpus it recovers 9 of the 74 reported defects with no adapter and found 7 new ones, each confirmed by a run; see `results/corpus/RESCAN_2026-10.md`. Tests in `tests/test_scan.py`.
 
