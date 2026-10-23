@@ -1,6 +1,6 @@
 # Roadmap
 
-What may come after 0.4.2. The unreleased changes (identity checks, `extract_functions`, `load_repaired`, `residual_check`, `decay_rate`, an accuracy option for `check_order`, and sandbox version stubs, latest-stack image and conflict hint) are in the changelog. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
+What may come after 0.5.0. Release 0.5.0 (2026-10-24) added `physverify scan` with the Phase 1 static checks; see the changelog. Next is Phase 2 of the scan plan below, for 0.6.0. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
 
 
 ## Principles
@@ -11,7 +11,7 @@ What may come after 0.4.2. The unreleased changes (identity checks, `extract_fun
 - **Deepen before widening.** Numerical-method coverage grows only when it adds value for ODE/PDE time integration, convergence or conservation. Statistical (Monte Carlo) checks grow carefully: each new one with its false-alarm rate and power measured over repeated seeds.
 - **Every published number is regenerable** with `python scripts/reproduce_all.py`, or says why not.
 
-## Done for 0.5.0: the installed package holds only the checks
+## Done in 0.5.0: the installed package holds only the checks
 
 The benchmark and the single-repository adapters moved to `benchmark/pvbench/` (not installed). The AI-assistant parts (`physverify hook`, `physverify mcp`) stay in the package: they use only the standard library, so an extra would not make the install any smaller.
 

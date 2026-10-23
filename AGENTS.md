@@ -5,7 +5,7 @@ This file is for an AI assistant (Claude Code, Codex, Cursor, Copilot and others
 ## Checking someone's project with physverify
 
 1. Install into a virtual environment: `python -m venv .pv && . .pv/bin/activate && pip install physverify` (on Windows `.pv\Scripts\Activate.ps1`).
-2. Start with `physverify scan PATH` (planned for 0.5.0; with 0.4.x install the development version from GitHub to have it). It reads the source and runs nothing, so it is safe on untrusted code. Exit code 1 means at least one WARN.
+2. Start with `physverify scan PATH` (physverify 0.5.0 or newer). It reads the source and runs nothing, so it is safe on untrusted code. Exit code 1 means at least one WARN.
 3. `physverify run`, `physverify smoke`, the hook and the MCP server **run** the code. Use them only on code the user trusts, or inside the container in `sandbox/` (see `sandbox/README.md`).
 4. Write the reference in a spec from the physics: the README, the paper, a textbook. Never derive it from the solver under test, or a bug in the solver is copied into the reference and the check passes. Say where each equation came from.
 5. When a check fails, suspect the spec first: units, sign conventions, time origin, the step counts, CODATA edition. `docs/troubleshooting.md` and `docs/pitfalls.md` list the mistakes that were made most often. In the corpus study, adapters written with an AI assistant were wrong about 28 times before they were right.
