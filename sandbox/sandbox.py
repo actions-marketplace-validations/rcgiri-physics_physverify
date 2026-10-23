@@ -22,8 +22,10 @@ packages go to deps-latest-stack/<id>, so wheels built against two NumPy version
 """
 
 import os
+import re
 import subprocess
 import sys
+import threading
 from pathlib import Path
 
 DEFAULT_IMAGE = "physverify-sandbox:1"
@@ -73,13 +75,47 @@ def remove_stale(name):
     subprocess.run(["docker", "rm", "-f", name], capture_output=True)
 
 
-def timed(args, name, limit):
+def timed(args, name, limit, keep=None):
+    """Run docker with a time limit. With a list `keep`, the output is shown as it comes and also kept there."""
+    if keep is None:
+        try:
+            return docker(args, timeout=limit)
+        except subprocess.TimeoutExpired:
+            subprocess.run(["docker", "kill", name], capture_output=True)
+            print(f"killed after {limit} s")
+            return 124
+    print("+ docker " + " ".join(args), flush=True)
+    proc = subprocess.Popen(["docker", *args], stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True,
+                            encoding="utf-8", errors="replace")
+    timer = threading.Timer(limit, lambda: subprocess.run(["docker", "kill", name], capture_output=True))
+    timer.start()
     try:
-        return docker(args, timeout=limit)
-    except subprocess.TimeoutExpired:
-        subprocess.run(["docker", "kill", name], capture_output=True)
+        for line in proc.stdout:
+            print(line, end="", flush=True)
+            keep.append(line)
+        rc = proc.wait()
+    finally:
+        expired = not timer.is_alive()
+        timer.cancel()
+    if expired and rc != 0:
         print(f"killed after {limit} s")
         return 124
+    return rc
+
+
+STACK_CONFLICT = re.compile(r"depends on (numpy|scipy)\s*([^\r\n]+)", re.IGNORECASE)
+
+
+def stack_hint(output: str) -> str:
+    """A suggestion when pip failed because a package needs other NumPy/SciPy versions than the image pins."""
+    found = sorted({m.group(1).lower() + " " + " and ".join(p.strip() for p in m.group(2).split(" and "))
+                    for m in STACK_CONFLICT.finditer(output)})
+    if not found or "ResolutionImpossible" not in output and "conflict" not in output.lower():
+        return ""
+    if IMAGE == DEFAULT_IMAGE:
+        return (f"a dependency needs {', '.join(found)}, which the pinned image cannot provide. Build the newer stack with"
+                f" `python -I sandbox/sandbox.py build --stack latest` and rerun with PHYSVERIFY_IMAGE={LATEST_IMAGE}")
+    return f"a dependency needs {', '.join(found)}, which this image ({IMAGE}) does not have either"
 
 
 def build(stack=None):
@@ -131,11 +167,16 @@ def deps(repo_id, packages=()):
     cache = CORPUS / "pip-cache"
     cache.mkdir(parents=True, exist_ok=True)
     remove_stale(name)
-    return timed(["run", *lockdown, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
-                  "-v", f"{cache}:/pip-cache:rw", "-e", "PIP_CACHE_DIR=/pip-cache",
-                  IMAGE, "pip", "install", "--only-binary=:all:", "--target=/deps",
-                  "--constraint=/opt/constraints.txt", *what],
-                 name, DEPS_TIME_LIMIT)
+    out: list = []
+    rc = timed(["run", *lockdown, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
+                "-v", f"{cache}:/pip-cache:rw", "-e", "PIP_CACHE_DIR=/pip-cache",
+                IMAGE, "pip", "install", "--only-binary=:all:", "--target=/deps",
+                "--constraint=/opt/constraints.txt", *what],
+               name, DEPS_TIME_LIMIT, keep=out)
+    hint = stack_hint("".join(out)) if rc else ""
+    if hint:
+        print(f"physverify sandbox: {hint}")
+    return rc
 
 
 def head(repo):

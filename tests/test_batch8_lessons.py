@@ -180,3 +180,84 @@ def test_runner_version_file_from_setup_py_and_no_escape(tmp_path):
     assert r.add_version_stubs(tmp_path) == ["pkg/_version.py"]
     (tmp_path / "pyproject.toml").write_text('[tool.setuptools_scm]\nwrite_to = "../outside.py"\n', encoding="utf-8")
     assert r.version_files(tmp_path) == [(tmp_path / "pkg" / "_version.py").resolve()]
+
+
+# --- roadmap items done after batch 8 ---
+
+from physverify.loaders import load_repaired, repairs_note  # noqa: E402
+from physverify.order import check_order  # noqa: E402
+from physverify.studies import decay_rate, residual_check  # noqa: E402
+
+
+def test_check_order_reports_an_accuracy_only_failure():
+    hs = np.array([0.1, 0.05, 0.025, 0.0125])
+    errs = 3.0 * hs**2
+    assert check_order(hs, errs, 2).status == PASS
+    r = check_order(hs, errs, 2, atol=1e-4)
+    assert r.status == FAIL and "only the accuracy requirement fails" in r.message
+    assert "2.2 times smaller steps" in r.message  # finest error 4.69e-4, order 2: sqrt(4.69)
+    assert check_order(hs, errs, 2, atol=1e-3).status == PASS
+    bad = check_order(hs, 3.0 * hs, 2, atol=1e-4)
+    assert bad.status == FAIL and "below the expected" in bad.message and "also above" in bad.message
+
+
+def test_decay_rate_skips_the_start_up_transient():
+    t = np.linspace(0, 6, 2001)
+    y = np.exp(-0.7 * t) + 30.0 * np.exp(-3.0 * t)  # a large, fast transient on top of the slow mode
+    naive = -np.polyfit(t, np.log(y), 1)[0]
+    gamma, t0 = decay_rate(t, y)
+    assert abs(naive - 0.7) > 0.3 and abs(gamma - 0.7) < 0.7 * 0.05 and t0 > 0  # accurate to about steady_tol
+    g_tight, t_tight = decay_rate(t, y, steady_tol=0.005, windows=12)
+    assert abs(g_tight - 0.7) < 0.7 * 0.005 and t_tight > t0
+    g2, _ = decay_rate(t, y, t_skip=5.0)
+    assert abs(g2 - 0.7) < 1e-3
+    with pytest.raises(ValueError):
+        decay_rate(t, np.exp(-0.1 * t**2))  # rate keeps growing: no steady stretch
+
+
+def test_residual_check_catches_a_solver_that_does_not_iterate():
+    rng = np.random.default_rng(1)
+    n = 30
+    A = np.diag(np.full(n, 4.0)) + np.diag(np.full(n - 1, -1.0), 1) + np.diag(np.full(n - 1, -1.0), -1)
+    b = rng.normal(size=n)
+    D = np.diag(A)
+
+    def jacobi(tol, max_sweeps=10000):
+        x = np.zeros(n)
+        for _ in range(max_sweeps):
+            x = (b - (A @ x - D * x)) / D
+            if np.linalg.norm(b - A @ x) <= tol:
+                break
+        return x
+
+    def one_sweep(tol):  # the real bug: a single sweep whatever the tolerance
+        return (b - (A @ np.zeros(n) - 0.0)) / D
+
+    res = lambda x: np.linalg.norm(b - A @ x)  # noqa: E731
+    assert residual_check(jacobi, res).status == PASS
+    r = residual_check(one_sweep, res, label="pressure solve")
+    assert r.status == FAIL and "hardly changes" in r.message
+
+
+def test_load_repaired_records_the_repair(tmp_path):
+    f = tmp_path / "py2.py"
+    f.write_text("def area(r):\n    return 3.14159265358979 * r ** 2\nprint 'loaded'\n", encoding="utf-8")
+    with pytest.raises(SyntaxError):
+        compile(f.read_text(), str(f), "exec")
+    m = load_repaired("pv_py2_test", f, {"print 'loaded'": "print('loaded')"})
+    assert abs(m.area(2.0) - 4 * math.pi) < 1e-12
+    assert "tested after repairs" in repairs_note(m) and "print 'loaded'" in repairs_note(m)
+    with pytest.raises(ValueError):
+        load_repaired("pv_py2_test2", f, {"no such text": ""})
+    assert not list(tmp_path.glob("__pycache__"))
+
+
+def test_sandbox_stack_hint():
+    spec = importlib.util.spec_from_file_location("pv_sandbox_b8", ROOT / "sandbox" / "sandbox.py")
+    sb = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sb)
+    out = ("The conflict is caused by:\n    kfactory 3.5.0 depends on scipy<2 and >=1.18.1\n"
+           "    opticalglass 2.0.2 depends on numpy>=2.5.1\nERROR: ResolutionImpossible: for help")
+    hint = sb.stack_hint(out)
+    assert "numpy >=2.5.1" in hint and "scipy <2 and >=1.18.1" in hint and "--stack latest" in hint
+    assert sb.stack_hint("ERROR: No matching distribution found for pydy") == ""

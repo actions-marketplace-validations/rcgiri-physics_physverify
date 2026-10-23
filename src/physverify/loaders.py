@@ -262,3 +262,53 @@ def extract_functions(path, names, *, namespace=None, stubs=()) -> types.ModuleT
     module.__skipped_imports__ = skipped
     module.__extracted__ = sorted(wanted)
     return module
+
+
+def load_repaired(name: str, path, fix, *, stubs=()) -> types.ModuleType:
+    """Import a file that does not run as published, after a recorded repair of its source.
+
+    `fix` is a dict {old text: new text} (each `old` must occur in the file, else ValueError) or a function
+    source -> source. The repaired source is compiled in memory with the original file name, so tracebacks
+    point at the right lines; nothing is written to disk. The module's `__repairs__` lists what was changed,
+    and `repairs_note(module)` gives a sentence to put in the check's message, so that a PASS on repaired
+    code is never reported as a PASS on the original (batch 7 had scripts that did not parse, one with a
+    stray line, one written for Python 2).
+    """
+    path = Path(path)
+    source = path.read_text(encoding="utf-8")
+    repairs = []
+    if callable(fix):
+        new = fix(source)
+        if new != source:
+            repairs.append("source transformed by a repair function")
+        source = new
+    else:
+        for old, new in fix.items():
+            count = source.count(old)
+            if not count:
+                raise ValueError(f"repair text not found in {path.name}: {old!r}")
+            source = source.replace(old, new)
+            repairs.append(f"{old!r} -> {new!r} ({count}x)")
+    added = stub_modules(stubs)
+    module = types.ModuleType(name)
+    module.__file__ = str(path)
+    module.__repairs__ = repairs
+    old_flag = sys.dont_write_bytecode
+    sys.dont_write_bytecode = True
+    sys.modules[name] = module
+    try:
+        exec(compile(source, str(path), "exec"), module.__dict__)
+    except BaseException:
+        sys.modules.pop(name, None)
+        raise
+    finally:
+        sys.dont_write_bytecode = old_flag
+        for stub in added:
+            sys.modules.pop(stub, None)
+    return module
+
+
+def repairs_note(module) -> str:
+    """'tested after repairs: ...' for a module from load_repaired, or '' when nothing was changed."""
+    reps = getattr(module, "__repairs__", [])
+    return f"tested after repairs to the published source: {'; '.join(reps)}" if reps else ""

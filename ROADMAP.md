@@ -1,6 +1,6 @@
 # Roadmap
 
-What may come after 0.4.2. The unreleased changes (identity checks, `extract_functions`, sandbox version stubs and latest-stack image) are in the changelog. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
+What may come after 0.4.2. The unreleased changes (identity checks, `extract_functions`, `load_repaired`, `residual_check`, `decay_rate`, an accuracy option for `check_order`, and sandbox version stubs, latest-stack image and conflict hint) are in the changelog. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
 
 
 ## Principles
@@ -36,11 +36,7 @@ Today every check needs a short spec file, and for most codes a small adapter th
 - **2D and 3D heat equation.** Manufactured solutions, an independent reference operator, order studies in space and time, and checks for Dirichlet, Neumann and periodic boundaries, including the corners and edges where 2D/3D codes most often go wrong. Then the same for the wave and advection-diffusion equations.
 - **Whole PDE order studies from SymPy.** `physverify.symbolic` already derives source terms; the next step is to run the full study from an equation written as text.
 - **IMEX / additive Runge-Kutta coupling conditions.** Check the conditions that link the explicit and implicit tables of an IMEX pair (bi-coloured trees), not only each table on its own. Also the order of embedded error estimators.
-- **Loading code that needs repair.** A `load_repaired(path, fix)` helper for files that do not parse as published, recording the repair so that a pass on repaired code is never reported as a pass on the original.
-- **"Was any work done?" probe.** Count iterations or call every public function once; two real bugs were functions that silently did almost nothing (one Jacobi sweep in a pressure solver).
 - **Stochastic checks that stop early.** Stop sampling as soon as the result is decisive, so slow Monte Carlo codes fit inside a time budget.
-- **Clearer messages** when only an absolute tolerance fails while the observed order is exact, and a helper that skips the start-up transient before fitting a decay rate.
-- **Sandbox: pick the image automatically.** When `deps` fails because a dependency needs a newer NumPy or SciPy than the pinned image, say so and suggest the latest-stack image, instead of a bare pip resolution error. (The shared wheel cache and the latest-stack image are done.)
 - **Identity probes in `physverify scan`.** Run the cheap identity checks that need no knowledge of the equations: pairs of functions whose names say they are inverses (`x_to_y` / `y_to_x`, `s2z` / `z2s`) as round trips, and `min_*` / `max_*` or 2D / 3D siblings called with the same arguments.
 - **Units in comparisons.** Most adapter mistakes in batch 8 were units or coordinate origins. An optional units-aware comparison (via pint, when installed) that refuses to compare quantities of different dimension.
 

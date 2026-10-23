@@ -24,7 +24,7 @@ The functions most specs need. Each has a docstring with the details: `help(phys
 | `invariant_study(integrate, quantity, y0, t_end, ns, order)` | Drift of a conserved quantity. |
 | `patch_study(integrate, rhs_ref, y0, slope, t_end, ns)` | A linear solution reproduced to round-off. |
 | `trajectory_order_study(runs, exact, t_compare, order, period=None)` | From whole trajectories, at one fixed time. |
-| `check_order(hs, errors, expected)` | The verdict from step sizes and errors. |
+| `check_order(hs, errors, expected, atol=None)` | The verdict from step sizes and errors; `atol` adds an accuracy requirement on the finest grid, reported apart from the order. |
 | `check_exact(hs, errors)` | The verdict when every error should be at round-off. |
 
 ## Other checks (`physverify.studies`)
@@ -36,6 +36,8 @@ The functions most specs need. Each has a docstring with the details: `help(phys
 | `size_sweep_check(run_at_size, sizes)` | The code runs for odd and even sizes. |
 | `coverage_check(simulate, interval, prior_sampler, level=...)` | Coverage of stated intervals. |
 | `damped_sinusoid_fit(t, y, t_start, t_stop)` | Complex frequency of a ringdown. |
+| `decay_rate(t, y, t_skip=None)` | Exponential decay rate, skipping the start-up transient (found automatically when `t_skip` is not given). |
+| `residual_check(solve, residual, tols)` | An iterative solver's residual follows the tolerance it was asked for. |
 
 ## Identities and round trips (`physverify.identities`)
 
@@ -60,6 +62,7 @@ See [Identities and round trips](checks/identities.md).
 |---|---|
 | `load_module_from_path(path, stubs=None)` | Import a file as a module. |
 | `load_definitions_from_path(path, stubs=None)` | Only its functions and classes, without running the script. |
+| `load_repaired(name, path, fix)`, `repairs_note(module)` | Import a file after a recorded repair, so a PASS is reported as a PASS on repaired code. |
 | `extract_functions(path, names, namespace=None)` | Named functions plus the same-file helpers they use, for a package that will not import. |
 | `run_script(path, argv=(), inputs=None)` | Run a whole script; returns (globals, printed text). |
 | `stub_modules({...})` | Stand-ins for imports the tested code does not use. |
