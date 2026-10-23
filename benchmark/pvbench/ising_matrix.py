@@ -1,6 +1,6 @@
 """Run every Ising check on every seeded bug; write the table, the prediction scorecard and the messages.
 
-    python -m physverify.stochastic.matrix results/ising_matrix.md
+    python -m pvbench.ising_matrix results/ising_matrix.md
 
 A check "flags" a bug when it returns FAIL or ERROR. INCONCLUSIVE is shown as
 such and is neither a catch nor a pass. Takes several minutes (plain NumPy).
@@ -12,9 +12,9 @@ import sys
 import time
 from pathlib import Path
 
-from ..checks import ERROR, FAIL, INCONCLUSIVE, run_check
-from . import ising
-from .checks import FAMILIES
+from physverify.checks import ERROR, FAIL, INCONCLUSIVE, run_check
+from physverify.stochastic import ising
+from physverify.checks import FAMILIES
 
 SHORT = {"PASS": "ok", "EXACT": "ok", FAIL: "FAIL", ERROR: "ERROR", INCONCLUSIVE: "inconcl.", "SKIP": "skip"}
 

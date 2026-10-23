@@ -8,24 +8,26 @@ The Markdown tables are deterministic and must match the committed ones
 also record the machine and the run times, which differ between runs.
 """
 
+import os
 import subprocess
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 STEPS = [
-    ["-m", "physverify.matrix", "results/detection_matrix.md"],
-    ["-m", "physverify.compare", "results/comparison.md"],
+    ["-m", "pvbench.matrix", "results/detection_matrix.md"],
+    ["-m", "pvbench.compare", "results/comparison.md"],
     ["scripts/make_figures.py"],
 ]
-SLOW = [["-m", "physverify.stochastic.matrix", "results/ising_matrix.md"]]
+SLOW = [["-m", "pvbench.ising_matrix", "results/ising_matrix.md"]]
 
 
 def main() -> int:
     steps = STEPS + (SLOW if "--slow" in sys.argv[1:] else [])
     for step in steps:
         print("python", " ".join(step), flush=True)
-        subprocess.run([sys.executable, *step], cwd=ROOT, check=True, stdout=subprocess.DEVNULL)
+        env = {**os.environ, "PYTHONPATH": os.pathsep.join([str(ROOT / "src"), str(ROOT / "benchmark")])}
+        subprocess.run([sys.executable, *step], cwd=ROOT, check=True, stdout=subprocess.DEVNULL, env=env)
     print("done; `git diff results/` shows what changed")
     return 0
 

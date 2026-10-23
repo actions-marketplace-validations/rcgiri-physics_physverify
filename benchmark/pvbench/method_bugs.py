@@ -1,6 +1,6 @@
 """Seeded bugs in numerical methods themselves, modelled on bugs found in public code.
 
-The problem benchmark (physverify.problems) seeds bugs into five solvers. Some bugs found in real
+The problem benchmark (pvbench.problems) seeds bugs into five solvers. Some bugs found in real
 repositories are not bugs of a solver for one problem but of a method or a helper: a Butcher table with
 the wrong order label, error-estimate weights that do not sum to zero, backward time-stepping with
 stage times on the wrong side, a time loop that stops one step late, a spectral derivative that only
@@ -20,11 +20,11 @@ from typing import Callable
 
 import numpy as np
 
-from .butcher import check_tableau
-from .checks import FAIL, PASS, Result, run_check, Check
-from .mms import ManufacturedODE
-from .order import check_order
-from .studies import backward_mms_study, balance_check, size_sweep_check, time_grid_check
+from physverify.butcher import check_tableau
+from physverify.checks import FAIL, PASS, Result, run_check, Check
+from physverify.mms import ManufacturedODE
+from physverify.order import check_order
+from physverify.studies import backward_mms_study, balance_check, size_sweep_check, time_grid_check
 
 # --- Butcher tables ---------------------------------------------------------------------------------
 

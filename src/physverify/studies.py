@@ -82,7 +82,7 @@ def smoke_check(label, integrate, rhs_ref, y0, t_end, n, *, rtol=1e-3) -> Check:
     """What an ordinary unit test would do: one run, compared with a reference within a tolerance.
 
     Not one of the verification families. It is here so that the benchmark can
-    report what a plain test would have caught (see physverify.compare).
+    report what a plain test would have caught (see the benchmark comparison, pvbench.compare).
     """
 
     def run():
@@ -342,3 +342,73 @@ def coverage_check(simulate: Callable, interval: Callable, prior_sampler: Callab
     msg = (f"{prefix}{hits} of {trials} intervals contain the truth ({hits / trials:.3f}, stated {level}); "
            f"binomial p = {p:.1e}, false-alarm rate {alpha:g}")
     return Result(FAIL if p < alpha else PASS, msg)
+
+
+def decay_rate(t, y, *, t_skip: float | None = None, windows: int = 8, steady_tol: float = 0.05) -> tuple[float, float]:
+    """Exponential decay rate gamma of |y| ~ A exp(-gamma t), and the time the fit starts.
+
+    A run started from a state that is not a single decaying mode has a start-up transient (a shear wave
+    started from equilibrium, a heat profile with higher harmonics); fitting from t = 0 gives the wrong
+    rate (batch 7). With `t_skip` the fit uses t >= t_skip. Without it, the record is cut into `windows`
+    pieces, the local rate is fitted on each, and the fit starts at the first piece after which every
+    local rate stays within `steady_tol` (relative) of the last one. Returns (gamma, t_start). What is left of
+    the transient after the start biases the rate by up to about `steady_tol`; lower it (and use more
+    windows) for a tighter fit, or pass `t_skip`.
+
+    `y` should be a positive amplitude (an energy, a mode amplitude, an envelope); for an oscillating
+    signal use `damped_sinusoid_fit`. Raises ValueError when no steady stretch is found.
+    """
+    t = np.asarray(t, dtype=float)
+    y = np.abs(np.asarray(y, dtype=float))
+    ok = np.isfinite(y) & (y > 0)
+    t, y = t[ok], y[ok]
+    if t.size < 2 * windows:
+        raise ValueError(f"need at least {2 * windows} positive samples")
+    ly = np.log(y)
+    if t_skip is None:
+        edges = np.linspace(t[0], t[-1], windows + 1)
+        rates = []
+        for a, b in zip(edges[:-1], edges[1:]):
+            m = (t >= a) & (t <= b)
+            rates.append(-np.polyfit(t[m], ly[m], 1)[0] if m.sum() >= 2 else np.nan)
+        rates = np.array(rates)
+        last = rates[-1]
+        steady = np.abs(rates - last) <= steady_tol * abs(last)
+        start = None
+        for i in range(windows):
+            if np.all(steady[i:]):
+                start = i
+                break
+        if start is None or start == windows - 1:
+            raise ValueError("the local decay rate does not settle; pass t_skip, or use a longer record")
+        t_skip = float(edges[start])
+    m = t >= t_skip
+    if m.sum() < 2:
+        raise ValueError("fewer than two samples after t_skip")
+    return float(-np.polyfit(t[m], ly[m], 1)[0]), float(t_skip)
+
+
+def residual_check(solve: Callable, residual: Callable, tols=(1e-4, 1e-6, 1e-8), *, slack: float = 10.0,
+                   label: str = "") -> Result:
+    """An iterative solver that is asked for tolerance tol returns an answer whose residual is about tol.
+
+    `solve(tol)` returns the solution, `residual(x)` its residual computed independently (for example the
+    norm of b - A x). PASS when residual <= slack * tol for every tol. A residual that does not follow the
+    requested tolerance is the sign of a solver that does almost no work: a real pressure solver did one
+    Jacobi sweep whatever the tolerance, and its answers looked plausible.
+    """
+    rows = []
+    for tol in tols:
+        r = float(residual(solve(tol)))
+        rows.append((tol, r))
+    prefix = f"{label}: " if label else ""
+    table = ", ".join(f"tol {tol:g} -> residual {r:.3g}" for tol, r in rows)
+    bad = [(tol, r) for tol, r in rows if not (np.isfinite(r) and r <= slack * tol)]
+    if not bad:
+        return Result(PASS, f"{prefix}residual follows the requested tolerance ({table})")
+    rs = np.array([r for _, r in rows])
+    msg = f"{prefix}residual above {slack:g} x tolerance ({table})"
+    if len(rows) >= 2 and np.all(np.isfinite(rs)) and rs.max() <= 1.5 * rs.min():
+        msg += ("; it hardly changes with the tolerance, so the solver may stop after a fixed number of iterations"
+                " or not iterate at all")
+    return Result(FAIL, msg)

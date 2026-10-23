@@ -7,8 +7,8 @@ import numpy as np
 import pytest
 
 from physverify.mms import zero_source
-from physverify.problems import heat1d, pendulum, projectile
-from physverify.problems._common import make_integrate
+from pvbench.problems import heat1d, pendulum, projectile
+from pvbench.problems._common import make_integrate
 from physverify.steppers import integrate_fixed, rk4
 
 

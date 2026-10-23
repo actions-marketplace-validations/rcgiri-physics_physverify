@@ -75,12 +75,74 @@ def apply_shim(root: Path) -> int:
     return n
 
 
+STUB = '__version__ = version = "0+unknown"\n__version_tuple__ = version_tuple = (0, 0, "unknown")\n'
+
+
+def version_files(root: Path) -> list:
+    """Version files a build backend would generate from git (setuptools-scm, hatch-vcs), as paths in root.
+
+    A source checkout has none of them, so `import pkg` fails with ModuleNotFoundError for pkg._version
+    before any physics runs. Read from pyproject.toml (tool.setuptools_scm version_file / write_to,
+    tool.hatch.build.hooks.vcs version-file) and from setup.py (use_scm_version={"write_to": ...}).
+    """
+    import re
+    found = []
+    pp = root / "pyproject.toml"
+    if pp.is_file():
+        text = pp.read_text(encoding="utf-8", errors="replace")
+        try:
+            import tomllib
+            data = tomllib.loads(text)
+        except ModuleNotFoundError:  # Python 3.10: read the three keys directly
+            data = {}
+            found += re.findall(r"""^\s*(?:version_file|write_to|version-file)\s*=\s*["']([^"']+)["']""", text, re.M)
+        except Exception:  # noqa: BLE001 - an unreadable pyproject just gives no stub
+            data = {}
+        tool = data.get("tool", {})
+        scm = tool.get("setuptools_scm", {})
+        found += [scm[k] for k in ("version_file", "write_to") if isinstance(scm.get(k), str)]
+        hatch = tool.get("hatch", {}).get("build", {})
+        for hooks in (hatch.get("hooks", {}), hatch.get("targets", {}).get("wheel", {}).get("hooks", {})):
+            vf = hooks.get("vcs", {}).get("version-file")
+            if isinstance(vf, str):
+                found.append(vf)
+    sp = root / "setup.py"
+    if sp.is_file():
+        try:
+            text = sp.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError):
+            text = ""
+        found += re.findall(r"""["'](?:write_to|version_file)["']\s*:\s*["']([^"']+\.py)["']""", text)
+        found += re.findall(r"""(?:write_to|version_file)\s*=\s*["']([^"']+\.py)["']""", text)
+    out = []
+    for rel in dict.fromkeys(found):
+        p = (root / rel).resolve()
+        if p.suffix == ".py" and root.resolve() in p.parents:
+            out.append(p)
+    return out
+
+
+def add_version_stubs(root: Path) -> list:
+    """Write a placeholder version file for each generated one that is missing; return the ones written."""
+    written_ = []
+    for p in version_files(root):
+        if not p.exists() and p.parent.is_dir():
+            p.write_text(STUB, encoding="utf-8")
+            written_.append(p.relative_to(root.resolve()).as_posix())
+    return written_
+
+
 def main(argv) -> int:
     src = Path(os.environ.get("PHYSVERIFY_REPO_SRC", "/repo-src"))
     dst = Path(os.environ.get("PHYSVERIFY_REPO", "/tmp/repo"))
     shutil.copytree(src, dst, symlinks=True, ignore=shutil.ignore_patterns(".git"), dirs_exist_ok=True)
     if os.environ.get("PHYSVERIFY_PY314_SHIM") == "1":
         print(f"physverify sandbox: Python 3.14 shim added postponed annotations to {apply_shim(dst)} files", file=sys.stderr)
+    if os.environ.get("PHYSVERIFY_NO_VERSION_STUB") != "1":
+        stubs = add_version_stubs(dst)
+        if stubs:
+            print(f"physverify sandbox: wrote placeholder version file{'s' if len(stubs) > 1 else ''} {', '.join(stubs)} "
+                  "(generated from git at build time, absent from a source checkout)", file=sys.stderr)
     before = snapshot(dst)
     rc = subprocess.call([sys.executable, *argv], env={**os.environ, "PHYSVERIFY_REPO": str(dst)})
     changed = written(before, snapshot(dst))

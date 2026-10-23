@@ -6,10 +6,13 @@ Thanks for your interest. physverify is actively evolving, and contributions and
 
 1. **A trial report on your own solver (most wanted).** Install physverify from PyPI, write a spec for a solver you know well, and tell us how it went: what was flagged, what was missed, and where you got stuck. Even "everything passed in 20 minutes" is useful. Use the [trial report template](https://github.com/rcgiri-physics/physverify/issues/new?template=trial_report.md).
 2. **A blind test.** Make a few copies of your solver with bugs you choose (and keep one correct copy), without telling us which is which. Run physverify on all of them and report, for each: detected, missed, false alarm, or could not be set up. Results from someone other than the author are the evidence the project needs most; they will be published in `results/independent/` (anonymously if you prefer), misses first.
-3. **New seeded bugs.** The benchmark's 37 bugs were written by the author, who also wrote the checks. A bug written by someone else, added to one of the problems in `src/physverify/problems/` with its expected symptom, tests the checks more fairly.
+3. **New seeded bugs.** The benchmark's 37 bugs were written by the author, who also wrote the checks. A bug written by someone else, added to one of the problems in `benchmark/pvbench/problems/` with its expected symptom, tests the checks more fairly.
 4. **Adapters for common solver styles,** for example a SciPy `solve_ivp`-style function, or a solver that writes its output to files.
 5. **Documentation:** a step that confused you, a missing example, a typo. Small pull requests are welcome.
 6. **Exact reference solutions** from your field (with a citation), for `physverify.references`.
+7. **Run `physverify scan` on code you know** and tell us about every WARN: real, harmless, or a false alarm. This is how each check gets a false-alarm rate on real code (see "Test each feature on as many repositories as possible" in [ROADMAP.md](ROADMAP.md)).
+
+Everyone taking part is asked to follow the [code of conduct](CODE_OF_CONDUCT.md). Questions are welcome as [question issues](https://github.com/rcgiri-physics/physverify/issues/new?template=question.md). If you work with an AI assistant, point it to [AGENTS.md](AGENTS.md), and say in the pull request that it helped.
 
 ## Reporting a problem
 

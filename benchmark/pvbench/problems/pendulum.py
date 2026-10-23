@@ -10,9 +10,9 @@ import math
 
 import numpy as np
 
-from ..checks import FAIL, PASS, Check, Result
-from ..mms import ManufacturedODE
-from ..studies import close_result, ode_checks, smoke_check
+from physverify.checks import FAIL, PASS, Check, Result
+from physverify.mms import ManufacturedODE
+from physverify.studies import close_result, ode_checks, smoke_check
 from ._common import STEPPER_BUGS, BugInfo, families, make_integrate
 
 NAME = "pendulum"

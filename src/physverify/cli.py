@@ -3,8 +3,7 @@
     physverify run SPEC.py [SPEC.py ...] [--json FILE|-] [--html FILE] [--markdown FILE] [--quiet]
     physverify demo        (a correct and a broken solver, no files needed)
     physverify init [SPEC.py] [--solver MODULE] [--function NAME] [--dim N] [--order P]
-    physverify matrix [OUT.md]
-    physverify compare [OUT.md]
+    physverify scan PATH   (reads the source, runs nothing: constants, RK tables, grid spacing, inverse pairs)
     physverify hook        (Claude Code PostToolUse hook; see docs/agent.md)
     physverify mcp         (MCP server on stdio; see docs/agent.md)
 
@@ -98,18 +97,6 @@ def _cmd_demo(args) -> int:
     return demo_main()
 
 
-def _cmd_matrix(args) -> int:
-    from . import matrix
-
-    return matrix.main([args.out] if args.out else [])
-
-
-def _cmd_compare(args) -> int:
-    from . import compare
-
-    return compare.main([args.out] if args.out else [])
-
-
 def _cmd_hook(args) -> int:
     from .agent import hook_main
 
@@ -132,6 +119,37 @@ def _cmd_smoke(args) -> int:
     bad = sum(r.outcome != OK for r in results)
     print(f"{len(results)} scripts, {len(results) - bad} ran to the end")
     return 1 if bad else 0
+
+
+def _cmd_scan(args) -> int:
+    import json
+
+    from .scan import STAGES, WARN, scan, to_dict
+
+    stages = args.only.split(",") if args.only else STAGES
+    unknown = set(stages) - set(STAGES)
+    if unknown:
+        print(f"physverify: unknown stage {', '.join(sorted(unknown))}; choose from {', '.join(STAGES)}", file=sys.stderr)
+        return 2
+    if not Path(args.path).exists():
+        print(f"physverify: {args.path} does not exist", file=sys.stderr)
+        return 2
+    findings, unparsed = scan(args.path, stages=stages)
+    if args.json:
+        text = json.dumps(to_dict(findings, unparsed), indent=1)
+        if args.json == "-":
+            print(text)
+        else:
+            Path(args.json).write_text(text, encoding="utf-8")
+    if args.json != "-":
+        for f in findings:
+            print(f)
+        for u in unparsed:
+            print(f"NOTE parse     {u}")
+        warn = sum(f.level == WARN for f in findings)
+        print(f"{warn} warnings, {len(findings) - warn} notes, {len(unparsed)} files not parsed"
+              " (the scan reads the code and runs nothing; a clean scan means only that these patterns were not found)")
+    return 1 if any(f.level == WARN for f in findings) else 0
 
 
 def _cmd_references(args) -> int:
@@ -173,14 +191,6 @@ def build_parser() -> argparse.ArgumentParser:
     i.add_argument("--force", action="store_true", help="overwrite an existing file")
     i.set_defaults(func=_cmd_init)
 
-    m = sub.add_parser("matrix", help="run the seeded-bug benchmark")
-    m.add_argument("out", nargs="?", help="also write the tables next to this Markdown file")
-    m.set_defaults(func=_cmd_matrix)
-
-    c = sub.add_parser("compare", help="compare the families with plain tests on the seeded bugs")
-    c.add_argument("out", nargs="?", help="also write the table to this Markdown file")
-    c.set_defaults(func=_cmd_compare)
-
     h = sub.add_parser("hook", help="Claude Code PostToolUse hook: reads the event on stdin, exits 2 on a failed check")
     h.set_defaults(func=_cmd_hook)
 
@@ -188,6 +198,12 @@ def build_parser() -> argparse.ArgumentParser:
     sm.add_argument("path", help="a script or a folder of scripts")
     sm.add_argument("--timeout", type=float, default=60.0, help="seconds per script (default 60)")
     sm.set_defaults(func=_cmd_smoke)
+
+    sc = sub.add_parser("scan", help="look for common defects without a spec file; reads the code and runs nothing")
+    sc.add_argument("path", help="a Python file or a folder")
+    sc.add_argument("--only", metavar="STAGES", help="comma-separated stages: constants,tables,grid,pairs (default all)")
+    sc.add_argument("--json", metavar="FILE", help="write findings as JSON to FILE, or to stdout with -")
+    sc.set_defaults(func=_cmd_scan)
 
     r = sub.add_parser("references", help="list the exact reference solutions in physverify.references")
     r.set_defaults(func=_cmd_references)

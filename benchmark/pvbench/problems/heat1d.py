@@ -23,9 +23,9 @@ import math
 
 import numpy as np
 
-from ..checks import Check
-from ..order import check_exact, check_order
-from ..studies import close_result
+from physverify.checks import Check
+from physverify.order import check_exact, check_order
+from physverify.studies import close_result
 from ._common import BugInfo, families
 
 NAME = "heat1d"

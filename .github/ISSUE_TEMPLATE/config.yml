@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Start here (documentation)
+    url: https://rcgiri-physics.github.io/physverify/start-here/
+    about: Installation and a first check in about ten minutes.
+  - name: Troubleshooting
+    url: https://rcgiri-physics.github.io/physverify/troubleshooting/
+    about: Most failing checks come from the spec, not the solver. Please read this first.

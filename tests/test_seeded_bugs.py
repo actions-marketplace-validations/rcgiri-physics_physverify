@@ -8,7 +8,7 @@ baselines must never raise a false alarm.
 
 import pytest
 
-from physverify.matrix import PROBLEMS, evaluate, Row
+from pvbench.matrix import PROBLEMS, evaluate, Row
 
 
 @pytest.fixture(scope="module")
@@ -79,7 +79,7 @@ def test_committed_tables_match_a_fresh_run(cache):
     """Rerunning the benchmark gives the committed tables, so others can reproduce them."""
     from pathlib import Path
 
-    from physverify.matrix import catalogue, to_markdown
+    from pvbench.matrix import catalogue, to_markdown
 
     rows = [_row(cache, name, None) for name in PROBLEMS] + [_row(cache, n, b) for n, b in CASES]
     order = {(r.problem, r.bug): r for r in rows}

@@ -17,8 +17,11 @@ The demo checks a correct solver (all checks pass), then the same solver with th
 
 ![Error against step size: the correct solver follows the slope-2 line, the broken one levels off](https://raw.githubusercontent.com/rcgiri-physics/physverify/main/docs/images/convergence.svg)
 
+New to this? [Start here](https://rcgiri-physics.github.io/physverify/start-here/) walks through installation and a first check in about ten minutes, with a prompt to paste if you use an AI coding assistant.
+
 ## Use it on your own code
 
+- **Any project, no set-up (planned for 0.5.0; now in the development version, `pip install git+https://github.com/rcgiri-physics/physverify`):** `physverify scan PATH` reads the code (it runs nothing) and flags Runge-Kutta methods that do not have their stated order (written as tables, as class attributes or as stages in code), grid spacings that do not match their grid, near-miss physical constants, and inverse function pairs worth a round-trip test.
 - **An ODE solver:** `physverify init verify_solver.py --solver mysolver --order 4` writes a spec; fill in the equations (from the physics, not from your code) and run `physverify run verify_solver.py`.
 - **A Runge-Kutta table:** `check_tableau(A, b, c, claimed=3)` from `physverify.butcher` checks its order, stage order and stability from the coefficients alone.
 - **Errors you already have:** `check_order(hs, errors, expected=2)` gives PASS, FAIL or INCONCLUSIVE with a reason.
@@ -37,7 +40,7 @@ A failed check fails the job, like a broken unit test ([CI guide](https://rcgiri
 
 ## Does it catch bugs?
 
-Of 37 bugs seeded into five small solvers, it flagged 35 (plain "compare with one answer" tests: 27), with no false alarms. The bugs and checks were written by the same person, so this shows the tool works as designed, not how it does on other people's code. On public physics repositories it found real bugs, for example Runge-Kutta tables with a wrong order label; the counts are not a bug rate. Details: [results](https://rcgiri-physics.github.io/physverify/results/), and [results/README.md](https://github.com/rcgiri-physics/physverify/blob/main/results/README.md) to regenerate every table.
+Of 37 bugs seeded into five small solvers, it flagged 35 (plain "compare with one answer" tests: 27), with no false alarms. The bugs and checks were written by the same person, so this shows the tool works as designed, not how it does on other people's code. On public physics repositories, 74 defects were reported to authors; 14 of them were found by a physverify check as such, 11 by simply running the code, and the rest by the per-repository test scripts or by reading the code. `physverify scan` (coming in 0.5.0) alone, with no script, now finds 9 of the 74, up from 2 in its first version, and found 7 new defects in the same repositories ([which found what](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FINDINGS_BY_METHOD.md)). The counts describe that sample only and are not a bug rate. Details: [results](https://rcgiri-physics.github.io/physverify/results/), and [results/README.md](https://github.com/rcgiri-physics/physverify/blob/main/results/README.md) to regenerate every table.
 
 ## Limits
 
@@ -45,4 +48,4 @@ Works best for ODEs; PDEs only in 1D so far. Your code needs a way to add a sour
 
 ## Contributing, citing, licence
 
-Help is welcome: a trial report on your own solver, seeded bugs written by someone other than the author, adapters, documentation. See [CONTRIBUTING.md](https://github.com/rcgiri-physics/physverify/blob/main/CONTRIBUTING.md). To cite, use [doi:10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) or [CITATION.cff](https://github.com/rcgiri-physics/physverify/blob/main/CITATION.cff). Changes: [CHANGELOG.md](https://github.com/rcgiri-physics/physverify/blob/main/CHANGELOG.md); plans: [ROADMAP.md](https://github.com/rcgiri-physics/physverify/blob/main/ROADMAP.md). MIT licence, copyright (c) 2026 Ram Chandra Giri.
+Help is welcome: a trial report on your own solver, seeded bugs written by someone other than the author, adapters, documentation. See [CONTRIBUTING.md](https://github.com/rcgiri-physics/physverify/blob/main/CONTRIBUTING.md), the [code of conduct](https://github.com/rcgiri-physics/physverify/blob/main/CODE_OF_CONDUCT.md), [SUPPORT.md](https://github.com/rcgiri-physics/physverify/blob/main/SUPPORT.md) for help, [SECURITY.md](https://github.com/rcgiri-physics/physverify/blob/main/SECURITY.md) on running untrusted code, and [AGENTS.md](https://github.com/rcgiri-physics/physverify/blob/main/AGENTS.md) for AI assistants. To cite, use [doi:10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) or [CITATION.cff](https://github.com/rcgiri-physics/physverify/blob/main/CITATION.cff). Changes: [CHANGELOG.md](https://github.com/rcgiri-physics/physverify/blob/main/CHANGELOG.md); plans: [ROADMAP.md](https://github.com/rcgiri-physics/physverify/blob/main/ROADMAP.md). MIT licence, copyright (c) 2026 Ram Chandra Giri.

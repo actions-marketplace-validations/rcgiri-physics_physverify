@@ -39,6 +39,26 @@ From the adapters written for public repositories (details in [results/corpus/SU
 
 Each one was found before anything was reported, and each became a test in `tests/test_corpus_lessons.py` or a clearer message.
 
+## Reference mistakes when testing libraries
+
+Testing 20 widely used libraries (astronomy, meteorology, optics, fluids, units, particle data and others) gave about 25 first-run failures, and every one was a mistake in the adapter, not in the library. They fall into a few groups worth checking before you suspect the code:
+
+| What went wrong | Example | What to do |
+|---|---|---|
+| Units of the returned value | A particle mass compared in GeV, returned in MeV; a spectral radiance per metre compared with one per nanometre | Print the value with its units from the documentation before comparing |
+| Frame or origin of a coordinate | A ray position measured from the image plane, compared with a distance from the lens; geometric altitude passed where the standard atmosphere is tabulated in geopotential altitude | Find where zero is for every coordinate you compare |
+| A convention or standard the library follows on purpose | The four-decimal sRGB matrices of IEC 61966-2-1, which are not exact inverses; CIE's rounded c₂ = 1.4388e-2; the ISO British thermal unit; gauss as a Gaussian-system unit | Look for the standard the code cites; a difference at the level of its rounding is not a bug |
+| A model that does not reduce to the limit you assumed | The Klucher sky model does not give the horizontal irradiance on a flat panel; an asymptotic matrix-element ratio checked away from its limit | Check the limit in the model's own paper |
+| The reference formula itself | A Bragg-mirror reflectance with the admittance inverted; an ideal (van't Hoff) osmotic pressure for a real solution with osmotic coefficient 0.97 | Derive it a second way, or check it on a case with a known answer |
+| A remembered constant | A clear-sky constant of 0.057 where the published form uses 0.059 | Look the number up; do not rely on memory |
+| Python operator precedence | `(a ^ b) ^ c - d` parses as `(a ^ b) ^ (c - d)` | Parenthesise outer products and bitwise operators |
+| The tool used for the comparison | A finite-difference grid too coarse to locate a peak; a comparison helper that converted complex values to float | Test the comparison on a case you can do by hand |
+| Old constants the library vendors | CODATA 2014 values kept so results stay reproducible | Record it as a note; a 1e-6 difference is a convention, not a bug |
+
+## A suspicion from reading code is not a bug until a run confirms it
+
+Code review finds candidates quickly, but in the same study two of the strongest suspicions from reading turned out wrong when run: a claimed missing term in a thermodynamic derivative agreed with finite differences to 1e-10, and a claimed energy error had the opposite sign to the one predicted. Before reporting anything found by reading, run the function and compare it with an independent computation, for example with `check_derivative`, `check_roundtrip` or `check_agree` (see [Identities and round trips](checks/identities.md)). Report the measured numbers, not the reasoning.
+
 ## Still stuck?
 
 Open an issue with your spec and the output ([bug report template](https://github.com/rcgiri-physics/physverify/issues/new?template=bug_report.md)). Questions about whether a result is right are welcome too.

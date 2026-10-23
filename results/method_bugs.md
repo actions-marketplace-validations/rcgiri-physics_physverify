@@ -1,6 +1,6 @@
-# Seeded bugs in methods (physverify.method_bugs)
+# Seeded bugs in methods (pvbench.method_bugs)
 
-Each bug is a pattern found in a public repository (IDs as in [corpus/SUMMARY.md](corpus/SUMMARY.md)), with a bug-free control. Regenerate with `python -c "from physverify.method_bugs import run_all, to_markdown; print(to_markdown(run_all()))"`.
+Each bug is a pattern found in a public repository (IDs as in [corpus/SUMMARY.md](corpus/SUMMARY.md)), with a bug-free control. Regenerate with `PYTHONPATH=src:benchmark python -c "from pvbench.method_bugs import run_all, to_markdown; print(to_markdown(run_all()))"`.
 
 | Case | Seeded bug | From | Check | Result | Missed by |
 |---|---|---|---|---|---|

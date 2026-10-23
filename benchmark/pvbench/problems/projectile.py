@@ -12,10 +12,10 @@ import math
 
 import numpy as np
 
-from ..checks import Check
-from ..mms import ManufacturedODE
-from ..order import check_order
-from ..studies import close_result, ode_checks, smoke_check
+from physverify.checks import Check
+from physverify.mms import ManufacturedODE
+from physverify.order import check_order
+from physverify.studies import close_result, ode_checks, smoke_check
 from ._common import STEPPER_BUGS, BugInfo, families, make_integrate, rk4_with_bugs
 
 NAME = "projectile"

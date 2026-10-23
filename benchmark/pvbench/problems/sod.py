@@ -24,8 +24,8 @@ import math
 
 import numpy as np
 
-from ..checks import FAIL, PASS, Check, Result
-from ..order import check_exact, check_order
+from physverify.checks import FAIL, PASS, Check, Result
+from physverify.order import check_exact, check_order
 from ._common import BugInfo, families
 
 NAME = "sod"

@@ -9,11 +9,11 @@ from __future__ import annotations
 
 import numpy as np
 
-from ..checks import Check
-from ..loaders import load_module_from_path
+from physverify.checks import Check
+from physverify.loaders import load_module_from_path
 from ..problems import pendulum as P
 from ..problems._common import make_integrate
-from ..studies import ode_checks
+from physverify.studies import ode_checks
 from . import sibling_project
 
 ENV_VAR = "PHYSVERIFY_PENDULUM_DIR"

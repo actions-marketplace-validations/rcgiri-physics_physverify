@@ -2,9 +2,6 @@ site_name: physverify
 site_description: Check that physics simulation code solves the right equations at the order it claims.
 site_author: Ram Chandra Giri
 site_url: https://rcgiri-physics.github.io/physverify/
-repo_url: https://github.com/rcgiri-physics/physverify
-repo_name: rcgiri-physics/physverify
-edit_uri: edit/main/docs/
 copyright: Copyright &copy; 2026 Ram Chandra Giri, MIT licence
 
 theme:
@@ -55,6 +52,7 @@ markdown_extensions:
 
 nav:
   - Home: index.md
+  - Start here: start-here.md
   - Getting started: getting-started.md
   - How it works: how-it-works.md
   - What a PASS means: assumptions.md
@@ -66,6 +64,7 @@ nav:
       - Exact patch tests: checks/patch.md
       - Runge-Kutta tables: checks/runge-kutta.md
       - Exact references: checks/exact-references.md
+      - Identities and round trips: checks/identities.md
       - Statistics and Monte Carlo: checks/statistics.md
   - Convergence-study pitfalls: pitfalls.md
   - Recipes: recipes.md
@@ -82,3 +81,9 @@ nav:
   - Results on real code: results.md
   - Roadmap: roadmap.md
   - Changelog: changelog.md
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/rcgiri-physics/physverify
+      name: Source code on GitHub

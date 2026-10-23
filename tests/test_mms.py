@@ -2,7 +2,7 @@ import numpy as np
 
 from physverify.checks import FAIL, PASS
 from physverify.mms import ManufacturedODE, complex_step_derivative, mms_order_study
-from physverify.problems._common import make_integrate
+from pvbench.problems._common import make_integrate
 
 
 def test_complex_step_derivative_is_exact_to_roundoff():

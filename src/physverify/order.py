@@ -81,6 +81,7 @@ def check_order(
     fit_points: int = 4,
     scale: float = 1.0,
     tol: float | None = None,
+    atol: float | None = None,
 ) -> OrderResult:
     """Compare the observed order of convergence with the order the code claims.
 
@@ -95,6 +96,11 @@ def check_order(
 
     `tol` sets tol_low and tol_high to the same value (a common way to write it; without the alias an
     adapter that wrote `tol=` failed with a TypeError after its whole run).
+
+    `atol` adds an accuracy requirement on the finest resolution. It is reported separately: when the order
+    is as claimed and only `atol` is missed, the message says so, because that is a question of how fine the
+    grid must be, not a convergence bug (batch 7 had an adapter whose absolute tolerance failed while the
+    observed order was exactly as claimed).
     """
     if tol is not None:
         tol_low = tol_high = float(tol)
@@ -158,4 +164,15 @@ def check_order(
     else:
         msg = f"observed order {p:.2f} (expected {expected:g})"
         status = PASS
+    if atol is not None:
+        base["acceptance"] += f", and finest error at most {atol:g}"
+        finest = float(errs[-1])
+        if finest > atol:
+            if status == PASS:
+                msg = (f"observed order {p:.2f} is as claimed ({expected:g}), but the finest error {finest:.3g} is above"
+                       f" the absolute tolerance {atol:g}: only the accuracy requirement fails, not the convergence; at"
+                       f" this order it needs about {(finest / atol) ** (1 / p):.2g} times smaller steps")
+            else:
+                msg += f"; the finest error {finest:.3g} is also above the absolute tolerance {atol:g}"
+            status = FAIL
     return OrderResult(status, msg, fitted=p, **base)
