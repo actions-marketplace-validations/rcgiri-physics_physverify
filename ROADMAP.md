@@ -15,15 +15,21 @@ What may come after 0.4.2. The unreleased changes (identity checks, `extract_fun
 
 The benchmark and the single-repository adapters moved to `benchmark/pvbench/` (not installed). The AI-assistant parts (`physverify hook`, `physverify mcp`) stay in the package: they use only the standard library, so an extra would not make the install any smaller.
 
-## Next: checking code without writing a wrapper
+## Now: improve the tool, not the number of repositories tested
 
-Today every check needs a short spec file, and for most codes a small adapter that adds a source term. That is the biggest barrier to trying physverify. Several checks need no adapter at all, because they ask the code only to run, not to solve a different problem:
+From 2026-10-23 no new corpus batches are planned. Of the 74 defects reported to authors, 14 were found by a physverify check as such and most of the rest by the test script written for each repository ([FINDINGS_BY_METHOD.md](results/corpus/FINDINGS_BY_METHOD.md)). Writing those scripts is the bottleneck, so the work now goes into checks that need no script, then into rescanning the repositories already tested: what is recovered, and what is a false alarm, within that sample only.
 
-- **Find and check Runge-Kutta tables automatically.** Scan a project's source for Butcher tables (arrays named `A`/`b`/`c`, `butcher`, `tableau`, or the classic coefficient patterns) and run `check_tableau` on each, with the order taken from the name or the docstring. This found mislabelled tables in two real packages and needs no knowledge of the equations.
-- **Self-convergence (Richardson) studies.** Run the code at three or more resolutions and measure the order from the differences between them, with no exact solution. It cannot prove the equations are right, but it catches a wrong order, an off-by-one step count or a time grid that ends at the wrong time.
-- **A declarative spec instead of Python.** A `[tool.physverify]` table in `pyproject.toml` (or a small YAML file) that names the solver function, its call pattern (`solve(y0, t_end, n_steps)`), the claimed order and the equations as text (turned into a reference with SymPy). physverify would then build the checks itself.
-- **Call-pattern discovery.** Inspect a module for functions that look like a right-hand side `f(t, y)`, a stepper `step(y, dt)` or a solver `solve(..., n)`, call each with small test inputs, and suggest a spec. The user confirms; nothing is assumed silently.
-- **`physverify scan PATH`.** One command that runs the wrapper-free stages in order (smoke run, near-miss constants, Butcher tables, self-convergence where a solver is found) and writes one report.
+### Done: `physverify scan PATH` (static, runs nothing)
+
+Near-miss constants, Runge-Kutta tables written as literals (order, row sums, error and embedded weights, claimed order from names), grid spacing against `linspace`, inverse-pair suggestions. See `docs/running/cli.md`.
+
+### Next for `scan`
+
+- **Done: tables written as code.** Stages such as `k2 = h*f(t + h/2, y + k1/2)` are read back into `A`, `b`, `c` and checked like literal tables and against a table in the docstring. Next: split systems (`x` and `v` advanced side by side) and implicit stages.
+- **Stages that run code, in the sandbox only:** a smoke run, inverse pairs as round trips, `min_*` / `max_*` and 2D / 3D siblings called with the same arguments, and self-convergence (Richardson) where a solver with a step-count argument is found.
+- **Call-pattern discovery.** Find functions that look like a right-hand side `f(t, y)`, a stepper `step(y, dt)` or a solver `solve(..., n)` and suggest a spec. The user confirms; nothing is assumed silently.
+- **A declarative spec instead of Python.** A `[tool.physverify]` table in `pyproject.toml` naming the solver, its call pattern, the claimed order and the equations as text (turned into a reference with SymPy).
+- **Measure false alarms.** Every new stage is run over the whole cloned corpus at the tested and the latest commits, and each WARN is checked by hand before the stage is released.
 
 ## Must-have improvements
 
@@ -31,7 +37,6 @@ Today every check needs a short spec file, and for most codes a small adapter th
 - **Whole PDE order studies from SymPy.** `physverify.symbolic` already derives source terms; the next step is to run the full study from an equation written as text.
 - **IMEX / additive Runge-Kutta coupling conditions.** Check the conditions that link the explicit and implicit tables of an IMEX pair (bi-coloured trees), not only each table on its own. Also the order of embedded error estimators.
 - **Stochastic checks that stop early.** Stop sampling as soon as the result is decisive, so slow Monte Carlo codes fit inside a time budget.
-- **Identity probes in `physverify scan`.** Run the cheap identity checks that need no knowledge of the equations: pairs of functions whose names say they are inverses (`x_to_y` / `y_to_x`, `s2z` / `z2s`) as round trips, and `min_*` / `max_*` or 2D / 3D siblings called with the same arguments.
 - **Units in comparisons.** Most adapter mistakes in batch 8 were units or coordinate origins. An optional units-aware comparison (via pint, when installed) that refuses to compare quantities of different dimension.
 
 ## Documentation website

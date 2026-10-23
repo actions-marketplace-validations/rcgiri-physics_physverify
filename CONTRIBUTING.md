@@ -11,6 +11,8 @@ Thanks for your interest. physverify is actively evolving, and contributions and
 5. **Documentation:** a step that confused you, a missing example, a typo. Small pull requests are welcome.
 6. **Exact reference solutions** from your field (with a citation), for `physverify.references`.
 
+Everyone taking part is asked to follow the [code of conduct](CODE_OF_CONDUCT.md). Questions are welcome as [question issues](https://github.com/rcgiri-physics/physverify/issues/new?template=question.md). If you work with an AI assistant, point it to [AGENTS.md](AGENTS.md), and say in the pull request that it helped.
+
 ## Reporting a problem
 
 - **A check that fails when it should pass, or passes when it should fail:** use the [bug report template](https://github.com/rcgiri-physics/physverify/issues/new?template=bug_report.md) with a minimal example and the output. First read [Troubleshooting](https://rcgiri-physics.github.io/physverify/troubleshooting/): many failures come from the spec or the adapter, not the solver.

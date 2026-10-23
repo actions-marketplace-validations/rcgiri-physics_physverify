@@ -44,6 +44,24 @@ Call `requires("package")` at the start of a check (or `raise SkipCheck(reason)`
 - A check still running at twice its budget is reported INCONCLUSIVE, and the remaining checks run.
 - Python cannot stop a running thread, so such a check keeps running in the background until the program exits; its result is discarded.
 
+## `physverify scan`
+
+```bash
+physverify scan path/to/project
+physverify scan path/to/project --only tables,grid --json scan.json
+```
+
+Reads every `.py` file with Python's `ast` module and **runs nothing**, so it is safe on code you have not read. Four stages, each from a kind of bug found in public code:
+
+| Stage | Looks for | Level |
+|---|---|---|
+| `constants` | literals close to, but not equal to, a physical constant: within 10% for constants with units (`6.6e-11`), within 0.2% for pure numbers (`3.14`, `2.27`), and `g` only when assigned to a gravity name (`g = 9.7`); one line per constant and file | NOTE |
+| `tables` | Runge-Kutta tables written as literals: the order the coefficients really have, row sums against `c`, error weights that must sum to 0, and the order a name, docstring or `order` attribute claims (`rk4`, `heun3`, `3rd order`, `def order(self): return 3`). Tables are read from assignments, from constructor keywords and dicts (`ButcherTableau(a=..., b=..., b_error=..., order=5)`), from classes that inherit them, and from `A = np.zeros((s, s))` filled by `A[i, :k] = [...]`. Also **stages written as code** (`k2 = h*f(t + h/2, y + k1/2)`): the table is read back from the calls, then checked the same way, against the stage times, and against a Butcher table drawn in the docstring | WARN when a claim, `c` or the docstring does not match, when a stage leaves out `h`, or when a combination of the stages sums to neither 1 nor 0; else NOTE |
+| `grid` | a spacing `(b - a)/D` next to `linspace(a, b, M)` with `D` not equal to `M - 1`; compared by substituting random values, so `W/(N-1)` with `linspace(0, W, N+1)` is caught too. `D` must differ from `M - 1` by a constant, so an element length `L/n` next to a plotting grid of `100*n` points is not flagged | WARN in the same function, NOTE across functions or files |
+| `pairs` | functions whose names say they undo each other (`x_to_y` / `y_to_x`, `s2z` / `z2s`), to check with `identities.check_roundtrip` | NOTE |
+
+Exit code 1 if there is any WARN, 0 otherwise, 2 for a bad path or stage name. Files that do not parse are listed, not skipped silently. A clean scan means only that these patterns were not found. Stages are read only for explicit methods on one state variable: implicit methods and systems split into parts (`x` and `v` advanced side by side) are skipped, and no check of the physics is made.
+
 ## `physverify smoke`
 
 ```bash

@@ -8,6 +8,10 @@ Both call the same code as `physverify run`. Neither needs anything beyond physv
 
 Neither is switched on by installing the package. You add them to your own assistant's configuration, as shown below.
 
+## 0. A prompt you can paste
+
+[Start here](start-here.md#with-an-ai-assistant) has a prompt that asks an assistant to install physverify, run `physverify scan`, write a spec from the physics (not from the code) and explain the result. An assistant working on physverify itself should read [AGENTS.md](https://github.com/rcgiri-physics/physverify/blob/main/AGENTS.md) in the repository.
+
 ## 1. Write a spec next to the solver
 
 A spec is a `verify_*.py` file that defines `checks()`. [examples/verify_damped_oscillator.py](../examples/verify_damped_oscillator.py) is a complete one. The reference right-hand side in the spec must be written independently of the solver. If the assistant writes both, ask it to derive the reference from the equations, not from its solver.
