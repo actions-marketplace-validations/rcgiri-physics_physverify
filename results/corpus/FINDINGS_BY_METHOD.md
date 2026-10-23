@@ -46,7 +46,7 @@ Some entries are judgement calls, marked *; where a report has two defects found
 
 ## What the new `physverify scan` recovers without any script
 
-`physverify scan` (added 2026-10-23) reads a repository's source and runs nothing. On the tested commits it recovers 9 of the 74 defects with no adapter:
+`physverify scan` (added 2026-10-23) reads a repository's source and runs nothing. On the tested commits it recovers 18 of the 74 defects with no adapter (the Phase 1 additions are listed in [RESCAN_2026-10.md](RESCAN_2026-10.md)):
 
 | ID | Found by `scan` | Stage |
 |---|---|---|

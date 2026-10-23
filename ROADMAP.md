@@ -25,9 +25,9 @@ Near-miss constants, Runge-Kutta tables written as literals (order, row sums, er
 
 ### Plan: let `scan` find more of these defects on its own
 
-Today `physverify scan` finds 9 of the 74 reported defects with no test script. The other 65 were found by running the code (11), by a reference written for that repository (37), or by reading (12). Looking at each one, most fall into a few patterns that a general check could catch without knowing the physics. The plan adds those checks in order of defects per unit of work. Every target count below is a guess from the reports, not a result; each phase ends by measuring it.
+Today `physverify scan` finds 18 of the 74 reported defects with no test script (9 before Phase 1). The other 65 were found by running the code (11), by a reference written for that repository (37), or by reading (12). Looking at each one, most fall into a few patterns that a general check could catch without knowing the physics. The plan adds those checks in order of defects per unit of work. Every target count below is a guess from the reports, not a result; each phase ends by measuring it.
 
-**Phase 1: more static checks (runs nothing; about a week).** Target: about 8 more of the 74.
+**Phase 1: more static checks (runs nothing). Done 2026-10-23:** target about 8 more of the 74, result 9 more, for 6% more run time. Details and false alarms in [RESCAN_2026-10.md](results/corpus/RESCAN_2026-10.md).
 
 | Check | Defects it targets |
 |---|---|
@@ -66,7 +66,7 @@ Today `physverify scan` finds 9 of the 74 reported defects with no test script. 
 4. Release the check only if its false alarms on this sample are few enough to read through, and say in the docs that the rules were tuned on it.
 5. Update [FINDINGS_BY_METHOD.md](results/corpus/FINDINGS_BY_METHOD.md) and [RESCAN_2026-10.md](results/corpus/RESCAN_2026-10.md) with the new "found by scan alone" count.
 
-If the targets hold, `scan` would find roughly 40 of the 74 on its own, against 9 today. Even then a clean scan will not mean correct code: the counts describe this sample only.
+If the targets hold, `scan` would find roughly 40 of the 74 on its own, against 18 today. Even then a clean scan will not mean correct code: the counts describe this sample only.
 
 **Speed rule.** `physverify scan PATH` stays static (it reads the code and runs nothing), so it stays fast and safe on any code. Today a small repository takes under a second and a 200-file library about 30 s; the full corpus about 26 minutes per commit set.
 

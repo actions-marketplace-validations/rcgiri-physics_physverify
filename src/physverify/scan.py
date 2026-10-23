@@ -12,6 +12,9 @@ Each stage comes from a kind of bug found in the corpus study:
 - pairs       functions whose names say they are inverses (`x_to_y` / `y_to_x`), listed as round trips
               worth running with `physverify.identities.check_roundtrip`; not run here
 
+- names, api, literals, units   undefined names and files that do not parse, removed NumPy/SciPy/Python
+              features, typo-like literals, unit tables with the wrong dimension (`physverify.lint`)
+
 A finding is WARN (very likely a defect: a table that misses its claimed order, row sums that do not
 match c, a spacing that does not match its grid) or NOTE (worth one look). A clean scan says only that
 these patterns were not found.
@@ -191,12 +194,20 @@ def _own_nodes(scope):
         todo.extend(ast.iter_child_nodes(node))
 
 
+def all_nodes(tree) -> list:
+    """Every node of a file's tree, computed once and shared by the stages (walking the tree is most of the cost)."""
+    cached = getattr(tree, "_pv_nodes", None)
+    if cached is None:
+        cached = tree._pv_nodes = list(ast.walk(tree))
+    return cached
+
+
 def _scopes(tree):
     """Module, each class and each function: (node, name, docstring) to look for tables in (computed once per tree)."""
     cached = getattr(tree, "_pv_scopes", None)
     if cached is None:
         cached = [(tree, "", (ast.get_docstring(tree) or "") if isinstance(tree, ast.Module) else "")]
-        cached += [(n, n.name, ast.get_docstring(n) or "") for n in ast.walk(tree)
+        cached += [(n, n.name, ast.get_docstring(n) or "") for n in all_nodes(tree)
                    if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
         tree._pv_scopes = cached
     return cached
@@ -415,7 +426,7 @@ def scan_tables(path: Path, tree, rel: str) -> list[Finding]:
         owner[id(node)] = fn
         inner = node if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) else fn
         todo.extend((child, inner) for child in ast.iter_child_nodes(node))
-    for node in ast.walk(tree):
+    for node in all_nodes(tree):
         if not isinstance(node, (ast.Call, ast.Dict)):
             continue
         group = _keyword_group(node)
@@ -683,7 +694,7 @@ def scan_code_tables(path: Path, tree, rel: str) -> list[Finding]:
     from .butcher import order_residuals, tableau_order
 
     found = []
-    for fn in ast.walk(tree):
+    for fn in all_nodes(tree):
         if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
         names = [_call_name(n) for n in ast.walk(fn) if isinstance(n, ast.Call) and len(n.args) >= 2]
@@ -902,7 +913,7 @@ _PAIR = re.compile(r"^(?P<pre>.*?)(?P<x>[a-z0-9]+)(?P<sep>_to_|2)(?P<y>[a-z0-9]+
 
 
 def scan_pairs(path: Path, tree, rel: str) -> list[Finding]:
-    funcs = {n.name: n.lineno for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    funcs = {n.name: n.lineno for n in all_nodes(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
     found, seen = [], set()
     for fname, line in funcs.items():
         m = _PAIR.match(fname)
@@ -923,6 +934,11 @@ def scan_pairs(path: Path, tree, rel: str) -> list[Finding]:
 # them only when they are close; dimensional constants (6.6e-11, 3e8) rarely match by chance.
 _PURE = {"pi", "e (Euler)", "T_c (2D Ising)", "G M_sun / 4 pi^2 (au, yr)"}
 _PURE_REL = 2e-3
+# Units and constants fixed by definition: a slip or an old value sits within 0.1%, so only that close is noted.
+_DEFINED = {"N_A", "R (gas constant)", "sigma (Stefan-Boltzmann)", "astronomical unit", "light year", "parsec",
+            "standard atmosphere", "torr", "nautical mile", "h (CGS)", "k_B (CGS)", "c (CGS)", "e (esu)", "m_e (g)",
+            "G (CGS)"}
+_DEFINED_REL = 1e-3
 
 
 def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
@@ -931,7 +947,7 @@ def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
 
     names = constants._assigned_names(tree)
     hits = {}
-    for node in ast.walk(tree):
+    for node in all_nodes(tree):
         if not (isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool)):
             continue
         try:
@@ -943,11 +959,14 @@ def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
             continue
         name, ref, r, comment = hit
         assigned = names.get(id(node), set())
-        if name == "g" or isinstance(node.value, int) or constants._digits(v) < 3:
+        short_int = isinstance(node.value, int) and constants._digits(v) < 6  # 149597870691 is no accident
+        if name == "g" or short_int or constants._digits(v) < 3:
             if not assigned & constants.NAMES.get(name, set()):
                 continue
         elif name in _PURE and abs(r) > _PURE_REL:
             continue
+        if name in _DEFINED and abs(r) > (_DEFINED_REL / 10 if isinstance(node.value, int) else _DEFINED_REL):
+            continue  # a definition typed wrong or taken from an old edition is close; 14666785333344 is not an au
         hits.setdefault((name, ast.unparse(node)), []).append((node.lineno, ref, r, comment))
     out = []
     for (name, literal), where in sorted(hits.items(), key=lambda kv: kv[1][0][0]):
@@ -960,25 +979,33 @@ def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
 
 # --- driver ---------------------------------------------------------------------------------------
 
-STAGES = ("constants", "tables", "grid", "pairs")
+STAGES = ("constants", "tables", "grid", "pairs", "names", "api", "literals", "units")
 
 
 def scan(path, *, stages=STAGES) -> tuple[list[Finding], list[str]]:
     """Findings for every Python file under `path`, and the files that could not be parsed."""
+    from . import lint
+
     root = Path(path)
     findings, unparsed, parsed = [], [], []
     for f in python_files(root):
         rel = str(f.relative_to(root)) if root.is_dir() else f.name
         try:
-            text = f.read_text(encoding="utf-8", errors="replace")
+            text = f.read_text(encoding="utf-8-sig", errors="replace")  # a byte-order mark is valid Python
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")  # invalid escapes in other people's strings are not our concern
                 tree = ast.parse(text, str(f))
         except (SyntaxError, ValueError) as exc:
-            unparsed.append(f"{rel}: {type(exc).__name__}: {exc}")
+            if "names" in stages:
+                findings.append(lint.parse_finding(rel, exc, text))
+            else:
+                unparsed.append(f"{rel}: {type(exc).__name__}: {exc}")
             continue
         parsed.append((rel, tree))
-        for stage, run in (("constants", scan_constants), ("tables", scan_tables), ("tables", scan_code_tables), ("grid", scan_grid), ("pairs", scan_pairs)):
+        runs = (("constants", scan_constants), ("tables", scan_tables), ("tables", scan_code_tables),
+                ("grid", scan_grid), ("pairs", scan_pairs), ("names", lambda f, t, r: lint.scan_names(f, t, r, text)), ("api", lint.scan_api),
+                ("literals", lambda f, t, r: lint.scan_literals(f, t, r, text)), ("units", lint.scan_units))
+        for stage, run in runs:
             if stage in stages:
                 try:
                     findings += run(f, tree, rel)
