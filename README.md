@@ -21,7 +21,7 @@ New to this? [Start here](https://rcgiri-physics.github.io/physverify/start-here
 
 ## Use it on your own code
 
-- **Any project, no set-up:** `physverify scan PATH` reads the code (it runs nothing) and flags Runge-Kutta tables that do not have their stated order, grid spacings that do not match their grid, near-miss physical constants, and inverse function pairs worth a round-trip test.
+- **Any project, no set-up:** `physverify scan PATH` reads the code (it runs nothing) and flags Runge-Kutta methods that do not have their stated order (written as tables, as class attributes or as stages in code), grid spacings that do not match their grid, near-miss physical constants, and inverse function pairs worth a round-trip test.
 - **An ODE solver:** `physverify init verify_solver.py --solver mysolver --order 4` writes a spec; fill in the equations (from the physics, not from your code) and run `physverify run verify_solver.py`.
 - **A Runge-Kutta table:** `check_tableau(A, b, c, claimed=3)` from `physverify.butcher` checks its order, stage order and stability from the coefficients alone.
 - **Errors you already have:** `check_order(hs, errors, expected=2)` gives PASS, FAIL or INCONCLUSIVE with a reason.
@@ -40,7 +40,7 @@ A failed check fails the job, like a broken unit test ([CI guide](https://rcgiri
 
 ## Does it catch bugs?
 
-Of 37 bugs seeded into five small solvers, it flagged 35 (plain "compare with one answer" tests: 27), with no false alarms. The bugs and checks were written by the same person, so this shows the tool works as designed, not how it does on other people's code. On public physics repositories, 74 defects were reported to authors; 14 of them were found by a physverify check as such, 11 by simply running the code, and the rest by the per-repository test scripts or by reading the code ([which found what](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FINDINGS_BY_METHOD.md)). The counts describe that sample only and are not a bug rate. Details: [results](https://rcgiri-physics.github.io/physverify/results/), and [results/README.md](https://github.com/rcgiri-physics/physverify/blob/main/results/README.md) to regenerate every table.
+Of 37 bugs seeded into five small solvers, it flagged 35 (plain "compare with one answer" tests: 27), with no false alarms. The bugs and checks were written by the same person, so this shows the tool works as designed, not how it does on other people's code. On public physics repositories, 74 defects were reported to authors; 14 of them were found by a physverify check as such, 11 by simply running the code, and the rest by the per-repository test scripts or by reading the code. `physverify scan` alone, with no script, now finds 9 of the 74, up from 2 in its first version, and found 7 new defects in the same repositories ([which found what](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FINDINGS_BY_METHOD.md)). The counts describe that sample only and are not a bug rate. Details: [results](https://rcgiri-physics.github.io/physverify/results/), and [results/README.md](https://github.com/rcgiri-physics/physverify/blob/main/results/README.md) to regenerate every table.
 
 ## Limits
 

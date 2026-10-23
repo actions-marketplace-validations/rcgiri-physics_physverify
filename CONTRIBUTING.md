@@ -10,6 +10,7 @@ Thanks for your interest. physverify is actively evolving, and contributions and
 4. **Adapters for common solver styles,** for example a SciPy `solve_ivp`-style function, or a solver that writes its output to files.
 5. **Documentation:** a step that confused you, a missing example, a typo. Small pull requests are welcome.
 6. **Exact reference solutions** from your field (with a citation), for `physverify.references`.
+7. **Run `physverify scan` on code you know** and tell us about every WARN: real, harmless, or a false alarm. This is how each check gets a false-alarm rate on real code (see "Test each feature on as many repositories as possible" in [ROADMAP.md](ROADMAP.md)).
 
 Everyone taking part is asked to follow the [code of conduct](CODE_OF_CONDUCT.md). Questions are welcome as [question issues](https://github.com/rcgiri-physics/physverify/issues/new?template=question.md). If you work with an AI assistant, point it to [AGENTS.md](AGENTS.md), and say in the pull request that it helped.
 

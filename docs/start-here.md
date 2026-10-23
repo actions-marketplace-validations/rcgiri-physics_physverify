@@ -55,7 +55,7 @@ physverify scan path/to/the/project
 | What | Example |
 |---|---|
 | **constants** close to, but not equal to, a physical constant | `g = 9.7`, `pi = 3.14` |
-| **tables**: Runge-Kutta coefficient tables that do not have the order their name says, or whose rows do not add up to `c` | a table called "order 3" that is only order 2 |
+| **tables**: Runge-Kutta methods that do not have the order their name says, whether written as a table or as stages in code (`k2 = h*f(t + h/2, y + k1/2)`), or whose stages disagree with the table in their own docstring | a method called "order 3" that is only order 2 |
 | **grid**: a spacing that does not match its grid | `x = linspace(0, L, N)` with `dx = L/N` (it is `L/(N-1)`) |
 | **pairs**: functions that should undo each other | `cart_to_polar` and `polar_to_cart` |
 

@@ -68,6 +68,24 @@ Today `physverify scan` finds 9 of the 74 reported defects with no test script. 
 
 If the targets hold, `scan` would find roughly 40 of the 74 on its own, against 9 today. Even then a clean scan will not mean correct code: the counts describe this sample only.
 
+**Speed rule.** `physverify scan PATH` stays static (it reads the code and runs nothing), so it stays fast and safe on any code. Today a small repository takes under a second and a 200-file library about 30 s; the full corpus about 26 minutes per commit set.
+
+- Phase 1 checks join the tree walks that already happen rather than adding their own; the expected cost is 10 to 30% more time. A check that adds more than that must say why.
+- Phases 2 and 3 run the code, so they go behind `physverify scan PATH --run`, inside the sandbox for code that is not your own, with a time budget per probe (as `physverify run --budget`). A probe that runs out of time is reported as skipped, never as passed.
+- Each phase reports its run time next to its detection count. A check that costs much more than it finds moves behind `--run` or is dropped.
+- On the corpus, `--run` sweeps run in batches in the background, and later rescans run only for repositories with new commits.
+
+### Test each feature on as many repositories as possible
+
+Every check should be measured on every repository in the corpus where it applies, not only on the few where a bug was first found. For each feature:
+
+1. **Find where it applies.** For example `check_tableau`: every repository with a Butcher table as literals, constructor keywords, class attributes or stages written as code (the scan's `tables` stage lists them; 63 tables and 47 steppers in the October rescan). For `check_order`: every repository with a stepper the scan can identify. For the statistics checks: every Monte Carlo sampler.
+2. **Run the feature there,** at the tested and the latest commit, in the sandbox when it runs code.
+3. **Report per feature:** how many repositories it applied to, how many it could actually run on, defects confirmed, false alarms, and run time. One table per feature in `results/corpus/`, kept up to date as new repositories are added.
+4. **Grow the pool of repositories** for features that apply to few of them (implicit methods, Monte Carlo samplers, PDE solvers), from the untested candidate pool, with the selection rule written down first.
+
+This shows how often each check is useful, not just that it can find a bug, and it gives each check its own false-alarm rate on real code.
+
 ### Also for `scan`
 
 - **A declarative spec instead of Python.** A `[tool.physverify]` table in `pyproject.toml` naming the solver, its call pattern, the claimed order and the equations as text (turned into a reference with SymPy).
