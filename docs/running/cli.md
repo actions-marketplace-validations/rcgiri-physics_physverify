@@ -66,6 +66,8 @@ Reads every `.py` file with Python's `ast` module and **runs nothing**, so it is
 | `units` | a table of (unit expression, "physical type") whose dimension does not match the name, such as `(si.W * si.m**2 / si.Hz, "surface tension")` | WARN |
 | `pairs` | functions whose names say they undo each other (`x_to_y` / `y_to_x`, `s2z` / `z2s`), to check with `identities.check_roundtrip` | NOTE |
 
+From Python, `physverify.scan.extract_tables(path)` returns every table the scan found (A, b, c, the claimed order and its source), to pass on to `check_tableau` for stage order or stability claims.
+
 Exit code 1 if there is any WARN, 0 otherwise, 2 for a bad path or stage name. Files that do not parse are listed, not skipped silently. A clean scan means only that these patterns were not found. Stages are read only for explicit methods on one state variable: implicit methods and systems split into parts (`x` and `v` advanced side by side) are skipped, and no check of the physics is made.
 
 ## `physverify smoke`

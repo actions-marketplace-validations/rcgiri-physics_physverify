@@ -44,7 +44,7 @@ Of the 74 defects reported to authors, 14 were found by a physverify check as su
 | After the first triage | 3 | 4 grid mismatches (3 confirmed) |
 | Runge-Kutta stages written as code | 6 | 7 |
 | Tables in constructors and classes | 9 | 7 |
-| Phase 1 static checks (names, removed APIs, literals, exact constants, units) | 18 | 7 (and static marks in about 80 repositories, not yet confirmed by runs) | Details: [which found what](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FINDINGS_BY_METHOD.md) and [the rescan](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/RESCAN_2026-10.md).
+| Phase 1 static checks (names, removed APIs, literals, exact constants, units) | 18 | 7 (and static marks in about 80 repositories, not yet confirmed by runs) | How often each check applies and what it finds there: [per-feature results](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FEATURES.md). Details: [which found what](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FINDINGS_BY_METHOD.md) and [the rescan](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/RESCAN_2026-10.md).
 
 !!! note "Not a bug rate"
     These counts describe the repositories that were drawn. They are not a bug rate for physics code in general.

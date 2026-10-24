@@ -81,7 +81,7 @@ Every check should be measured on every repository in the corpus where it applie
 
 1. **Find where it applies.** For example `check_tableau`: every repository with a Butcher table as literals, constructor keywords, class attributes or stages written as code (the scan's `tables` stage lists them; 63 tables and 47 steppers in the October rescan). For `check_order`: every repository with a stepper the scan can identify. For the statistics checks: every Monte Carlo sampler.
 2. **Run the feature there,** at the tested and the latest commit, in the sandbox when it runs code.
-3. **Report per feature:** how many repositories it applied to, how many it could actually run on, defects confirmed, false alarms, and run time. One table per feature in `results/corpus/`, kept up to date as new repositories are added.
+3. **Report per feature:** how many repositories it applied to, how many it could actually run on, defects confirmed, false alarms, and run time, in [results/corpus/FEATURES.md](results/corpus/FEATURES.md), kept up to date as new repositories are added. Done for `check_tableau` and the scan stages (2026-10-24); the features that run code follow Phase 2.
 4. **Grow the pool of repositories** for features that apply to few of them (implicit methods, Monte Carlo samplers, PDE solvers), from the untested candidate pool, with the selection rule written down first.
 
 This shows how often each check is useful, not just that it can find a bug, and it gives each check its own false-alarm rate on real code.

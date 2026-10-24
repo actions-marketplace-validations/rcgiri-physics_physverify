@@ -26,7 +26,7 @@ import ast
 import math
 import re
 import warnings
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from fractions import Fraction
 from pathlib import Path
 
@@ -42,6 +42,7 @@ class Finding:
     path: str
     line: int
     message: str
+    table: dict | None = field(default=None, repr=False)  # the Runge-Kutta table a "tables" finding was made from
 
     def __str__(self):
         return f"{self.level} {self.stage:9s} {self.path}:{self.line}: {self.message}"
@@ -364,7 +365,14 @@ def _check_table(lits, name, doc, stem, stated, rel, *, kind="table", stated_emb
                         msgs.append(f"embedded weights {en} have order {pe}, but order {stated_embedded} is stated")
                     else:
                         msgs.append(f"embedded weights {en} have order {pe}")
-        found.append(Finding("tables", level, rel, line, f"{where}: " + "; ".join(msgs)))
+        table = {"name": name, "kind": kind, "A": A, "b": b, "c": lits[cn][0] if cn is not None else None,
+                 "claimed": claimed if claimed is not None and claimed <= 6 else None, "claim_source": why,
+                 "stated_embedded": stated_embedded,
+                 "embedded": {en: e for en, (e, _l) in lits.items() if _BHAT_NAMES.match(en) and _vector(e, s) and en != bn},
+                 "error_weights": {en: e for en, (e, _l) in lits.items()
+                                   if (_E_NAMES.match(en) or en == "<e>") and _vector(e, s) and en != bn},
+                 "order": p}
+        found.append(Finding("tables", level, rel, line, f"{where}: " + "; ".join(msgs), table))
     return found
 
 
@@ -745,7 +753,11 @@ def scan_code_tables(path: Path, tree, rel: str) -> list[Finding]:
                 msgs.append(f"but '{why}' suggests order {claimed} (largest residual {worst:.1e})")
             else:
                 msgs.append(f"consistent with '{why}'")
-        found.append(Finding("tables", level, rel, line, f"{fn.name}: " + "; ".join(msgs)))
+        table = {"name": fn.name, "kind": "stages written as code", "A": A, "b": b, "c": c,
+                 "claimed": claimed if claimed is not None and claimed <= 6 else None, "claim_source": why,
+                 "stated_embedded": None, "embedded": {}, "error_weights": {}, "order": p,
+                 "docstring_table": {"A": drawn[0], "b": drawn[1]} if drawn is not None and len(drawn[1]) == s else None}
+        found.append(Finding("tables", level, rel, line, f"{fn.name}: " + "; ".join(msgs), table))
     return found
 
 
@@ -1030,6 +1042,17 @@ def scan(path, *, stages=STAGES) -> tuple[list[Finding], list[str]]:
                     grids = {id(g): g for n in div[3] for g in by_name.get(n, {}).get(rel_g, [])}
                     findings += _grid_findings(list(grids.values()), [div], rel_d, rel_g, seen)
     return findings, unparsed
+
+
+def extract_tables(path) -> list[dict]:
+    """Every Runge-Kutta table the scan finds under `path`, as dicts with A, b, c (or None), the claimed order and
+    where the claim comes from, embedded and error weights, and the order the coefficients have. Runs nothing.
+
+    For checks the scan does not make itself, pass them on, e.g.
+    `physverify.butcher.check_tableau(t["A"], t["b"], t["c"], claimed=t["claimed"])`.
+    """
+    findings, _unparsed = scan(path, stages=("tables",))
+    return [dict(f.table, path=f.path, line=f.line, level=f.level) for f in findings if f.table is not None]
 
 
 def to_dict(findings, unparsed) -> dict:

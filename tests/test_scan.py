@@ -532,3 +532,23 @@ def test_environment_names_and_nan_tests_are_quiet(tmp_path):
     _write(tmp_path / "tests", "test_nan.py", "import math\nassert not (1.0 == math.nan)\n")
     f = scan(tmp_path)[0]
     assert not _by_stage(f, "names") and not _by_stage(f, "literals")
+
+
+def test_extract_tables_returns_the_coefficients(tmp_path):
+    from physverify.butcher import check_tableau
+    from physverify.scan import extract_tables
+
+    _write(tmp_path, "rk.py", _RK4_CODE)
+    _write(tmp_path, "tab.py", '''
+        def ssprk3():
+            """order 3"""
+            A = [[0, 0, 0], [1, 0, 0], [0.25, 0.25, 0]]
+            b = [1/6, 1/6, 2/3]
+            c = [0, 1, 0.5]
+            return A, b, c
+        ''')
+    tables = {t["name"]: t for t in extract_tables(tmp_path)}
+    assert set(tables) == {"rk4", "ssprk3"}
+    assert tables["rk4"]["kind"] == "stages written as code" and tables["rk4"]["claimed"] == 4
+    t = tables["ssprk3"]
+    assert check_tableau(t["A"], t["b"], t["c"], claimed=t["claimed"]).status == "PASS"
