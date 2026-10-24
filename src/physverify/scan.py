@@ -862,6 +862,7 @@ def _own_grids_and_divs(scope):
     nodes = list(_own_nodes(scope))
     # a division used as the step of a slice (np.mgrid[a:b:(b-a)/n], arange-style) builds its own grid
     steps = {id(n.step) for n in nodes if isinstance(n, ast.Slice) and n.step is not None}
+    periodic = []  # linspace(a, b, M, endpoint=False): its spacing really is (b - a) / M
     for node in nodes:
         if id(node) in steps:
             continue
@@ -870,12 +871,17 @@ def _own_grids_and_divs(scope):
             if fn == "linspace" and len(node.args) >= 3:
                 if any(k.arg == "endpoint" and isinstance(k.value, ast.Constant) and k.value.value is False
                        for k in node.keywords):
+                    periodic.append(node.args[2])
                     continue
                 grids.append((node.args[0], node.args[1], node.args[2], node.lineno))
         if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
             den_names = _names(node.right)
             if den_names:  # x / 2 cannot be a grid spacing with a named number of points
                 divs.append((node, node.lineno, den_names))
+    if periodic:
+        # a spacing L / M next to its own periodic grid of M points is right; do not pair it with grids elsewhere
+        divs = [d for d in divs if not any(_src(d[0].right) == _src(m) or _src(d[0].right) == f"({_src(m)})"
+                                           for m in periodic)]
     return grids, divs
 
 
@@ -925,7 +931,9 @@ _PAIR = re.compile(r"^(?P<pre>.*?)(?P<x>[a-z0-9]+)(?P<sep>_to_|2)(?P<y>[a-z0-9]+
 
 
 def scan_pairs(path: Path, tree, rel: str) -> list[Finding]:
-    funcs = {n.name: n.lineno for n in all_nodes(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    # test_x_to_y / test_y_to_x test an inverse pair; they are not converters to run
+    funcs = {n.name: n.lineno for n in all_nodes(tree)
+             if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and not n.name.startswith("test")}
     found, seen = [], set()
     for fname, line in funcs.items():
         m = _PAIR.match(fname)
@@ -946,6 +954,11 @@ def scan_pairs(path: Path, tree, rel: str) -> list[Finding]:
 # them only when they are close; dimensional constants (6.6e-11, 3e8) rarely match by chance.
 _PURE = {"pi", "e (Euler)", "T_c (2D Ising)", "G M_sun / 4 pi^2 (au, yr)"}
 _PURE_REL = 2e-3
+# Constants with units: an old edition or a rounded value is within 0.1%, while values 2-10% away were almost all
+# other quantities in the corpus rescan (test values, the atomic mass unit next to the proton mass).
+_DIM_REL = 1e-2
+_TABLE_MIN = 8
+_MANY_CONSTANTS = 20
 # Units and constants fixed by definition: a slip or an old value sits within 0.1%, so only that close is noted.
 _DEFINED = {"N_A", "R (gas constant)", "sigma (Stefan-Boltzmann)", "astronomical unit", "light year", "parsec",
             "standard atmosphere", "torr", "nautical mile", "h (CGS)", "k_B (CGS)", "c (CGS)", "e (esu)", "m_e (g)",
@@ -958,9 +971,14 @@ def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
     from . import constants
 
     names = constants._assigned_names(tree)
+    # numbers in long literal tables are data (measurements, reference values), not constants typed by hand
+    tabulated = {id(e) for n in all_nodes(tree) if isinstance(n, (ast.List, ast.Tuple)) and len(n.elts) >= _TABLE_MIN
+                 for e in n.elts}
     hits = {}
     for node in all_nodes(tree):
         if not (isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool)):
+            continue
+        if id(node) in tabulated:
             continue
         try:
             v = float(node.value)
@@ -977,9 +995,16 @@ def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
                 continue
         elif name in _PURE and abs(r) > _PURE_REL:
             continue
+        elif name not in _PURE and abs(r) > _DIM_REL:
+            continue  # 1.44e-19 is a test value, not a mistyped elementary charge
         if name in _DEFINED and abs(r) > (_DEFINED_REL / 10 if isinstance(node.value, int) else _DEFINED_REL):
             continue  # a definition typed wrong or taken from an old edition is close; 14666785333344 is not an au
         hits.setdefault((name, ast.unparse(node)), []).append((node.lineno, ref, r, comment))
+    if len(hits) > _MANY_CONSTANTS:
+        first = min(w[0][0] for w in hits.values())
+        return [Finding("constants", NOTE, rel, first,
+                        f"{len(hits)} different numbers in this file are close to physical constants; so many usually means"
+                        " the file holds data (fits, tables, generated code), so they are not listed one by one")]
     out = []
     for (name, literal), where in sorted(hits.items(), key=lambda kv: kv[1][0][0]):
         line, ref, r, comment = where[0]

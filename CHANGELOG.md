@@ -3,7 +3,8 @@
 ## Unreleased
 
 - **`physverify.scan.extract_tables(path)`:** every Runge-Kutta table the scan finds, with A, b, c, the claimed order and where the claim comes from, embedded and error weights; `scan --json` includes the same data. For checks the scan does not make itself, such as `check_tableau`'s stage order or stability claims.
-- `results/corpus/FEATURES.md`: each feature measured on every corpus repository where it applies (`check_tableau` and the scan stages).
+- `results/corpus/FEATURES.md`: each feature measured on every corpus repository where it applies (`check_tableau`, stability and embedded-order claims, and every scan stage, with samples checked by hand).
+- **Fewer false alarms in `scan`**, from those samples: constants with units are noted within 1% (was 10%), long numeric tables and files with more than 20 near-constants are summarised, the atomic mass unit and the neutron mass are known constants, and R has its exact value; `test_*` functions are not listed as inverse pairs; a file with six or more undefined names and no usual module alias is one NOTE (names injected by a host program); a spacing next to its own `linspace(..., endpoint=False)` is not paired with grids elsewhere; `distutils` imports are a NOTE, since setuptools still provides the module.
 
 ## 0.5.0 (2026-10-24)
 

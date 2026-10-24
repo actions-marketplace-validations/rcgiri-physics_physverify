@@ -129,6 +129,10 @@ def _annotation_nodes(tree) -> set[int]:
     return {id(m) for r in roots for m in ast.walk(r)}
 
 
+# a file with this many undefined names, none of them a usual module alias, is treated as getting them at run time
+_INJECTED_MIN = 6
+_COMMON_ALIASES = {"np", "plt", "pd", "sp", "scipy", "numpy", "math", "os", "sys", "re", "json", "time", "random",
+                   "torch", "jnp", "jax", "tf", "mpl", "sns", "nx", "integrate", "interpolate", "optimize", "linalg"}
 _NOQA = re.compile(r"#\s*noqa(?::[^#]*\bF821\b|\s*$|\s*#)", re.I)
 
 
@@ -155,6 +159,14 @@ def scan_names(path: Path, tree, rel: str, source: str = "") -> list[Finding]:
             continue  # annotations are not evaluated with `from __future__ import annotations` (or from Python 3.14)
         unknown.setdefault(n.id, []).append(n.lineno)
     out = []
+    if len(unknown) >= _INJECTED_MIN and not unknown.keys() & _COMMON_ALIASES:
+        # many names and none of them a forgotten import: the file most likely gets them at run time
+        # (a host program such as SpaceClaim, or a library that defines names in the caller's namespace)
+        first = min(lines[0] for lines in unknown.values())
+        shown = ", ".join(sorted(unknown)[:8]) + (", ..." if len(unknown) > 8 else "")
+        return [Finding("names", NOTE, rel, first,
+                        f"{len(unknown)} names are used but never defined or imported ({shown}); so many usually means they"
+                        " are provided at run time by a host program or a library, so they are not reported one by one")]
     for name, lines in sorted(unknown.items(), key=lambda kv: kv[1][0]):
         close = [k for k in known if k != name and len(k) > 2 and _one_edit(name, k)]
         hint = f" (did you mean {close[0]}?)" if close else ""
@@ -225,7 +237,8 @@ _SCIPY = {
                         "cumtrapz": "scipy.integrate.cumulative_trapezoid", "romb": None},
     "scipy.misc": {"*": "scipy.datasets, scipy.special or numpy (scipy.misc was removed)"},
 }
-_PY_REMOVED = {"imp": "importlib (removed in Python 3.12)", "distutils": "setuptools or sysconfig (removed in Python 3.12)",
+_SHIMMED = {"distutils"}  # still importable wherever setuptools is installed, so only a NOTE
+_PY_REMOVED = {"imp": "importlib (removed in Python 3.12)", "distutils": "setuptools or sysconfig (removed from the standard library in Python 3.12; setuptools still provides it)",
                "asynchat": "asyncio (removed in Python 3.12)", "asyncore": "asyncio (removed in Python 3.12)",
                "smtpd": "aiosmtpd (removed in Python 3.12)"}
 
@@ -281,12 +294,14 @@ def scan_api(path: Path, tree, rel: str) -> list[Finding]:
                             out.append(Finding("api", WARN, rel, n.lineno, f"{n.module}.{a.name} has been removed from SciPy"
                                                                            + (f"; use {new}" if new else "")))
             if n.module.split(".")[0] in _PY_REMOVED:
-                out.append(Finding("api", WARN, rel, n.lineno, f"{n.module}: use {_PY_REMOVED[n.module.split('.')[0]]}"))
+                top = n.module.split(".")[0]
+                out.append(Finding("api", NOTE if top in _SHIMMED else WARN, rel, n.lineno, f"{n.module}: use {_PY_REMOVED[top]}"))
         if isinstance(n, ast.Import):
             for a in n.names:
                 top = a.name.split(".")[0]
                 if top in _PY_REMOVED:
-                    out.append(Finding("api", WARN, rel, n.lineno, f"import {a.name}: use {_PY_REMOVED[top]}"))
+                    out.append(Finding("api", NOTE if top in _SHIMMED else WARN, rel, n.lineno,
+                                       f"import {a.name}: use {_PY_REMOVED[top]}"))
                 if a.name == "scipy.misc":
                     out.append(Finding("api", WARN, rel, n.lineno, "scipy.misc has been removed from SciPy"))
         if isinstance(n, ast.Attribute) and n.attr in ("simps", "cumtrapz") and isinstance(n.value, ast.Attribute) \

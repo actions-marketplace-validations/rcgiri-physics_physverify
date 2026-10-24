@@ -552,3 +552,54 @@ def test_extract_tables_returns_the_coefficients(tmp_path):
     assert tables["rk4"]["kind"] == "stages written as code" and tables["rk4"]["claimed"] == 4
     t = tables["ssprk3"]
     assert check_tableau(t["A"], t["b"], t["c"], claimed=t["claimed"]).status == "PASS"
+
+
+def test_spacing_of_its_own_periodic_grid_is_not_paired_elsewhere(tmp_path):
+    _write(tmp_path, "spectral.py", """
+        import numpy as np
+        def evolve(x_min, x_max, n_points):
+            x = np.linspace(x_min, x_max, n_points, endpoint=False)
+            dx = (x_max - x_min) / n_points
+            return x, dx
+        """)
+    _write(tmp_path, "fd.py", """
+        import numpy as np
+        def states(x_min, x_max, n_points):
+            x = np.linspace(x_min, x_max, n_points)
+            return x, x[1] - x[0]
+        """)
+    assert not _by_stage(scan(tmp_path)[0], "grid")
+
+
+def test_many_injected_names_become_one_note(tmp_path):
+    _write(tmp_path, "host.py", """
+        sel = NamedSelection.Create(FaceSelection.Create(GetRootPart().Faces), Selection.Empty())
+        opts = FixMissingFacesOptions()
+        DocumentSave.Execute(GetRootPart().Document.Path)
+        CloseWindow()
+        """)
+    _write(tmp_path, "forgot.py", "x = np.sin(1)\ny = plt.plot(x)\nz = sparse.eye(3)\nw = linalg.inv(z)\nv = a + b + c\n")
+    f = _by_stage(scan(tmp_path)[0], "names")
+    host = [x for x in f if x.path == "host.py"]
+    assert len(host) == 1 and host[0].level == NOTE and "run time" in host[0].message
+    assert len([x for x in f if x.path == "forgot.py" and x.level == WARN]) >= 5
+
+
+def test_constants_in_data_files_and_tables_are_summarised(tmp_path):
+    _write(tmp_path, "rates.py", "\n".join(f"r{i} = rate({2.7175 + 1e-5 * i:.6f}, {3.1405 + 1e-5 * i:.6f})"
+                                            for i in range(30)) + "\n")
+    _write(tmp_path, "table.py", "y = [3.1, 3.12, 3.13, 3.14, 3.15, 2.27, 2.71, 2.72]\n")
+    _write(tmp_path, "masses.py", "amu = 1.66053906660e-27\nm_n = 1.67492749804e-27\ncharge = 1.44e-19\n")
+    f = _by_stage(scan(tmp_path)[0], "constants")
+    assert [(x.path, "close to physical constants" in x.message) for x in f] == [("rates.py", True)]
+
+
+def test_test_functions_are_not_inverse_pairs(tmp_path):
+    _write(tmp_path, "t.py", """
+        def test_xyz_to_lab(): pass
+        def test_lab_to_xyz(): pass
+        def c2k(t): return t
+        def k2c(t): return t
+        """)
+    f = _by_stage(scan(tmp_path)[0], "pairs")
+    assert len(f) == 1 and "c2k" in f[0].message
