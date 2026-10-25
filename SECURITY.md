@@ -8,7 +8,14 @@ Most physverify commands **run the code they check**: `physverify run` imports y
 
 ## Advisory GCVE-110-VULN-PYPI-2026-000391
 
-An automated database (Vulnetix) lists "dynamic code execution" (CWE-94) for all physverify versions up to 0.4.2. Its own text says it comes from static analysis, is not a finding of malicious intent, and has not established that untrusted input can reach the flagged call. The calls it refers to are in `physverify.loaders` and the spec loader: running the files you point physverify at is what `physverify run`, `load_definitions_from_path`, `extract_functions` and `load_repaired` are for. physverify never runs code it was not given by you: no code from the network, no code from environment variables, no code from a package's data. The advice above is the remedy: run physverify on code you have not read only inside the sandbox, or use `physverify scan`, which does not execute anything.
+Vulnetix first listed this as "dynamic code execution" (CWE-94) in the spec loader. After review they agreed that running the files you point physverify at is the documented purpose, and corrected the record to CWE-829 (CVSS 3.1 7.0, `AV:L/AC:H/PR:N/UI:R/S:U/C:H/I:H/A:H`) for versions 0.1.0 to 0.5.0:
+
+- `physverify hook` took the project root from the folder of the edited file, not from the session folder, and then ran that folder's `verify_*.py`. With the hook enabled, an assistant's edit inside an untrusted folder ran that folder's code.
+- The `specs` list in `[tool.physverify]` was not confined to the project root, so an entry such as `../x.py` was run.
+
+**Fixed in 0.5.1:** the hook does nothing for an edit outside the session folder and never looks above it, and `specs` entries that leave the project root are dropped. Tests in `tests/test_agent.py`. If you use the hook, upgrade with `pip install -U physverify`. `physverify run`, `smoke` and the MCP server still run the code you give them, as described above.
+
+Record: https://github.com/Vulnetix/advisory-database/blob/main/vulnetix/VULN-PYPI/2026/0xxx/GCVE-110-VULN-PYPI-2026-000391.json
 
 ## Reporting a vulnerability
 

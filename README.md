@@ -4,7 +4,7 @@
 
 **Checks that a simulation solves the equations it claims, at the order of accuracy it claims, not just that it runs.**
 
-physverify is actively evolving (v0.5.0), welcoming contributions and test cases from the computational physics community. Scope: numerical solutions of ODEs and PDEs (time integration, convergence, conservation), plus a few Monte Carlo checks. It needs only NumPy.
+physverify is actively evolving (v0.5.1), welcoming contributions and test cases from the computational physics community. Scope: numerical solutions of ODEs and PDEs (time integration, convergence, conservation), plus a few Monte Carlo checks. It needs only NumPy.
 
 ![The check loop: your solver and an independent description of the physics go in; physverify runs the solver at several resolutions, measures the error and reports a verdict with a reason](https://raw.githubusercontent.com/rcgiri-physics/physverify/main/docs/images/check-loop.svg)
 
@@ -31,7 +31,7 @@ New to this? [Start here](https://rcgiri-physics.github.io/physverify/start-here
 A failed check fails the job, like a broken unit test ([CI guide](https://rcgiri-physics.github.io/physverify/ci/): options, pre-commit, pytest):
 
 ```yaml
-      - uses: rcgiri-physics/physverify@v0.5.0
+      - uses: rcgiri-physics/physverify@v0.5.1
         with:
           specs: tests/verify_*.py
 ```

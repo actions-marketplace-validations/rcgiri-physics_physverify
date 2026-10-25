@@ -55,7 +55,9 @@ def find_specs(root: Path) -> list[Path]:
         except Exception:
             config = {}
         if config.get("specs"):
-            return [(root / s).resolve() for s in config["specs"]]
+            # Entries that leave the root are dropped (GCVE-110-VULN-PYPI-2026-000391).
+            inside = root.resolve()
+            return [p for p in ((root / s).resolve() for s in config["specs"]) if p.is_relative_to(inside)]
     specs = []
     for path in sorted(root.rglob("verify_*.py")):
         parts = path.relative_to(root).parts[:-1]
@@ -111,8 +113,12 @@ def hook_main(stdin=None, stderr=None) -> int:
     edited = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
     if edited and not edited.endswith(".py"):
         return 0
-    cwd = Path(event.get("cwd") or ".")
+    cwd = Path(event.get("cwd") or ".").resolve()
+    if edited and not Path(edited).resolve().is_relative_to(cwd):
+        return 0  # an edit outside the session folder must not run that folder's code (GCVE-110-VULN-PYPI-2026-000391)
     root = find_project_root(Path(edited).parent if edited else cwd)
+    if not root.is_relative_to(cwd):
+        root = cwd  # never climb above the session folder
     specs = find_specs(root)
     if not specs:
         return 0
