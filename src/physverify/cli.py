@@ -3,7 +3,8 @@
     physverify run SPEC.py [SPEC.py ...] [--json FILE|-] [--html FILE] [--markdown FILE] [--quiet]
     physverify demo        (a correct and a broken solver, no files needed)
     physverify init [SPEC.py] [--solver MODULE] [--function NAME] [--dim N] [--order P]
-    physverify scan PATH   (reads the source, runs nothing: constants, RK tables, grid spacing, inverse pairs)
+    physverify scan PATH   (reads the source, runs nothing: constants, RK tables, grid spacing, inverse pairs,
+                           undefined names, removed APIs, typo-like literals, unit tables)
     physverify hook        (Claude Code PostToolUse hook; see docs/agent.md)
     physverify mcp         (MCP server on stdio; see docs/agent.md)
 
@@ -201,7 +202,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     sc = sub.add_parser("scan", help="look for common defects without a spec file; reads the code and runs nothing")
     sc.add_argument("path", help="a Python file or a folder")
-    sc.add_argument("--only", metavar="STAGES", help="comma-separated stages: constants,tables,grid,pairs (default all)")
+    sc.add_argument("--only", metavar="STAGES", help="comma-separated stages: constants,tables,grid,pairs,names,api,literals,units (default all)")
     sc.add_argument("--json", metavar="FILE", help="write findings as JSON to FILE, or to stdout with -")
     sc.set_defaults(func=_cmd_scan)
 

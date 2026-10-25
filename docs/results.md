@@ -36,14 +36,15 @@ The adapters written to test these codes were themselves wrong about 28 times be
 
 ### What found each bug
 
-Of the 74 defects reported to authors, 14 were found by a physverify check as such (an order study, Butcher order conditions, a conservation check), 11 by simply running the code, 37 by the reference written in the test script for that repository, and 12 by reading the code and then confirming with a run. So most of the finding was done by the person writing the test, with physverify running it. The new `physverify scan`, which needs no script, recovers 9 of the 74, and when the cloned repositories were scanned again it found 7 new defects, each then confirmed by a run.
+Of the 74 defects reported to authors, 14 were found by a physverify check as such (an order study, Butcher order conditions, a conservation check), 11 by simply running the code, 37 by the reference written in the test script for that repository, and 12 by reading the code and then confirming with a run. So most of the finding was done by the person writing the test, with physverify running it. The new `physverify scan`, which needs no script, recovers 18 of the 74, and when the cloned repositories were scanned again it found 7 new defects, each then confirmed by a run.
 
 | `physverify scan` version (all on 2026-10-23) | Of the 74 found with no script | New defects (confirmed by a run) |
 |---|---|---|
 | First version | 2 | 0 |
 | After the first triage | 3 | 4 grid mismatches (3 confirmed) |
 | Runge-Kutta stages written as code | 6 | 7 |
-| Tables in constructors and classes | 9 | 7 | Details: [which found what](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FINDINGS_BY_METHOD.md) and [the rescan](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/RESCAN_2026-10.md).
+| Tables in constructors and classes | 9 | 7 |
+| Phase 1 static checks (names, removed APIs, literals, exact constants, units) | 18 | 7 (and static marks in about 80 repositories, not yet confirmed by runs) | How often each check applies and what it finds there: [per-feature results](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FEATURES.md). Details: [which found what](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FINDINGS_BY_METHOD.md) and [the rescan](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/RESCAN_2026-10.md).
 
 !!! note "Not a bug rate"
     These counts describe the repositories that were drawn. They are not a bug rate for physics code in general.

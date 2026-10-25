@@ -46,8 +46,7 @@ Call `requires("package")` at the start of a check (or `raise SkipCheck(reason)`
 
 ## `physverify scan`
 
-!!! note "Planned for 0.5.0"
-    `physverify scan` is planned for the next release, 0.5.0. Until then it is only in the development version: `pip install git+https://github.com/rcgiri-physics/physverify`.
+New in 0.5.0.
 
 ```bash
 physverify scan path/to/project
@@ -58,10 +57,16 @@ Reads every `.py` file with Python's `ast` module and **runs nothing**, so it is
 
 | Stage | Looks for | Level |
 |---|---|---|
-| `constants` | literals close to, but not equal to, a physical constant: within 10% for constants with units (`6.6e-11`), within 0.2% for pure numbers (`3.14`, `2.27`), and `g` only when assigned to a gravity name (`g = 9.7`); one line per constant and file | NOTE |
+| `constants` | literals close to, but not equal to, a physical constant: within 1% for constants with units (`6.67e-11`; a long numeric table, or a file with more than 20 near-constants, is summarised in one NOTE), within 0.2% for pure numbers (`3.14`, `2.27`), within 0.1% for values fixed by definition (the astronomical unit, the torr, the nautical mile, the SI 2019 constants and their CGS values, so an old `h_CGS = 6.626196e-27` is noted), and `g` only when assigned to a gravity name (`g = 9.7`); one line per constant and file | NOTE |
 | `tables` | Runge-Kutta tables written as literals: the order the coefficients really have, row sums against `c`, error weights that must sum to 0, and the order a name, docstring or `order` attribute claims (`rk4`, `heun3`, `3rd order`, `def order(self): return 3`). Tables are read from assignments, from constructor keywords and dicts (`ButcherTableau(a=..., b=..., b_error=..., order=5)`), from classes that inherit them, and from `A = np.zeros((s, s))` filled by `A[i, :k] = [...]`. Also **stages written as code** (`k2 = h*f(t + h/2, y + k1/2)`): the table is read back from the calls, then checked the same way, against the stage times, and against a Butcher table drawn in the docstring | WARN when a claim, `c` or the docstring does not match, when a stage leaves out `h`, or when a combination of the stages sums to neither 1 nor 0; else NOTE |
 | `grid` | a spacing `(b - a)/D` next to `linspace(a, b, M)` with `D` not equal to `M - 1`; compared by substituting random values, so `W/(N-1)` with `linspace(0, W, N+1)` is caught too. `D` must differ from `M - 1` by a constant, so an element length `L/n` next to a plotting grid of `100*n` points is not flagged | WARN in the same function, NOTE across functions or files |
+| `names` | a name used but never defined or imported in the file (a misspelt parameter, `np` without `import numpy`, with a "did you mean" for one-letter slips), and a file that does not parse. Names inside `try ... except NameError/ImportError` and in branches for another Python version are skipped; files with `from x import *` or `exec` are not checked | WARN |
+| `api` | features removed from NumPy (`np.NaN`, `np.float`, `np.product`, `np.array(x, copy=False)`), SciPy (`scipy.integrate.simps`, `scipy.misc`) and Python (`imp`, `distutils`) | WARN; deprecated ones (`np.trapz`) NOTE |
+| `literals` | `1e0 - 5` (meant `1e-5`?), `x ^ 2` (exclusive or, not a power), `x == np.nan` (never true) | WARN |
+| `units` | a table of (unit expression, "physical type") whose dimension does not match the name, such as `(si.W * si.m**2 / si.Hz, "surface tension")` | WARN |
 | `pairs` | functions whose names say they undo each other (`x_to_y` / `y_to_x`, `s2z` / `z2s`), to check with `identities.check_roundtrip` | NOTE |
+
+From Python, `physverify.scan.extract_tables(path)` returns every table the scan found (A, b, c, the claimed order and its source), to pass on to `check_tableau` for stage order or stability claims.
 
 Exit code 1 if there is any WARN, 0 otherwise, 2 for a bad path or stage name. Files that do not parse are listed, not skipped silently. A clean scan means only that these patterns were not found. Stages are read only for explicit methods on one state variable: implicit methods and systems split into parts (`x` and `v` advanced side by side) are skipped, and no check of the physics is made.
 

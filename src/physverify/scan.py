@@ -12,6 +12,9 @@ Each stage comes from a kind of bug found in the corpus study:
 - pairs       functions whose names say they are inverses (`x_to_y` / `y_to_x`), listed as round trips
               worth running with `physverify.identities.check_roundtrip`; not run here
 
+- names, api, literals, units   undefined names and files that do not parse, removed NumPy/SciPy/Python
+              features, typo-like literals, unit tables with the wrong dimension (`physverify.lint`)
+
 A finding is WARN (very likely a defect: a table that misses its claimed order, row sums that do not
 match c, a spacing that does not match its grid) or NOTE (worth one look). A clean scan says only that
 these patterns were not found.
@@ -23,7 +26,7 @@ import ast
 import math
 import re
 import warnings
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, field
 from fractions import Fraction
 from pathlib import Path
 
@@ -39,6 +42,7 @@ class Finding:
     path: str
     line: int
     message: str
+    table: dict | None = field(default=None, repr=False)  # the Runge-Kutta table a "tables" finding was made from
 
     def __str__(self):
         return f"{self.level} {self.stage:9s} {self.path}:{self.line}: {self.message}"
@@ -191,12 +195,20 @@ def _own_nodes(scope):
         todo.extend(ast.iter_child_nodes(node))
 
 
+def all_nodes(tree) -> list:
+    """Every node of a file's tree, computed once and shared by the stages (walking the tree is most of the cost)."""
+    cached = getattr(tree, "_pv_nodes", None)
+    if cached is None:
+        cached = tree._pv_nodes = list(ast.walk(tree))
+    return cached
+
+
 def _scopes(tree):
     """Module, each class and each function: (node, name, docstring) to look for tables in (computed once per tree)."""
     cached = getattr(tree, "_pv_scopes", None)
     if cached is None:
         cached = [(tree, "", (ast.get_docstring(tree) or "") if isinstance(tree, ast.Module) else "")]
-        cached += [(n, n.name, ast.get_docstring(n) or "") for n in ast.walk(tree)
+        cached += [(n, n.name, ast.get_docstring(n) or "") for n in all_nodes(tree)
                    if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))]
         tree._pv_scopes = cached
     return cached
@@ -353,7 +365,14 @@ def _check_table(lits, name, doc, stem, stated, rel, *, kind="table", stated_emb
                         msgs.append(f"embedded weights {en} have order {pe}, but order {stated_embedded} is stated")
                     else:
                         msgs.append(f"embedded weights {en} have order {pe}")
-        found.append(Finding("tables", level, rel, line, f"{where}: " + "; ".join(msgs)))
+        table = {"name": name, "kind": kind, "A": A, "b": b, "c": lits[cn][0] if cn is not None else None,
+                 "claimed": claimed if claimed is not None and claimed <= 6 else None, "claim_source": why,
+                 "stated_embedded": stated_embedded,
+                 "embedded": {en: e for en, (e, _l) in lits.items() if _BHAT_NAMES.match(en) and _vector(e, s) and en != bn},
+                 "error_weights": {en: e for en, (e, _l) in lits.items()
+                                   if (_E_NAMES.match(en) or en == "<e>") and _vector(e, s) and en != bn},
+                 "order": p}
+        found.append(Finding("tables", level, rel, line, f"{where}: " + "; ".join(msgs), table))
     return found
 
 
@@ -415,7 +434,7 @@ def scan_tables(path: Path, tree, rel: str) -> list[Finding]:
         owner[id(node)] = fn
         inner = node if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)) else fn
         todo.extend((child, inner) for child in ast.iter_child_nodes(node))
-    for node in ast.walk(tree):
+    for node in all_nodes(tree):
         if not isinstance(node, (ast.Call, ast.Dict)):
             continue
         group = _keyword_group(node)
@@ -683,7 +702,7 @@ def scan_code_tables(path: Path, tree, rel: str) -> list[Finding]:
     from .butcher import order_residuals, tableau_order
 
     found = []
-    for fn in ast.walk(tree):
+    for fn in all_nodes(tree):
         if not isinstance(fn, (ast.FunctionDef, ast.AsyncFunctionDef)):
             continue
         names = [_call_name(n) for n in ast.walk(fn) if isinstance(n, ast.Call) and len(n.args) >= 2]
@@ -734,7 +753,11 @@ def scan_code_tables(path: Path, tree, rel: str) -> list[Finding]:
                 msgs.append(f"but '{why}' suggests order {claimed} (largest residual {worst:.1e})")
             else:
                 msgs.append(f"consistent with '{why}'")
-        found.append(Finding("tables", level, rel, line, f"{fn.name}: " + "; ".join(msgs)))
+        table = {"name": fn.name, "kind": "stages written as code", "A": A, "b": b, "c": c,
+                 "claimed": claimed if claimed is not None and claimed <= 6 else None, "claim_source": why,
+                 "stated_embedded": None, "embedded": {}, "error_weights": {}, "order": p,
+                 "docstring_table": {"A": drawn[0], "b": drawn[1]} if drawn is not None and len(drawn[1]) == s else None}
+        found.append(Finding("tables", level, rel, line, f"{fn.name}: " + "; ".join(msgs), table))
     return found
 
 
@@ -839,6 +862,7 @@ def _own_grids_and_divs(scope):
     nodes = list(_own_nodes(scope))
     # a division used as the step of a slice (np.mgrid[a:b:(b-a)/n], arange-style) builds its own grid
     steps = {id(n.step) for n in nodes if isinstance(n, ast.Slice) and n.step is not None}
+    periodic = []  # linspace(a, b, M, endpoint=False): its spacing really is (b - a) / M
     for node in nodes:
         if id(node) in steps:
             continue
@@ -847,12 +871,17 @@ def _own_grids_and_divs(scope):
             if fn == "linspace" and len(node.args) >= 3:
                 if any(k.arg == "endpoint" and isinstance(k.value, ast.Constant) and k.value.value is False
                        for k in node.keywords):
+                    periodic.append(node.args[2])
                     continue
                 grids.append((node.args[0], node.args[1], node.args[2], node.lineno))
         if isinstance(node, ast.BinOp) and isinstance(node.op, ast.Div):
             den_names = _names(node.right)
             if den_names:  # x / 2 cannot be a grid spacing with a named number of points
                 divs.append((node, node.lineno, den_names))
+    if periodic:
+        # a spacing L / M next to its own periodic grid of M points is right; do not pair it with grids elsewhere
+        divs = [d for d in divs if not any(_src(d[0].right) == _src(m) or _src(d[0].right) == f"({_src(m)})"
+                                           for m in periodic)]
     return grids, divs
 
 
@@ -902,7 +931,9 @@ _PAIR = re.compile(r"^(?P<pre>.*?)(?P<x>[a-z0-9]+)(?P<sep>_to_|2)(?P<y>[a-z0-9]+
 
 
 def scan_pairs(path: Path, tree, rel: str) -> list[Finding]:
-    funcs = {n.name: n.lineno for n in ast.walk(tree) if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef))}
+    # test_x_to_y / test_y_to_x test an inverse pair; they are not converters to run
+    funcs = {n.name: n.lineno for n in all_nodes(tree)
+             if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)) and not n.name.startswith("test")}
     found, seen = [], set()
     for fname, line in funcs.items():
         m = _PAIR.match(fname)
@@ -923,6 +954,16 @@ def scan_pairs(path: Path, tree, rel: str) -> list[Finding]:
 # them only when they are close; dimensional constants (6.6e-11, 3e8) rarely match by chance.
 _PURE = {"pi", "e (Euler)", "T_c (2D Ising)", "G M_sun / 4 pi^2 (au, yr)"}
 _PURE_REL = 2e-3
+# Constants with units: an old edition or a rounded value is within 0.1%, while values 2-10% away were almost all
+# other quantities in the corpus rescan (test values, the atomic mass unit next to the proton mass).
+_DIM_REL = 1e-2
+_TABLE_MIN = 8
+_MANY_CONSTANTS = 20
+# Units and constants fixed by definition: a slip or an old value sits within 0.1%, so only that close is noted.
+_DEFINED = {"N_A", "R (gas constant)", "sigma (Stefan-Boltzmann)", "astronomical unit", "light year", "parsec",
+            "standard atmosphere", "torr", "nautical mile", "h (CGS)", "k_B (CGS)", "c (CGS)", "e (esu)", "m_e (g)",
+            "G (CGS)"}
+_DEFINED_REL = 1e-3
 
 
 def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
@@ -930,9 +971,14 @@ def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
     from . import constants
 
     names = constants._assigned_names(tree)
+    # numbers in long literal tables are data (measurements, reference values), not constants typed by hand
+    tabulated = {id(e) for n in all_nodes(tree) if isinstance(n, (ast.List, ast.Tuple)) and len(n.elts) >= _TABLE_MIN
+                 for e in n.elts}
     hits = {}
-    for node in ast.walk(tree):
+    for node in all_nodes(tree):
         if not (isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool)):
+            continue
+        if id(node) in tabulated:
             continue
         try:
             v = float(node.value)
@@ -943,12 +989,22 @@ def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
             continue
         name, ref, r, comment = hit
         assigned = names.get(id(node), set())
-        if name == "g" or isinstance(node.value, int) or constants._digits(v) < 3:
+        short_int = isinstance(node.value, int) and constants._digits(v) < 6  # 149597870691 is no accident
+        if name == "g" or short_int or constants._digits(v) < 3:
             if not assigned & constants.NAMES.get(name, set()):
                 continue
         elif name in _PURE and abs(r) > _PURE_REL:
             continue
+        elif name not in _PURE and abs(r) > _DIM_REL:
+            continue  # 1.44e-19 is a test value, not a mistyped elementary charge
+        if name in _DEFINED and abs(r) > (_DEFINED_REL / 10 if isinstance(node.value, int) else _DEFINED_REL):
+            continue  # a definition typed wrong or taken from an old edition is close; 14666785333344 is not an au
         hits.setdefault((name, ast.unparse(node)), []).append((node.lineno, ref, r, comment))
+    if len(hits) > _MANY_CONSTANTS:
+        first = min(w[0][0] for w in hits.values())
+        return [Finding("constants", NOTE, rel, first,
+                        f"{len(hits)} different numbers in this file are close to physical constants; so many usually means"
+                        " the file holds data (fits, tables, generated code), so they are not listed one by one")]
     out = []
     for (name, literal), where in sorted(hits.items(), key=lambda kv: kv[1][0][0]):
         line, ref, r, comment = where[0]
@@ -960,25 +1016,33 @@ def scan_constants(path: Path, tree, rel: str) -> list[Finding]:
 
 # --- driver ---------------------------------------------------------------------------------------
 
-STAGES = ("constants", "tables", "grid", "pairs")
+STAGES = ("constants", "tables", "grid", "pairs", "names", "api", "literals", "units")
 
 
 def scan(path, *, stages=STAGES) -> tuple[list[Finding], list[str]]:
     """Findings for every Python file under `path`, and the files that could not be parsed."""
+    from . import lint
+
     root = Path(path)
     findings, unparsed, parsed = [], [], []
     for f in python_files(root):
         rel = str(f.relative_to(root)) if root.is_dir() else f.name
         try:
-            text = f.read_text(encoding="utf-8", errors="replace")
+            text = f.read_text(encoding="utf-8-sig", errors="replace")  # a byte-order mark is valid Python
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")  # invalid escapes in other people's strings are not our concern
                 tree = ast.parse(text, str(f))
         except (SyntaxError, ValueError) as exc:
-            unparsed.append(f"{rel}: {type(exc).__name__}: {exc}")
+            if "names" in stages:
+                findings.append(lint.parse_finding(rel, exc, text))
+            else:
+                unparsed.append(f"{rel}: {type(exc).__name__}: {exc}")
             continue
         parsed.append((rel, tree))
-        for stage, run in (("constants", scan_constants), ("tables", scan_tables), ("tables", scan_code_tables), ("grid", scan_grid), ("pairs", scan_pairs)):
+        runs = (("constants", scan_constants), ("tables", scan_tables), ("tables", scan_code_tables),
+                ("grid", scan_grid), ("pairs", scan_pairs), ("names", lambda f, t, r: lint.scan_names(f, t, r, text)), ("api", lint.scan_api),
+                ("literals", lambda f, t, r: lint.scan_literals(f, t, r, text)), ("units", lint.scan_units))
+        for stage, run in runs:
             if stage in stages:
                 try:
                     findings += run(f, tree, rel)
@@ -1003,6 +1067,17 @@ def scan(path, *, stages=STAGES) -> tuple[list[Finding], list[str]]:
                     grids = {id(g): g for n in div[3] for g in by_name.get(n, {}).get(rel_g, [])}
                     findings += _grid_findings(list(grids.values()), [div], rel_d, rel_g, seen)
     return findings, unparsed
+
+
+def extract_tables(path) -> list[dict]:
+    """Every Runge-Kutta table the scan finds under `path`, as dicts with A, b, c (or None), the claimed order and
+    where the claim comes from, embedded and error weights, and the order the coefficients have. Runs nothing.
+
+    For checks the scan does not make itself, pass them on, e.g.
+    `physverify.butcher.check_tableau(t["A"], t["b"], t["c"], claimed=t["claimed"])`.
+    """
+    findings, _unparsed = scan(path, stages=("tables",))
+    return [dict(f.table, path=f.path, line=f.line, level=f.level) for f in findings if f.table is not None]
 
 
 def to_dict(findings, unparsed) -> dict:

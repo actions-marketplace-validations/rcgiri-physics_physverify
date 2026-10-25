@@ -1,6 +1,6 @@
 # Roadmap
 
-What may come after 0.4.2. The unreleased changes (identity checks, `extract_functions`, `load_repaired`, `residual_check`, `decay_rate`, an accuracy option for `check_order`, and sandbox version stubs, latest-stack image and conflict hint) are in the changelog. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
+What may come after 0.5.0. Release 0.5.0 (2026-10-24) added `physverify scan` with the Phase 1 static checks; see the changelog. Next is Phase 2 of the scan plan below, for 0.6.0. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
 
 
 ## Principles
@@ -11,7 +11,7 @@ What may come after 0.4.2. The unreleased changes (identity checks, `extract_fun
 - **Deepen before widening.** Numerical-method coverage grows only when it adds value for ODE/PDE time integration, convergence or conservation. Statistical (Monte Carlo) checks grow carefully: each new one with its false-alarm rate and power measured over repeated seeds.
 - **Every published number is regenerable** with `python scripts/reproduce_all.py`, or says why not.
 
-## Done for 0.5.0: the installed package holds only the checks
+## Done in 0.5.0: the installed package holds only the checks
 
 The benchmark and the single-repository adapters moved to `benchmark/pvbench/` (not installed). The AI-assistant parts (`physverify hook`, `physverify mcp`) stay in the package: they use only the standard library, so an extra would not make the install any smaller.
 
@@ -25,9 +25,9 @@ Near-miss constants, Runge-Kutta tables written as literals (order, row sums, er
 
 ### Plan: let `scan` find more of these defects on its own
 
-Today `physverify scan` finds 9 of the 74 reported defects with no test script. The other 65 were found by running the code (11), by a reference written for that repository (37), or by reading (12). Looking at each one, most fall into a few patterns that a general check could catch without knowing the physics. The plan adds those checks in order of defects per unit of work. Every target count below is a guess from the reports, not a result; each phase ends by measuring it.
+Today `physverify scan` finds 18 of the 74 reported defects with no test script (9 before Phase 1). The other 65 were found by running the code (11), by a reference written for that repository (37), or by reading (12). Looking at each one, most fall into a few patterns that a general check could catch without knowing the physics. The plan adds those checks in order of defects per unit of work. Every target count below is a guess from the reports, not a result; each phase ends by measuring it.
 
-**Phase 1: more static checks (runs nothing; about a week).** Target: about 8 more of the 74.
+**Phase 1: more static checks (runs nothing). Done 2026-10-23:** target about 8 more of the 74, result 9 more, for 6% more run time. Details and false alarms in [RESCAN_2026-10.md](results/corpus/RESCAN_2026-10.md).
 
 | Check | Defects it targets |
 |---|---|
@@ -66,7 +66,7 @@ Today `physverify scan` finds 9 of the 74 reported defects with no test script. 
 4. Release the check only if its false alarms on this sample are few enough to read through, and say in the docs that the rules were tuned on it.
 5. Update [FINDINGS_BY_METHOD.md](results/corpus/FINDINGS_BY_METHOD.md) and [RESCAN_2026-10.md](results/corpus/RESCAN_2026-10.md) with the new "found by scan alone" count.
 
-If the targets hold, `scan` would find roughly 40 of the 74 on its own, against 9 today. Even then a clean scan will not mean correct code: the counts describe this sample only.
+If the targets hold, `scan` would find roughly 40 of the 74 on its own, against 18 today. Even then a clean scan will not mean correct code: the counts describe this sample only.
 
 **Speed rule.** `physverify scan PATH` stays static (it reads the code and runs nothing), so it stays fast and safe on any code. Today a small repository takes under a second and a 200-file library about 30 s; the full corpus about 26 minutes per commit set.
 
@@ -81,7 +81,7 @@ Every check should be measured on every repository in the corpus where it applie
 
 1. **Find where it applies.** For example `check_tableau`: every repository with a Butcher table as literals, constructor keywords, class attributes or stages written as code (the scan's `tables` stage lists them; 63 tables and 47 steppers in the October rescan). For `check_order`: every repository with a stepper the scan can identify. For the statistics checks: every Monte Carlo sampler.
 2. **Run the feature there,** at the tested and the latest commit, in the sandbox when it runs code.
-3. **Report per feature:** how many repositories it applied to, how many it could actually run on, defects confirmed, false alarms, and run time. One table per feature in `results/corpus/`, kept up to date as new repositories are added.
+3. **Report per feature:** how many repositories it applied to, how many it could actually run on, defects confirmed, false alarms, and run time, in [results/corpus/FEATURES.md](results/corpus/FEATURES.md), kept up to date as new repositories are added. Done for `check_tableau` and the scan stages (2026-10-24); the features that run code follow Phase 2.
 4. **Grow the pool of repositories** for features that apply to few of them (implicit methods, Monte Carlo samplers, PDE solvers), from the untested candidate pool, with the selection rule written down first.
 
 This shows how often each check is useful, not just that it can find a bug, and it gives each check its own false-alarm rate on real code.

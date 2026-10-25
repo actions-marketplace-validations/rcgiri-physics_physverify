@@ -1,7 +1,10 @@
 """physverify scan: each stage finds its pattern, and stays quiet on correct code."""
 
 import json
+import sys
 import textwrap
+
+import pytest
 
 from physverify.cli import main
 from physverify.scan import NOTE, WARN, scan
@@ -122,14 +125,16 @@ def test_inverse_pairs_and_constants(tmp_path):
     assert _by_stage(f, "constants")
 
 
-def test_unparsable_file_is_reported_not_raised(tmp_path):
+def test_unparsable_file_is_a_warning_not_an_exception(tmp_path):
     _write(tmp_path, "bad.py", "def f(:\n")
     findings, unparsed = scan(tmp_path)
+    assert unparsed == [] and [f.message.startswith("the file does not parse") for f in findings] == [True]
+    findings, unparsed = scan(tmp_path, stages=("tables",))
     assert findings == [] and len(unparsed) == 1
 
 
 def test_cli_exit_codes_and_json(tmp_path, capsys):
-    _write(tmp_path, "g.py", "import numpy as np\nx = np.linspace(0, L, N)\ndx = L / N\n")
+    _write(tmp_path, "g.py", "import numpy as np\nL, N = 1.0, 10\nx = np.linspace(0, L, N)\ndx = L / N\n")
     assert main(["scan", str(tmp_path)]) == 1
     assert main(["scan", str(tmp_path), "--only", "pairs"]) == 0
     assert main(["scan", str(tmp_path), "--only", "nope"]) == 2
@@ -395,3 +400,206 @@ def test_stated_embedded_order(tmp_path):
         ''')
     (t,) = _by_stage(scan(tmp_path)[0], "tables")
     assert t.level == WARN and "embedded weights b2 have order 1, but order 2 is stated" in t.message
+
+
+def test_undefined_names(tmp_path):
+    _write(tmp_path, "cad.py", '''
+        import sys
+
+        class Rocket:
+            def __init__(self, wall_thickness):
+                self.tw = wall_thicknesss
+
+        def plot(x):
+            return np.sin(x)
+
+        try:
+            maxint = sys.maxint
+        except AttributeError:
+            maxint = unicode_fallback
+
+        if sys.version_info < (3,):
+            text = unicode("a")
+        ''')
+    f = _by_stage(scan(tmp_path)[0], "names")
+    assert [x.message.split()[0] for x in f] == ["wall_thicknesss", "np", "unicode_fallback"]
+    assert "did you mean wall_thickness?" in f[0].message
+
+
+def test_star_import_and_exec_turn_the_name_check_off(tmp_path):
+    _write(tmp_path, "a.py", "from numpy import *\nx = sin(1)\n")
+    _write(tmp_path, "b.py", "exec('y = 1')\nprint(y)\n")
+    assert not _by_stage(scan(tmp_path)[0], "names")
+
+
+def test_removed_numpy_scipy_and_python_features(tmp_path):
+    _write(tmp_path, "old.py", '''
+        import imp
+        import numpy as np
+        from numpy import NaN
+        from scipy.integrate import simps
+        from scipy.misc import factorial
+        a = np.array([1, 2], copy=False)
+        b = np.float(2) + np.Inf
+        c = np.trapz([1, 2])
+        d = np.array([1, 2], copy=True) + np.nan
+        ''')
+    f = _by_stage(scan(tmp_path)[0], "api")
+    text = " | ".join(x.message for x in f)
+    for part in ("imp", "numpy.NaN", "simps", "factorial", "copy=False", "np.float was removed", "np.Inf"):
+        assert part in text
+    assert [x.level for x in f if "trapz" in x.message] == [NOTE]
+    assert not [x for x in f if x.line == 10]
+
+
+def test_literal_typos(tmp_path):
+    _write(tmp_path, "lit.py", '''
+        import numpy as np
+        cutoff = 1e0 - 5
+        small = 1e-99 + 1
+        r2 = r ^ 2
+        bad = x == np.nan
+        mask = flags ^ 0xFF
+        ''')
+    f = _by_stage(scan(tmp_path)[0], "literals")
+    assert [x.line for x in f] == [3, 5, 6]
+    assert "1e-5" in f[0].message and "exclusive or" in f[1].message and "never" in f[2].message
+
+
+def test_unit_table_dimensions(tmp_path):
+    _write(tmp_path, "physical.py", '''
+        from astropy.units import si
+        _units_and_physical_types = [
+            (si.W * si.m**2 * si.Hz**-1, "surface tension"),
+            (si.N / si.m, "surface tension"),
+            (si.J / si.K, {"entropy", "heat capacity"}),
+            (si.kg / si.m**3, "mass density"),
+        ]
+        ''')
+    (f,) = _by_stage(scan(tmp_path)[0], "units")
+    assert f.line == 4 and "surface tension" in f.message and "kg s^-2" in f.message
+
+
+def test_exact_and_cgs_constants(tmp_path):
+    _write(tmp_path, "c.py", '''
+        h = 6.62607015e-34
+        h_CGS = 6.626196e-27
+        au = 149597870691
+        au_exact = 149597870700
+        ''')
+    f = _by_stage(scan(tmp_path)[0], "constants")
+    assert [x.line for x in f] == [3, 4]
+    assert "h (CGS)" in f[0].message and "astronomical unit" in f[1].message
+
+
+@pytest.mark.skipif(sys.version_info < (3, 12), reason="type parameter syntax needs Python 3.12")
+def test_type_parameters_are_defined_names(tmp_path):
+    _write(tmp_path, "g.py", "def generic[T](x: T) -> T:\n    return x\n")
+    assert not _by_stage(scan(tmp_path)[0], "names")
+
+
+def test_name_check_respects_noqa_annotations_and_templates(tmp_path):
+    _write(tmp_path, "a.py", '''
+        def f(x) -> Dot:  # noqa: F821
+            return helper(x)  # noqa
+        def g(x: Missing) -> int:
+            return 1
+        ''')
+    _write(tmp_path, "b.py", "from __future__ import annotations\ndef g(x: Missing) -> Other:\n    return 1\n")
+    _write(tmp_path, "tpl.py", "{% for name in names %}\nx = {{ name }}\n{% endfor %}\n")
+    (tmp_path / "bom.py").write_bytes(b"\xef\xbb\xbfimport numpy as np\nx = np.pi\n")
+    f = scan(tmp_path)[0]
+    names = {(x.path, x.level, x.message.split()[0]) for x in _by_stage(f, "names")}
+    assert names == {("a.py", NOTE, "Missing"), ("tpl.py", NOTE, "the")}
+
+
+def test_compatibility_shims_are_not_removed_api_findings(tmp_path):
+    _write(tmp_path, "compat.py", '''
+        import numpy as np
+        try:
+            float_ = np.float_
+        except AttributeError:
+            float_ = np.float64
+        x = np.NaN
+        ''')
+    (f,) = _by_stage(scan(tmp_path)[0], "api")
+    assert f.line == 7
+
+
+def test_environment_names_and_nan_tests_are_quiet(tmp_path):
+    _write(tmp_path, "jupyter_notebook_config.py", "c.NotebookApp.port = 8888\n")
+    (tmp_path / "tests").mkdir()
+    _write(tmp_path / "tests", "test_nan.py", "import math\nassert not (1.0 == math.nan)\n")
+    f = scan(tmp_path)[0]
+    assert not _by_stage(f, "names") and not _by_stage(f, "literals")
+
+
+def test_extract_tables_returns_the_coefficients(tmp_path):
+    from physverify.butcher import check_tableau
+    from physverify.scan import extract_tables
+
+    _write(tmp_path, "rk.py", _RK4_CODE)
+    _write(tmp_path, "tab.py", '''
+        def ssprk3():
+            """order 3"""
+            A = [[0, 0, 0], [1, 0, 0], [0.25, 0.25, 0]]
+            b = [1/6, 1/6, 2/3]
+            c = [0, 1, 0.5]
+            return A, b, c
+        ''')
+    tables = {t["name"]: t for t in extract_tables(tmp_path)}
+    assert set(tables) == {"rk4", "ssprk3"}
+    assert tables["rk4"]["kind"] == "stages written as code" and tables["rk4"]["claimed"] == 4
+    t = tables["ssprk3"]
+    assert check_tableau(t["A"], t["b"], t["c"], claimed=t["claimed"]).status == "PASS"
+
+
+def test_spacing_of_its_own_periodic_grid_is_not_paired_elsewhere(tmp_path):
+    _write(tmp_path, "spectral.py", """
+        import numpy as np
+        def evolve(x_min, x_max, n_points):
+            x = np.linspace(x_min, x_max, n_points, endpoint=False)
+            dx = (x_max - x_min) / n_points
+            return x, dx
+        """)
+    _write(tmp_path, "fd.py", """
+        import numpy as np
+        def states(x_min, x_max, n_points):
+            x = np.linspace(x_min, x_max, n_points)
+            return x, x[1] - x[0]
+        """)
+    assert not _by_stage(scan(tmp_path)[0], "grid")
+
+
+def test_many_injected_names_become_one_note(tmp_path):
+    _write(tmp_path, "host.py", """
+        sel = NamedSelection.Create(FaceSelection.Create(GetRootPart().Faces), Selection.Empty())
+        opts = FixMissingFacesOptions()
+        DocumentSave.Execute(GetRootPart().Document.Path)
+        CloseWindow()
+        """)
+    _write(tmp_path, "forgot.py", "x = np.sin(1)\ny = plt.plot(x)\nz = sparse.eye(3)\nw = linalg.inv(z)\nv = a + b + c\n")
+    f = _by_stage(scan(tmp_path)[0], "names")
+    host = [x for x in f if x.path == "host.py"]
+    assert len(host) == 1 and host[0].level == NOTE and "run time" in host[0].message
+    assert len([x for x in f if x.path == "forgot.py" and x.level == WARN]) >= 5
+
+
+def test_constants_in_data_files_and_tables_are_summarised(tmp_path):
+    _write(tmp_path, "rates.py", "\n".join(f"r{i} = rate({2.7175 + 1e-5 * i:.6f}, {3.1405 + 1e-5 * i:.6f})"
+                                            for i in range(30)) + "\n")
+    _write(tmp_path, "table.py", "y = [3.1, 3.12, 3.13, 3.14, 3.15, 2.27, 2.71, 2.72]\n")
+    _write(tmp_path, "masses.py", "amu = 1.66053906660e-27\nm_n = 1.67492749804e-27\ncharge = 1.44e-19\n")
+    f = _by_stage(scan(tmp_path)[0], "constants")
+    assert [(x.path, "close to physical constants" in x.message) for x in f] == [("rates.py", True)]
+
+
+def test_test_functions_are_not_inverse_pairs(tmp_path):
+    _write(tmp_path, "t.py", """
+        def test_xyz_to_lab(): pass
+        def test_lab_to_xyz(): pass
+        def c2k(t): return t
+        def k2c(t): return t
+        """)
+    f = _by_stage(scan(tmp_path)[0], "pairs")
+    assert len(f) == 1 and "c2k" in f[0].message

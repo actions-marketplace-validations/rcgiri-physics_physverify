@@ -46,14 +46,11 @@ It checks a correct solver (every check passes) and a copy with one wrong number
 
 ## 3. Scan a project without writing anything
 
-!!! note "Planned for 0.5.0"
-    `physverify scan` is planned for the next release, 0.5.0. Until then it is only in the development version: `pip install git+https://github.com/rcgiri-physics/physverify`.
-
 ```bash
 physverify scan path/to/the/project
 ```
 
-`scan` only **reads** the code; it never runs it, so it is safe on code you downloaded. It looks for four things that were real bugs in public code:
+`scan` only **reads** the code; it never runs it, so it is safe on code you downloaded. It looks for kinds of mistakes that were real bugs in public code:
 
 | What | Example |
 |---|---|
@@ -61,6 +58,7 @@ physverify scan path/to/the/project
 | **tables**: Runge-Kutta methods that do not have the order their name says, whether written as a table or as stages in code (`k2 = h*f(t + h/2, y + k1/2)`), or whose stages disagree with the table in their own docstring | a method called "order 3" that is only order 2 |
 | **grid**: a spacing that does not match its grid | `x = linspace(0, L, N)` with `dx = L/N` (it is `L/(N-1)`) |
 | **pairs**: functions that should undo each other | `cart_to_polar` and `polar_to_cart` |
+| **names, api, literals, units**: code that cannot run as written, or a typo that changes a number | a misspelt variable, `np.NaN` (removed in NumPy 2), `1e0 - 5` meant as `1e-5`, a unit table that calls J m^2 "surface tension" |
 
 Each line is a `WARN` (very likely a mistake) or a `NOTE` (worth one look). Nothing found does not mean the code is right; most bugs need step 4.
 
@@ -94,8 +92,7 @@ physverify run verify_solver.py
 If you use Claude Code, Cursor, Copilot or another assistant that can run commands, you can paste this prompt into it, in the folder of the project:
 
 ```text
-Install physverify in a virtual environment and check this project with it. Until 0.5.0 is released, install
-the development version, which has `physverify scan`: pip install git+https://github.com/rcgiri-physics/physverify
+Install physverify (0.5.0 or newer) in a virtual environment and check this project with it.
 1. Run `physverify scan .` and explain each WARN and NOTE in plain words; say which you think are real.
 2. Find the main solver. Write a spec with `physverify init`, filling in the equations from the physics
    (the README, the paper or the textbook), NOT from the solver's code. Tell me where you took them from.
