@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- **New: `physverify scan PATH --run`**, the first probes of Phase 2 of the scan plan (ROADMAP.md). They call the code, so use them on trusted code or in the sandbox: `smoke` (scripts run to the end, the project's tests collect), `deadargs` (an argument that changes nothing), `edges` (silent NaN at zero, negative or odd-size inputs), `branches` (a jump where `if x < a` switches formula) `roundtrip` (inverse pairs), `siblings` (two versions of one computation, and `method=` options, that should agree), `known` (cumulative trapezoid integrals, running means and autocorrelations against a slow direct loop) and `monotone` (the direction a named law or the docstring fixes). Each file is probed in its own process with `--timeout`; anything that runs out of time is SKIP, not passed. Tests in `tests/test_probes.py`. Measured on all 626 corpus repositories in the sandbox (results/corpus/FEATURES.md): `smoke` found scripts that stop on errors in their own code, `branches` J400's jump; the other six found no real defect, so `--run` alone runs only `smoke` and `branches`, and the rest are experimental, run with `--only`.
+
 ## 0.5.1 (2026-10-25)
 
 - **Security fix (GCVE-110-VULN-PYPI-2026-000391, CWE-829):** `physverify hook` does nothing for an edit outside the session folder and never looks above it for the project root; `specs` entries in `[tool.physverify]` that leave the project root are dropped. Before, an assistant's edit in an untrusted folder ran that folder's `verify_*.py`. See `SECURITY.md`.

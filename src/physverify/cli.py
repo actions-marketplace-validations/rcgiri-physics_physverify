@@ -125,17 +125,24 @@ def _cmd_smoke(args) -> int:
 def _cmd_scan(args) -> int:
     import json
 
+    from .probes import DEFAULT_PROBES, PROBES, probe
     from .scan import STAGES, WARN, scan, to_dict
 
-    stages = args.only.split(",") if args.only else STAGES
-    unknown = set(stages) - set(STAGES)
+    known = STAGES + PROBES if args.run else STAGES
+    stages = args.only.split(",") if args.only else (STAGES + DEFAULT_PROBES if args.run else STAGES)
+    unknown = set(stages) - set(known)
     if unknown:
-        print(f"physverify: unknown stage {', '.join(sorted(unknown))}; choose from {', '.join(STAGES)}", file=sys.stderr)
+        extra = "; the probes need --run" if unknown <= set(PROBES) else ""
+        print(f"physverify: unknown stage {', '.join(sorted(unknown))}; choose from {', '.join(known)}{extra}", file=sys.stderr)
         return 2
     if not Path(args.path).exists():
         print(f"physverify: {args.path} does not exist", file=sys.stderr)
         return 2
-    findings, unparsed = scan(args.path, stages=stages)
+    findings, unparsed = scan(args.path, stages=[s for s in stages if s in STAGES])
+    probes = [s for s in stages if s in PROBES]
+    if probes:
+        print("physverify: --run calls the code; use it only on code you trust or inside the sandbox", file=sys.stderr)
+        findings += probe(args.path, probes=probes, timeout=args.timeout)
     if args.json:
         text = json.dumps(to_dict(findings, unparsed), indent=1)
         if args.json == "-":
@@ -148,8 +155,11 @@ def _cmd_scan(args) -> int:
         for u in unparsed:
             print(f"NOTE parse     {u}")
         warn = sum(f.level == WARN for f in findings)
-        print(f"{warn} warnings, {len(findings) - warn} notes, {len(unparsed)} files not parsed"
-              " (the scan reads the code and runs nothing; a clean scan means only that these patterns were not found)")
+        skip = sum(f.level == "SKIP" for f in findings)
+        ran = (f", {skip} skipped (not passed)" if probes else "")
+        how = "the probes called the code with small inputs" if probes else "the scan reads the code and runs nothing"
+        print(f"{warn} warnings, {len(findings) - warn - skip} notes{ran}, {len(unparsed)} files not parsed"
+              f" ({how}; a clean scan means only that these patterns were not found)")
     return 1 if any(f.level == WARN for f in findings) else 0
 
 
@@ -204,6 +214,10 @@ def build_parser() -> argparse.ArgumentParser:
     sc.add_argument("path", help="a Python file or a folder")
     sc.add_argument("--only", metavar="STAGES", help="comma-separated stages: constants,tables,grid,pairs,names,api,literals,units (default all)")
     sc.add_argument("--json", metavar="FILE", help="write findings as JSON to FILE, or to stdout with -")
+    sc.add_argument("--run", action="store_true",
+                    help="also run the probes smoke and branches, which CALL the code (trusted code or the sandbox only); "
+                         "the experimental probes edges,deadargs,roundtrip,siblings,known,monotone with --only")
+    sc.add_argument("--timeout", type=float, default=60.0, help="with --run: seconds per script or file of functions (default 60)")
     sc.set_defaults(func=_cmd_scan)
 
     r = sub.add_parser("references", help="list the exact reference solutions in physverify.references")

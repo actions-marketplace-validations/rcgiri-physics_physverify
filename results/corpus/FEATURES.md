@@ -47,3 +47,22 @@ Sampling was done by the author with an AI assistant, with a fixed random seed; 
 ## Features that run code
 
 `check_order` on steppers found in the code, conservation checks, `physverify.identities` and the statistical checks need to run the repositories' code in the sandbox. Their sweeps come with Phase 2 of the scan plan (`physverify scan --run`, see [ROADMAP.md](../../ROADMAP.md)), which builds the probes that find where they apply.
+
+### `physverify scan --run` probes (2026-10-26)
+
+From the full sweep of the 626 tested commits in the sandbox, with the rules as of 2026-10-26: 613 repositories finished, 13 reached the 10-minute limit (SKIP, not passed); 444 minutes in all, median 8 s per repository. In 259 repositories at least one module did not import, mostly for a third-party package or a compiled extension the bare clone does not have (K16 pyroomacoustics needs its C++ `libroom`); those modules are SKIP. "Applies to" for siblings, known and monotone is a static pre-pass that reads the code.
+
+| Probe | Applies to | WARN (repositories) | NOTE (repositories) | Checked by hand |
+|---|---|---|---|---|
+| smoke | every file that runs something | 43 (19) | 3582 (399) | every WARN: about 14 errors in the repository's own code (names used without import or before assignment, `null`), about 20 calls to removed library APIs (Phonopy, matplotlib `hold`, Python 2 idioms), 4 that came from the environment and are now NOTE |
+| deadargs | every function the probe can call | 68 (25) | 392 (47) | every WARN before the last rules (249 in v2) and each new one: no real dead argument among the WARNs. They are regimes the guessed inputs do not reach (laminar flow, one term swamping another, a value inside one sky pixel), and 2 where the physics really does not depend on the argument (K30 ideal-gas lead terms, K54 Rayleigh S1). J400 `earth_like_rgb(seed)`, an unused seed, is a NOTE |
+| edges | the same | 0 | 182 (54) | not checked one by one |
+| branches | functions comparing a float argument with a threshold | 0 | 163 (28) | includes J400's jump at `rho = d/2` |
+| roundtrip | one-argument inverse pairs | 0 | 0 | none applied in a module that imports |
+| siblings | 76 repositories (159 pairs, 192 options) | 1 (1) | 17 (3) | the WARN (K30 `volume_solutions_fast` against `_numpy`) is the numerical trouble the function's own docstring describes, at inputs far from a real fluid |
+| known | 21 repositories (16 functions) | 0 | 0 | the K16 and K17 targets are in modules that do not import in a bare clone |
+| monotone | the same 21 (23 law and 2 docstring directions) | 0 | 0 | 3 WARNs in an earlier sweep (K52 vapour pressure at T < 2 K, with random fitted coefficients) were false; the rules now sweep 280 to 600 K and skip fitted curves and derivatives |
+
+Each rule added after reading the findings is listed, with the repository that prompted it, in the docstrings of `src/physverify/probes.py`. The deadargs WARNs fell from 197 to 64 on the same 55 repositories with the last set of rules. Counts are within this sample only.
+
+Outcome: `smoke` and `branches` found real defects and are what `scan --run` runs by default; the other six found none here and run only when named with `--only`.

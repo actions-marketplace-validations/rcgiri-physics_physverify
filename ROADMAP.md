@@ -37,7 +37,7 @@ Today `physverify scan` finds 18 of the 74 reported defects with no test script 
 | Constants against their exact definitions (astronomical unit, nautical mile, torr, the exact SI constants since 2019), and pairs of the same constant in two unit systems that disagree (h in J s and in erg s) | K51, K60 |
 | A unit registry whose dimensions do not match the name (`surface tension` as J m^2) | K15 |
 
-**Phase 2: probes that run the code, in the sandbox only (`physverify scan --run`; about two to three weeks).** Target: about 15 to 20 more. Each probe calls functions it finds with small inputs and needs no reference, only a rule that must hold:
+**Phase 2: probes that run the code, in the sandbox only (`physverify scan --run`; about two to three weeks).** Target: about 15 to 20 more. Each probe calls functions it finds with small inputs and needs no reference, only a rule that must hold. **Started 2026-10-25:** all eight probes below are in `physverify scan --run` (`src/physverify/probes.py`); the full corpus sweep in the sandbox finished 2026-10-26 (counts in [results/corpus/FEATURES.md](results/corpus/FEATURES.md)). It added only 1 of the 74 reported defects (J400), well short of the target: most of the others sit in modules that do not import in a bare clone (compiled extensions, missing packages), so installing each repository's dependencies in the sandbox is the next step. `--run` alone now runs only `smoke` and `branches`; the other six probes found no real defect and are opt-in (`--only`) until a sweep with dependencies installed shows they help. Known-answer and monotonicity are kept narrow (three operations, four named laws and stated directions), because conventions differ and most code states no direction:
 
 | Probe | Rule | Defects it targets |
 |---|---|---|
@@ -81,7 +81,7 @@ Every check should be measured on every repository in the corpus where it applie
 
 1. **Find where it applies.** For example `check_tableau`: every repository with a Butcher table as literals, constructor keywords, class attributes or stages written as code (the scan's `tables` stage lists them; 63 tables and 47 steppers in the October rescan). For `check_order`: every repository with a stepper the scan can identify. For the statistics checks: every Monte Carlo sampler.
 2. **Run the feature there,** at the tested and the latest commit, in the sandbox when it runs code.
-3. **Report per feature:** how many repositories it applied to, how many it could actually run on, defects confirmed, false alarms, and run time, in [results/corpus/FEATURES.md](results/corpus/FEATURES.md), kept up to date as new repositories are added. Done for `check_tableau` and the scan stages (2026-10-24); the features that run code follow Phase 2.
+3. **Report per feature:** how many repositories it applied to, how many it could actually run on, defects confirmed, false alarms, and run time, in [results/corpus/FEATURES.md](results/corpus/FEATURES.md), kept up to date as new repositories are added. Done for `check_tableau` and the scan stages (2026-10-24), and for the `scan --run` probes (2026-10-26).
 4. **Grow the pool of repositories** for features that apply to few of them (implicit methods, Monte Carlo samplers, PDE solvers), from the untested candidate pool, with the selection rule written down first.
 
 This shows how often each check is useful, not just that it can find a bug, and it gives each check its own false-alarm rate on real code.
@@ -89,6 +89,14 @@ This shows how often each check is useful, not just that it can find a bug, and 
 ### Also for `scan`
 
 - **A declarative spec instead of Python.** A `[tool.physverify]` table in `pyproject.toml` naming the solver, its call pattern, the claimed order and the equations as text (turned into a reference with SymPy).
+- **Finite-difference stencils.** Check the moment conditions of a stencil written as literals (weights sum to zero, the right moment is the right size), which catches sign and factor errors in derivative formulas.
+- **Fewer false negatives found by hand:** grid bounds written as numbers rather than names, Jupyter notebooks (read the code cells).
+- **Use in CI:** rule IDs, `# pv: ignore[rule]` comments, a baseline file, SARIF output for GitHub code scanning, and a mode that scans only changed files.
+
+## Reproducibility of the corpus results
+
+- **Name the findings that are confirmed.** The corpus is anonymous, so its counts cannot be checked by others. Findings that the maintainer confirmed or that someone else reproduced will be listed by repository, commit, issue and one-line repro; the others stay anonymous.
+- **A benchmark not written by the author.** Mutation testing on real solvers, next to the seeded bugs, and a held-out set of repositories never used to tune the scan rules.
 
 ## Must-have improvements
 
@@ -96,6 +104,10 @@ This shows how often each check is useful, not just that it can find a bug, and 
 - **Whole PDE order studies from SymPy.** `physverify.symbolic` already derives source terms; the next step is to run the full study from an equation written as text.
 - **IMEX / additive Runge-Kutta coupling conditions.** Check the conditions that link the explicit and implicit tables of an IMEX pair (bi-coloured trees), not only each table on its own. Also the order of embedded error estimators.
 - **Stochastic checks that stop early.** Stop sampling as soon as the result is decisive, so slow Monte Carlo codes fit inside a time budget.
+- **Uncertainty on the observed order.** Report the fitted order with a standard error (and the grid convergence index of Roache and Celik et al.), pick the points of the fit from the data instead of the last four, and estimate the round-off floor from the scatter, so a PASS states how sure it is.
+- **Real tableaux in `check_tableau`.** Accept FSAL tables whose `A` is n by n-1 (as in SciPy's `RK45`), ship SciPy's `RK23`, `RK45` and `DOP853` tables, and add an argument for the order of the embedded error estimate.
+- **Is the reference independent?** Warn when a spec's reference imports the module it checks or copies its constants; today nothing catches the mistake the docs warn about most.
+- **Long-time behaviour.** A symplecticity check on the tableau (b_i a_ij + b_j a_ji = b_i b_j) and energy drift against time, to tell symplectic from dissipative integrators.
 - **Units in comparisons.** Most adapter mistakes in batch 8 were units or coordinate origins. An optional units-aware comparison (via pint, when installed) that refuses to compare quantities of different dimension.
 
 ## Documentation website
@@ -107,6 +119,12 @@ Still to do:
 - An API reference generated from the docstrings (mkdocstrings), in place of the hand-written overview.
 - More recipes: a 1D heat code end to end, an inference code, a Monte Carlo sampler.
 - Plots of convergence studies on the pages, made from the examples.
+
+## Packaging and CI
+
+- Test the oldest supported versions (Python 3.10, NumPy 1.24) in CI; add Ruff, a type check on the public API, and a coverage floor.
+- A test that every version string (package, conda recipe, MCP registry entry, changelog) agrees.
+- Submit the conda-forge recipe.
 
 ## Later
 
