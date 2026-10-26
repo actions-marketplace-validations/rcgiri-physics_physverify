@@ -1,6 +1,6 @@
 context:
   name: physverify
-  version: "0.5.1"
+  version: "0.6.0"
 
 package:
   name: ${{ name }}
@@ -8,7 +8,7 @@ package:
 
 source:
   url: https://pypi.org/packages/source/${{ name[0] }}/${{ name }}/${{ name }}-${{ version }}.tar.gz
-  sha256: 10ce50069880871e389fd44dae4de48940c4b7c3e9ab337281281882a80a1428
+  sha256: 201f9b9a0f81a30a2860bd625b994bfdaa060aeef999a1ef47d075708f22f972
 
 build:
   number: 0
