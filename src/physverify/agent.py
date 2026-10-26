@@ -49,7 +49,10 @@ def find_specs(root: Path) -> list[Path]:
     pyproject = root / "pyproject.toml"
     if pyproject.is_file():
         try:
-            import tomllib
+            try:
+                import tomllib
+            except ImportError:  # Python 3.10
+                import tomli as tomllib
 
             config = tomllib.loads(pyproject.read_text(encoding="utf-8")).get("tool", {}).get("physverify", {})
         except Exception:

@@ -28,7 +28,7 @@ classifiers = [
     "Topic :: Software Development :: Testing",
     "Development Status :: 3 - Alpha",
 ]
-dependencies = ["numpy>=1.24"]
+dependencies = ["numpy>=1.24", "tomli>=1.1; python_version < '3.11'"]
 
 [project.urls]
 Homepage = "https://github.com/rcgiri-physics/physverify"
