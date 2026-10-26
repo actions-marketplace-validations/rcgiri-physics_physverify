@@ -14,7 +14,7 @@ from pathlib import Path
 
 from physverify.checks import ERROR, FAIL, INCONCLUSIVE, run_check
 from physverify.stochastic import ising
-from physverify.checks import FAMILIES
+from physverify.stochastic.checks import FAMILIES
 
 SHORT = {"PASS": "ok", "EXACT": "ok", FAIL: "FAIL", ERROR: "ERROR", INCONCLUSIVE: "inconcl.", "SKIP": "skip"}
 
