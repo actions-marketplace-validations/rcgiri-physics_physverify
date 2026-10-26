@@ -1,6 +1,6 @@
 # Roadmap
 
-What may come after 0.5.0. Release 0.5.0 (2026-10-24) added `physverify scan` with the Phase 1 static checks; see the changelog. Next is Phase 2 of the scan plan below, for 0.6.0. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
+What may come after 0.6.0. Release 0.5.0 (2026-10-24) added `physverify scan` with the Phase 1 static checks, and 0.6.0 (2026-10-26) the Phase 2 probes, `scan --run`; see the changelog. Next is Phase 3 of the scan plan below. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
 
 
 ## Principles
