@@ -4,7 +4,7 @@
 
 **Checks that a simulation solves the equations it claims, at the order of accuracy it claims, not just that it runs.**
 
-physverify is actively evolving (v0.5.0), welcoming contributions and test cases from the computational physics community. Scope: numerical solutions of ODEs and PDEs (time integration, convergence, conservation), plus a few Monte Carlo checks. It needs only NumPy.
+physverify is actively evolving (v0.6.0), welcoming contributions and test cases from the computational physics community. Scope: numerical solutions of ODEs and PDEs (time integration, convergence, conservation), plus a few Monte Carlo checks. It needs only NumPy.
 
 ![The check loop: your solver and an independent description of the physics go in; physverify runs the solver at several resolutions, measures the error and reports a verdict with a reason](https://raw.githubusercontent.com/rcgiri-physics/physverify/main/docs/images/check-loop.svg)
 
@@ -31,7 +31,7 @@ New to this? [Start here](https://rcgiri-physics.github.io/physverify/start-here
 A failed check fails the job, like a broken unit test ([CI guide](https://rcgiri-physics.github.io/physverify/ci/): options, pre-commit, pytest):
 
 ```yaml
-      - uses: rcgiri-physics/physverify@v0.5.0
+      - uses: rcgiri-physics/physverify@v0.6.0
         with:
           specs: tests/verify_*.py
 ```
@@ -48,4 +48,6 @@ Works best for ODEs; PDEs only in 1D so far. Your code needs a way to add a sour
 
 ## Contributing, citing, licence
 
-Help is welcome: a trial report on your own solver, seeded bugs written by someone other than the author, adapters, documentation. See [CONTRIBUTING.md](https://github.com/rcgiri-physics/physverify/blob/main/CONTRIBUTING.md), the [code of conduct](https://github.com/rcgiri-physics/physverify/blob/main/CODE_OF_CONDUCT.md), [SUPPORT.md](https://github.com/rcgiri-physics/physverify/blob/main/SUPPORT.md) for help, [SECURITY.md](https://github.com/rcgiri-physics/physverify/blob/main/SECURITY.md) on running untrusted code, and [AGENTS.md](https://github.com/rcgiri-physics/physverify/blob/main/AGENTS.md) for AI assistants. To cite, use [doi:10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) or [CITATION.cff](https://github.com/rcgiri-physics/physverify/blob/main/CITATION.cff). Changes: [CHANGELOG.md](https://github.com/rcgiri-physics/physverify/blob/main/CHANGELOG.md); plans: [ROADMAP.md](https://github.com/rcgiri-physics/physverify/blob/main/ROADMAP.md). MIT licence, copyright (c) 2026 Ram Chandra Giri.
+Help is welcome: a trial report on your own solver, seeded bugs written by someone other than the author, adapters, documentation. See [CONTRIBUTING.md](https://github.com/rcgiri-physics/physverify/blob/main/CONTRIBUTING.md), the [code of conduct](https://github.com/rcgiri-physics/physverify/blob/main/CODE_OF_CONDUCT.md), [SUPPORT.md](https://github.com/rcgiri-physics/physverify/blob/main/SUPPORT.md) for help, [SECURITY.md](https://github.com/rcgiri-physics/physverify/blob/main/SECURITY.md) on running untrusted code, and [AGENTS.md](https://github.com/rcgiri-physics/physverify/blob/main/AGENTS.md) for AI assistants. To cite, use [doi:10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) or [CITATION.cff](https://github.com/rcgiri-physics/physverify/blob/main/CITATION.cff). Changes: [CHANGELOG.md](https://github.com/rcgiri-physics/physverify/blob/main/CHANGELOG.md); plans: [ROADMAP.md](https://github.com/rcgiri-physics/physverify/blob/main/ROADMAP.md). The methods are standard and other tools do parts of this, some better (NodePy for Runge-Kutta analysis); see [related work and credits](https://rcgiri-physics.github.io/physverify/related-work/). MIT licence, copyright (c) 2026 Ram Chandra Giri.
+
+<!-- mcp-name: io.github.rcgiri-physics/physverify -->

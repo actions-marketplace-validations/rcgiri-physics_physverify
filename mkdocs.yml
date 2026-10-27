@@ -79,6 +79,7 @@ nav:
       - Ising checks: ising.md
       - Technical details: technical.md
   - Results on real code: results.md
+  - Related work and credits: related-work.md
   - Roadmap: roadmap.md
   - Changelog: changelog.md
 

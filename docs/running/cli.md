@@ -70,6 +70,32 @@ From Python, `physverify.scan.extract_tables(path)` returns every table the scan
 
 Exit code 1 if there is any WARN, 0 otherwise, 2 for a bad path or stage name. Files that do not parse are listed, not skipped silently. A clean scan means only that these patterns were not found. Stages are read only for explicit methods on one state variable: implicit methods and systems split into parts (`x` and `v` advanced side by side) are skipped, and no check of the physics is made.
 
+### `physverify scan --run`: probes that call the code
+
+New in 0.6.0 (unreleased). **This runs the code**: use it only on code you trust, or inside the sandbox (`sandbox/README.md`).
+
+```bash
+physverify scan path/to/project --run
+physverify scan path/to/project --run --only deadargs,branches --timeout 30
+```
+
+`--run` alone runs `smoke` and `branches`. The other six are **experimental** and run only when named in `--only`: in the sweep of 626 repositories (results/corpus/FEATURES.md) they found no real defect, and after tuning their remaining WARNs were false alarms.
+
+Each probe calls functions it finds with small inputs and needs no reference, only a rule that must hold:
+
+| Probe | Rule | Level |
+|---|---|---|
+| `smoke` | every script runs to the end (as `physverify smoke`), and the project's own tests can be collected by pytest | WARN for an error in the code (`NameError`, `IndexError`, `TypeError`, ...), NOTE for a missing file or module |
+| `deadargs` | changing an argument changes the result. Checked at the defaults and at three more random points, so an argument that is idle only at one point (an `erf` saturated, a term times `sin(0)`) is not reported | WARN when the function reads the argument; NOTE when it never uses it, or uses it only inside `max`, `min` or `clip` |
+| `edges` | zero and negative coordinates, velocities and angles, zero for other scalars, and odd and even sizes give no NaN or infinity without an error. A parameter the code plainly divides by or takes the log of is not set to zero | NOTE |
+| `branches` | at each `if x < a` (and `np.where(x < a, ...)`) on a float parameter, the result on the two sides of `a` does not jump; `a` may be an expression of other parameters (`d / 2`) | NOTE |
+| `roundtrip` | `y_to_x(x_to_y(x)) == x` to 1e-6 for the one-argument inverse pairs the `pairs` stage lists | WARN |
+| `siblings` | two functions in one file whose names differ only by a version word (`_py`, `_slow`/`_fast`, `_numba`/`_numpy`, `_serial`/`_parallel`, `_dense`/`_sparse`, `_reference`, ...) and that take the same arguments give the same result to 1e-6; private functions are included. Also one function under each value of a `method=`, `backend=`, `algorithm=` or `engine=` option it compares with strings | WARN for a pair, NOTE for options (some are meant to differ) |
+| `known` | a function named as a cumulative trapezoid integral, a running (moving) mean or an autocorrelation, called on random data, matches a slow direct loop in one of the usual conventions (with or without a leading 0; valid, centred, trailing, zero-padded or cumulative windows; raw or mean-removed lag sums divided by nothing, r0, N, N-1 or N-m) | WARN for a cumulative integral, NOTE for the others |
+| `monotone` | the result moves in the direction a named law fixes (reverberation time `rt60*` falls with absorption and rises with volume; vapour pressure rises with temperature; skin depth falls with conductivity and frequency), or that the docstring states for one of the function's own arguments ("decreases with T", "inversely proportional to d") | WARN for a law, NOTE for a docstring |
+
+Only module-level functions are probed. A module inside a package (a folder with `__init__.py`) is imported, as its users would; a loose file is imported only when its top level defines things and runs nothing else, and otherwise gets the smoke probe only. Inputs are the function's numeric defaults, then guesses from the parameter names (`n` is an integer, `x` may be an array). Functions whose names say they write, plot, load or run things are not called, nor are functions that take objects, strings or callables. Each file runs in its own process; a file that runs past `--timeout` seconds (default 60), or a function whose one call takes over 2 s, is reported as **SKIP, never as passed**. The rules were tuned on physverify's own code, the examples in `tests/test_probes.py` and the WARNs of the corpus sweep; each rule names the repository that prompted it. Most modules of large projects need their compiled parts or dependencies installed to be imported at all; without them the probes report SKIP.
+
 ## `physverify smoke`
 
 ```bash

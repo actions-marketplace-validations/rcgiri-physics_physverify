@@ -24,7 +24,7 @@ Only NumPy is needed (pytest to run the tests). Install from the folder, or run 
 pip install -e .            # add [symbolic] for the SymPy helpers, [dev] for the test dependencies
 ```
 
-It is not on PyPI yet. A wheel built from this folder installs and runs on a clean Python 3.14 environment.
+It is on PyPI: `pip install physverify`.
 
 Write a spec file that defines `checks()`; [examples/verify_damped_oscillator.py](../examples/verify_damped_oscillator.py) checks the solver in [examples/damped_oscillator.py](../examples/damped_oscillator.py). You provide an independent reference right-hand side and an `integrate(source, y0, t_end, n_steps)` function that advances your code with an additive source term `source(t)`. Codes with no source hook can still be wrapped; see `benchmark/pvbench/adapters/projectile_v2.py` for one that has no time argument either.
 
@@ -45,7 +45,7 @@ The benchmark and the test suite:
 
 ```bash
 python scripts/reproduce_all.py                 # the seeded-bug tables below, and the comparison with plain unit tests
-python -m pytest -q                             # about 1.5 minutes
+python -m pytest -q                             # about 2 minutes
 ```
 
 ## Seeded-bug benchmark

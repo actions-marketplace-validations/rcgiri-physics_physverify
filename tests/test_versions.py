@@ -19,3 +19,8 @@ def test_versions_agree():
     readme = _read("README.md")
     assert f"(v{v})" in readme and f"physverify@v{v}" in readme, "update the version in README.md"
     assert f"physverify@v{v}" in _read("docs/index.md"), "update the action version in docs/index.md"
+    for name in ("docs/ci.md", "packaging/mcp-registry/server.json"):
+        assert set(re.findall(r'@v(\d+\.\d+\.\d+)|"version": "(\d+\.\d+\.\d+)"|rev: v(\d+\.\d+\.\d+)', _read(name))) <= {
+            (v, "", ""), ("", v, ""), ("", "", v)}, f"update the version in {name}"
+    released = re.findall(r"^## (\d+\.\d+\.\d+)", _read("CHANGELOG.md"), re.M)
+    assert released[0] == v, "add a CHANGELOG section for this version"

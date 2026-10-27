@@ -68,6 +68,22 @@ def test_hook_ignores_non_python_edits_and_bad_input(project):
     assert hook_main(io.StringIO("not json"), io.StringIO()) == 0
 
 
+def test_hook_does_not_run_code_outside_the_session_folder(project, tmp_path_factory):
+    session = tmp_path_factory.mktemp("session")
+    seed_bug(project)
+    edit = io.StringIO(json.dumps({"cwd": str(session),
+                                   "tool_input": {"file_path": str(project / "damped_oscillator.py")}}))
+    assert hook_main(edit, io.StringIO()) == 0
+
+
+def test_pyproject_specs_outside_the_root_are_dropped(project, tmp_path_factory):
+    outside = tmp_path_factory.mktemp("outside") / "verify_evil.py"
+    outside.write_text("raise SystemExit('must not be imported')\n")
+    (project / "pyproject.toml").write_text(
+        f"[tool.physverify]\nspecs = ['verify_damped_oscillator.py', {str(outside)!r}, '../verify_up.py']\n")
+    assert find_specs(project) == [(project / "verify_damped_oscillator.py").resolve()]
+
+
 def test_mcp_lists_and_runs_the_tool(project):
     init = handle({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18"}})
     assert init["result"]["serverInfo"]["name"] == "physverify"
