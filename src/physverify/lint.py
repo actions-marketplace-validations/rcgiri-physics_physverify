@@ -227,9 +227,12 @@ _NUMPY = {
     "disp": ("print", "removed in NumPy 2.0"), "deprecate": ("warnings.warn", "removed in NumPy 2.0"),
     "fastCopyAndTranspose": ("a.T.copy()", "removed in NumPy 2.0"), "recfromcsv": ("np.genfromtxt", "removed in NumPy 2.0"),
     "recfromtxt": ("np.genfromtxt", "removed in NumPy 2.0"), "byte_bounds": ("(none)", "removed in NumPy 2.0"),
-    **{k: (k if k != "long" and k != "unicode" else {"long": "int", "unicode": "str"}[k], "removed in NumPy 1.24")
-       for k in ("int", "float", "bool", "object", "str", "complex", "long", "unicode")},
+    **{k: ({"unicode": "str"}.get(k, k), "removed in NumPy 1.24")
+       for k in ("int", "float", "object", "str", "complex", "unicode")},
 }
+# removed in NumPy 1.24 and added back in 2.0 with a new meaning, so they fail only on NumPy 1.24 to 1.26: a NOTE
+_NUMPY_READDED = {"bool": "np.bool_ (np.bool is the NumPy boolean type again since NumPy 2.0)",
+                  "long": "int or np.int_ (np.long is the C long type again since NumPy 2.0)"}
 _NUMPY_DEPRECATED = {"trapz": "np.trapezoid", "in1d": "np.isin", "row_stack": "np.vstack"}
 # module path -> name -> replacement (all removed)
 _SCIPY = {
@@ -268,6 +271,9 @@ def scan_api(path: Path, tree, rel: str) -> list[Finding]:
             if n.attr in _NUMPY:
                 new, when = _NUMPY[n.attr]
                 out.append(Finding("api", WARN, rel, n.lineno, f"{n.value.id}.{n.attr} was {when}; use {new}"))
+            elif n.attr in _NUMPY_READDED:
+                out.append(Finding("api", NOTE, rel, n.lineno, f"{n.value.id}.{n.attr} raises AttributeError on NumPy 1.24"
+                                                                 f" to 1.26; for those versions use {_NUMPY_READDED[n.attr]}"))
             elif n.attr in _NUMPY_DEPRECATED:
                 out.append(Finding("api", NOTE, rel, n.lineno, f"{n.value.id}.{n.attr} is deprecated in NumPy 2;"
                                                                  f" use {_NUMPY_DEPRECATED[n.attr]}"))

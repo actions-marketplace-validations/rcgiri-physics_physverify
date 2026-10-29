@@ -158,7 +158,7 @@ def _svg_plot(result: OrderResult, width=220, height=150) -> str:
     expected_line = []
     if math.isfinite(result.expected):
         # through the finest point, with the expected slope
-        yf = ly[-1] if lx[-1] == x0 else ly[lx.index(x0)]
+        yf = ly[lx.index(x0)]
         expected_line = [(x0, yf), (x1, yf + result.expected * (x1 - x0))]
         y0 = min(y0, *[p[1] for p in expected_line])
         y1 = max(y1, *[p[1] for p in expected_line])

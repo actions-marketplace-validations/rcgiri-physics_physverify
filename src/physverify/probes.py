@@ -238,7 +238,8 @@ def _probe_dead(f, args, y0, out, rel):
     unset = set(f.params) - set(args)  # options the probe leaves at their default (None, a string)
     changed, dead = [], []
     for p, v in args.items():
-        if isinstance(v, bool) or _CONTROL.search(p) or _FLAG.match(p) or _flag_like(f.node, p) or _gated(f.node, p, unset)                 or _only_in_messages(f.node, p):
+        if (isinstance(v, bool) or _CONTROL.search(p) or _FLAG.match(p) or _flag_like(f.node, p)
+                or _gated(f.node, p, unset) or _only_in_messages(f.node, p)):
             continue
         (dead if _no_effect(f, args, y0, p) else changed).append(p)
     # an argument can be idle at one point (an erf saturated, a term multiplied by sin(0)): try three more points
@@ -529,7 +530,7 @@ def _probe_roundtrips(fns, out, rel):
         g = fns.get(other)
         if g is None or name > other or len(f.params) - len(f.has_default) != 1 or len(g.params) - len(g.has_default) != 1:
             continue
-        p, q = f.params[0], g.params[0]
+        p = f.params[0]
         bad = None
         for x in (0.7, np.linspace(0.1, 1.0, 8)):
             try:
@@ -576,7 +577,8 @@ def _import(path: Path, root: Path):
             if where is None or str(where) in sys.path:
                 raise
             sys.path.insert(0, str(where))
-            for k in [k for k in sys.modules if k == path.stem or k.startswith(parts[0])]:
+            # forget the half-imported package, and only it: a bare prefix test would also drop `numpy` for a package `num`
+            for k in [k for k in sys.modules if k in (path.stem, parts[0]) or k.startswith(parts[0] + ".")]:
                 del sys.modules[k]
     raise ImportError("gave up after five folders")
 

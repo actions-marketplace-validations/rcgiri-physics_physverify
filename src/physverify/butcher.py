@@ -186,6 +186,7 @@ def a_stability_margin(A, b) -> float:
     iy = np.polynomial.Polynomial([0, 1j])
     Pi = np.polynomial.Polynomial(P.astype(complex))(iy)
     Qi = np.polynomial.Polynomial(Q.astype(complex))(iy)
+
     def sq(p):  # |p(iy)|^2 for real y, as a polynomial in y
         return p * np.polynomial.Polynomial(np.conj(p.coef))
 
@@ -258,8 +259,8 @@ def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1
             notes.append(f"linear order is at least {pl} (claimed {claimed_linear})")
         else:
             notes.append(f"linear order {pl} confirmed")
-    elif linear_order(A, b, max_order=max(p, claimed) + 2, tol=tol) > p:
-        notes.append(f"linear order {linear_order(A, b, max_order=max(p, claimed) + 2, tol=tol)} is higher than the order {p}:"
+    elif (pl := linear_order(A, b, max_order=max(p, claimed) + 2, tol=tol)) > p:
+        notes.append(f"linear order {pl} is higher than the order {p}:"
                      " a convergence test on y' = lambda*y alone would overstate the order")
     if claimed_stage is not None:
         q = stage_order(A, c, b, max_order=claimed_stage + 1, tol=tol)
