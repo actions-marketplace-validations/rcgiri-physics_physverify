@@ -22,7 +22,11 @@ from .checks import FAIL, PASS, Result
 
 
 def _worst(got, ref, rtol: float, atol: float):
-    """Largest violation of |got - ref| <= atol + rtol |ref|, as (excess, abs error, where)."""
+    """Largest violation of |got - ref| <= atol + rtol |ref|, as (excess, abs error, where, got there, ref there).
+
+    `where` indexes the broadcast shape, so the values there are returned too: indexing the original
+    `got` with it fails when a scalar was compared with an array.
+    """
     g = np.asarray(got)
     r = np.asarray(ref)
     if g.shape != r.shape:
@@ -34,12 +38,12 @@ def _worst(got, ref, rtol: float, atol: float):
     tol = atol + rtol * np.abs(r)
     excess = err - tol
     if excess.size == 0:
-        return -np.inf, 0.0, ()
+        return -np.inf, 0.0, (), got, ref
     if not np.all(np.isfinite(err)):
         i = np.unravel_index(int(np.argmax(~np.isfinite(err))), err.shape)
-        return np.inf, np.inf, i
+        return np.inf, np.inf, i, (g[i] if i else got), (r[i] if i else ref)
     i = np.unravel_index(int(np.argmax(excess)), excess.shape)
-    return float(excess[i]), float(err[i]), i
+    return float(excess[i]), float(err[i]), i, (g[i] if i else got), (r[i] if i else ref)
 
 
 def _verdict(what: str, cases, rtol: float, atol: float) -> Result:
@@ -48,18 +52,16 @@ def _verdict(what: str, cases, rtol: float, atol: float) -> Result:
     n = 0
     for label, got, ref in cases:
         n += 1
-        excess, err, where = _worst(got, ref, rtol, atol)
+        excess, err, where, g, r = _worst(got, ref, rtol, atol)
         if worst is None or excess > worst[0]:
-            worst = (excess, err, label, where, got, ref)
+            worst = (excess, err, label, where, g, r)
     if worst is None:
         raise ValueError(f"{what}: no inputs given")
-    excess, err, label, where, got, ref = worst
+    excess, err, label, where, g, r = worst
     at = f" at index {tuple(int(k) for k in where)}" if where else ""
     detail = f"worst case {label}{at}: |difference| = {err:.3g} (rtol {rtol:g}, atol {atol:g})"
     if excess <= 0:
         return Result(PASS, f"{what}: {n} case{'s' if n != 1 else ''} within tolerance; {detail}")
-    g = np.asarray(got)[where] if where else got
-    r = np.asarray(ref)[where] if where else ref
     return Result(FAIL, f"{what}: {detail}; got {g!r}, expected {r!r}")
 
 

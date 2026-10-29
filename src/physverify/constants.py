@@ -129,7 +129,10 @@ def scan(path, *, max_rel: float = 0.1) -> list[Note]:
     notes = []
     for node in ast.walk(tree):
         if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool):
-            v = float(node.value)
+            try:
+                v = float(node.value)
+            except OverflowError:  # an integer literal too large for a float is no physical constant
+                continue
             hit = check_value(abs(v), max_rel=max_rel)
             if hit and (isinstance(node.value, int) or _digits(v) < 3):
                 if not names.get(id(node), set()) & NAMES.get(hit[0], set()):

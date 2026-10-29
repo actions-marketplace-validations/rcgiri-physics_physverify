@@ -30,10 +30,11 @@ class SmokeResult:
 
 
 def _scripts(path: Path) -> list[Path]:
+    from .scan import python_files  # skips virtual environments and build output below `path` (not above it)
+
     if path.is_file():
         return [path]
-    skip = {".git", ".venv", "venv", "__pycache__", "build", "dist", "node_modules"}
-    return sorted(p for p in path.rglob("*.py") if not skip & set(p.parts) and not p.name.startswith("test_"))
+    return [p for p in python_files(path) if not p.name.startswith("test_")]
 
 
 def smoke_script(script: Path, *, timeout: float = 60.0) -> SmokeResult:

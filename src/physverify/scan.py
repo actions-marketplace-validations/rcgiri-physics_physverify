@@ -811,8 +811,6 @@ def _value(node, env):
     return None
 
 
-
-
 def _same(x, y, names) -> bool | None:
     """Whether two expressions agree for three random assignments of their names (None if not computable)."""
     import random
@@ -1029,6 +1027,10 @@ def scan(path, *, stages=STAGES) -> tuple[list[Finding], list[str]]:
         rel = str(f.relative_to(root)) if root.is_dir() else f.name
         try:
             text = f.read_text(encoding="utf-8-sig", errors="replace")  # a byte-order mark is valid Python
+        except OSError as exc:  # a broken link or a file without read permission must not stop the scan
+            unparsed.append(f"{rel}: not read: {type(exc).__name__}: {exc}")
+            continue
+        try:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")  # invalid escapes in other people's strings are not our concern
                 tree = ast.parse(text, str(f))

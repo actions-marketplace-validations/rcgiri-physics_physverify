@@ -140,7 +140,7 @@ def fetch(repo_id, url, commit):
     safe = ["-c", "core.hooksPath=/dev/null", "-c", "core.symlinks=false", "-c", "filter.lfs.smudge=", "-c", "filter.lfs.process=",
             "-c", "filter.lfs.clean=", "-c", "filter.lfs.required=false"]  # LFS files stay as small pointer files
     env = dict(os.environ, GIT_LFS_SKIP_SMUDGE="1", GIT_TERMINAL_PROMPT="0")
-    subprocess.run(["git", *safe, "clone", "--no-checkout", "--filter=blob:limit=20m", url, str(dest)], check=True, env=env)
+    subprocess.run(["git", *safe, "clone", "--config", "core.autocrlf=false", "--no-checkout", "--filter=blob:limit=20m", url, str(dest)], check=True, env=env)
     subprocess.run(["git", *safe, "-C", str(dest), "checkout", "--detach", commit], check=True, env=env)
     return 0
 

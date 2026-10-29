@@ -107,7 +107,9 @@ def compare_chain_means(name, per_chain_values, exact, resolution, min_se=0.0) -
 
 def verdict(comparisons, alpha: float = ALPHA_CHECK) -> Result:
     """Bonferroni-corrected t-tests; see the module docstring for PASS, FAIL and INCONCLUSIVE."""
-    m = max(len(comparisons), 1)
+    if not comparisons:
+        return Result(INCONCLUSIVE, "no comparisons were made, so nothing was tested")
+    m = len(comparisons)
     worst, worst_ratio, unresolved = None, -1.0, []
     for c in comparisons:
         if not (np.isfinite(c.estimate) and np.isfinite(c.se)):

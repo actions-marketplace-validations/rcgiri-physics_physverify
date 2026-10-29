@@ -112,14 +112,18 @@ def hook_main(stdin=None, stderr=None) -> int:
         event = json.load(stdin)
     except (json.JSONDecodeError, ValueError):
         return 0  # not a hook event; never block the assistant on our own input problem
-    tool_input = event.get("tool_input") or {}
+    if not isinstance(event, dict):
+        return 0
+    tool_input = event.get("tool_input")
+    tool_input = tool_input if isinstance(tool_input, dict) else {}
     edited = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
-    if edited and not edited.endswith(".py"):
+    if not isinstance(edited, str) or (edited and not edited.endswith(".py")):
         return 0
     cwd = Path(event.get("cwd") or ".").resolve()
-    if edited and not Path(edited).resolve().is_relative_to(cwd):
+    edited_path = (cwd / edited).resolve() if edited else None  # a relative path is relative to the session folder
+    if edited_path is not None and not edited_path.is_relative_to(cwd):
         return 0  # an edit outside the session folder must not run that folder's code (GCVE-110-VULN-PYPI-2026-000391)
-    root = find_project_root(Path(edited).parent if edited else cwd)
+    root = find_project_root(edited_path.parent if edited_path is not None else cwd)
     if not root.is_relative_to(cwd):
         root = cwd  # never climb above the session folder
     specs = find_specs(root)
@@ -141,8 +145,11 @@ META_VERSION = "io.modelcontextprotocol/protocolVersion"
 META_CAPABILITIES = "io.modelcontextprotocol/clientCapabilities"
 META_SERVER_INFO = "io.modelcontextprotocol/serverInfo"
 
-INVALID_PARAMS = -32602
+PARSE_ERROR = -32700
+INVALID_REQUEST = -32600
 METHOD_NOT_FOUND = -32601
+INVALID_PARAMS = -32602
+INTERNAL_ERROR = -32603
 UNSUPPORTED_PROTOCOL_VERSION = -32022
 
 CACHE_HINTS = {"ttlMs": 300_000, "cacheScope": "public"}  # the tool list does not change while the server runs
@@ -252,6 +259,16 @@ def handle(message: dict):
     return _error(msg_id, METHOD_NOT_FOUND, f"method not found: {method}")
 
 
+def _respond(message):
+    """handle(), but a message that is not an object, or an exception, becomes an error response; the server keeps running."""
+    if not isinstance(message, dict):  # a batch, a number, a string: not a request this server answers
+        return _error(None, INVALID_REQUEST, "invalid request: expected a JSON object")
+    try:
+        return handle(message)
+    except Exception as exc:  # report the failure to the client
+        return _error(message.get("id"), INTERNAL_ERROR, f"{type(exc).__name__}: {exc}")
+
+
 def mcp_main(stdin=None, stdout=None) -> int:
     stdin = stdin or sys.stdin
     stdout = stdout or sys.stdout
@@ -262,12 +279,9 @@ def mcp_main(stdin=None, stdout=None) -> int:
         try:
             message = json.loads(line)
         except json.JSONDecodeError:
-            response = {"jsonrpc": "2.0", "id": None, "error": {"code": -32700, "message": "parse error"}}
+            response = _error(None, PARSE_ERROR, "parse error")
         else:
-            try:
-                response = handle(message)
-            except Exception as exc:  # keep the server alive; report the failure to the client
-                response = {"jsonrpc": "2.0", "id": message.get("id"), "error": {"code": -32603, "message": f"{type(exc).__name__}: {exc}"}}
+            response = _respond(message)
         if response is not None:
             stdout.write(json.dumps(response) + "\n")
             stdout.flush()
