@@ -170,7 +170,7 @@ def deps(repo_id, packages=()):
     out: list = []
     rc = timed(["run", *lockdown, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
                 "-v", f"{cache}:/pip-cache:rw", "-e", "PIP_CACHE_DIR=/pip-cache",
-                IMAGE, "pip", "install", "--only-binary=:all:", "--target=/deps",
+                IMAGE, "pip", "install", "--progress-bar=off", "--only-binary=:all:", "--target=/deps",
                 "--constraint=/opt/constraints.txt", *what],
                name, DEPS_TIME_LIMIT, keep=out)
     hint = stack_hint("".join(out)) if rc else ""
@@ -223,6 +223,9 @@ def run(repo_id, script, extra, *, read_only_repo=False, py314_shim=False):
 
 
 def main(argv):
+    # pip and the repo code print UTF-8 (progress bars, Greek letters); a Windows console in cp1252 would raise
+    # UnicodeEncodeError on print, so unknown characters are replaced instead
+    sys.stdout.reconfigure(errors="replace")
     if not argv:
         sys.exit(__doc__)
     cmd, rest = argv[0], argv[1:]
