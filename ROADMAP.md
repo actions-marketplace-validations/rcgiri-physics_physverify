@@ -1,6 +1,6 @@
 # Roadmap
 
-What may come after 0.6.0. Release 0.5.0 (2026-10-24) added `physverify scan` with the Phase 1 static checks, and 0.6.0 (2026-10-26) the Phase 2 probes, `scan --run`; see the changelog. Next is Phase 3 of the scan plan below. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
+What may come after 0.7.0. Release 0.5.0 (2026-10-24) added `physverify scan` with the Phase 1 static checks, 0.6.0 (2026-10-26) the Phase 2 probes, `scan --run`, and 0.7.0 (2026-10-31) the checks from the daily corpus sessions; see the changelog. Next is Phase 3 of the scan plan below. Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
 
 
 ## Principles
@@ -89,7 +89,8 @@ This shows how often each check is useful, not just that it can find a bug, and 
 ### Also for `scan`
 
 - **A declarative spec instead of Python.** A `[tool.physverify]` table in `pyproject.toml` naming the solver, its call pattern, the claimed order and the equations as text (turned into a reference with SymPy).
-- **Finite-difference stencils.** Check the moment conditions of a stencil written as literals (weights sum to zero, the right moment is the right size), which catches sign and factor errors in derivative formulas.
+- **Finite-difference stencils in `scan`.** `physverify.stencils.check_stencil` now checks a table given to it; the next step is to find stencils written as literals in the source and check them without being asked.
+- **More static rules, one case each so far:** an `einsum` that sums a tensor index over the tensor alone (`'..ij,..i->..i'`, almost always a typo for `..j`); `jnp.cross` on 2-vectors; `if array:` on a possibly empty array.
 - **Fewer false negatives found by hand:** grid bounds written as numbers rather than names, Jupyter notebooks (read the code cells).
 - **Use in CI:** rule IDs, `# pv: ignore[rule]` comments, a baseline file, SARIF output for GitHub code scanning, and a mode that scans only changed files.
 
@@ -104,10 +105,10 @@ This shows how often each check is useful, not just that it can find a bug, and 
 - **Whole PDE order studies from SymPy.** `physverify.symbolic` already derives source terms; the next step is to run the full study from an equation written as text.
 - **IMEX / additive Runge-Kutta coupling conditions.** Check the conditions that link the explicit and implicit tables of an IMEX pair (bi-coloured trees), not only each table on its own. Also the order of embedded error estimators.
 - **Stochastic checks that stop early.** Stop sampling as soon as the result is decisive, so slow Monte Carlo codes fit inside a time budget.
-- **Uncertainty on the observed order.** Report the fitted order with a standard error (and the grid convergence index of Roache and Celik et al.), pick the points of the fit from the data instead of the last four, and estimate the round-off floor from the scatter, so a PASS states how sure it is.
-- **Real tableaux in `check_tableau`.** Accept FSAL tables whose `A` is n by n-1 (as in SciPy's `RK45`), ship SciPy's `RK23`, `RK45` and `DOP853` tables, and add an argument for the order of the embedded error estimate.
-- **Is the reference independent?** Warn when a spec's reference imports the module it checks or copies its constants; today nothing catches the mistake the docs warn about most.
-- **Long-time behaviour.** A symplecticity check on the tableau (b_i a_ij + b_j a_ji = b_i b_j) and energy drift against time, to tell symplectic from dissipative integrators.
+- **Uncertainty on the observed order.** Done in 0.7.0: `fit_order_error` and `gci`. Still to do: report the standard error in `check_order` itself, pick the points of the fit from the data instead of the last four, and estimate the round-off floor from the scatter.
+- **Real tableaux in `check_tableau`.** Done in 0.7.0 (FSAL shapes, embedded order, shipped tables). Still to do: DOP853 and other high-order tables, and dense-output (interpolant) order.
+- **Is the reference independent?** Done in 0.7.0 for references that call the code under test. Still to do: references that copy its constants.
+- **Long-time behaviour.** The symplecticity check on the tableau is done in 0.7.0. Still to do: energy drift against time, to tell symplectic from dissipative integrators in a run.
 - **Units in comparisons.** Most adapter mistakes in batch 8 were units or coordinate origins. An optional units-aware comparison (via pint, when installed) that refuses to compare quantities of different dimension.
 
 ## Documentation website
@@ -125,6 +126,22 @@ Still to do:
 - Test the oldest supported versions (Python 3.10, NumPy 1.24) in CI; add Ruff, a type check on the public API, and a coverage floor.
 - A test that every version string (package, conda recipe, MCP registry entry, changelog) agrees.
 - Submit the conda-forge recipe.
+
+## Candidate checks from the daily corpus sessions (one case each so far)
+
+Each was seen once in the October 2026 daily sessions. One case is not enough to build a check on; each is promoted when a second case turns up.
+
+- **Short-run probe:** rewrite literal `tEnd`/`Nt` in a script's `main()` to small values, and set output intervals large rather than removing plot blocks, so `smoke` gets past single-file tutorial scripts that hit the time limit.
+- **Time-dependent right-hand side** in a stepper probe (a driven oscillator with an exact solution): most tests use autonomous problems and miss wrong stage times.
+- **Layering invariance:** splitting a homogeneous medium into identical layers must not change the answer (seismology, transfer-matrix optics, heat conduction).
+- **Documented-units recipe:** integrate a spectral function and compare with its closed form (Planck's law against sigma T^4) in the units the docstring states.
+- **Adjoint or Jacobian against finite differences** (with a check that the step is in the stable range); `identities.check_derivative` covers scalars, a recipe for vector models is the gap. It also tells d/d(sigma) from d/d(log sigma).
+- **Source balance for heat solvers:** a uniform source in an insulated domain gives dT/dt = q/(rho c) for every solver option. Part of the 2D/3D heat family below.
+- **Causality of a run difference** for wave solvers: total minus reference field is zero before the first arrival.
+- **Lyapunov spectrum sum** equals the time-averaged trace of the Jacobian; **zero net flux** through a closed surface around a body in potential flow.
+- **Range ends:** evaluate piecewise fits at their documented range limits and flag 0, NaN or an exception.
+- **Truncated series inversion:** the round-trip error of an order-n inversion scales as a^(n+1); a recipe for perturbative codes.
+- **Sandbox:** a legacy image (NumPy 1.26, SciPy 1.11, JAX 0.4.30) for repositories that need NumPy 1; `pip --prefix` installs for wheels that put files outside site-packages; a helper that registers empty parent packages for heavy optional imports.
 
 ## Later
 

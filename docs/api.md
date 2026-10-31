@@ -26,6 +26,8 @@ The functions most specs need. Each has a docstring with the details: `help(phys
 | `trajectory_order_study(runs, exact, t_compare, order, period=None)` | From whole trajectories, at one fixed time. |
 | `check_order(hs, errors, expected, atol=None)` | The verdict from step sizes and errors; `atol` adds an accuracy requirement on the finest grid, reported apart from the order. |
 | `check_exact(hs, errors)` | The verdict when every error should be at round-off. |
+| `fit_order_error(hs, errors)` | The fitted order and its standard error. |
+| `gci(f_fine, f_medium, f_coarse, r)` | Grid convergence index (Roache; Celik et al. 2008): observed order, Richardson extrapolate, error band. |
 
 ## Other checks (`physverify.studies`)
 
@@ -49,12 +51,23 @@ The functions most specs need. Each has a docstring with the details: `help(phys
 | `check_identity([(label, lhs, rhs), ...])` | Identities computed from the physics. |
 | `check_unitary(M)` | `M^H M = I`. |
 | `fd_derivative`, `laplacian_fd` | Finite-difference helpers. |
+| `vary_one(test, defaults, changes)` | A test that passes at the defaults still passes with each parameter changed on its own. |
+| `check_scale(got, ref)` | The output is 1 times the reference; names the factor when it is not. |
+| `check_vec_convention(S, f, X)` | Row- or column-major vectorisation of a superoperator. |
 
-See [Identities and round trips](checks/identities.md).
+See [Identities and round trips](checks/identities.md) and [Hidden defaults, scale, stencils and fluxes](checks/defaults-scale-stencils.md).
+
+## Stencils and fluxes (`physverify.stencils`, `physverify.fluxes`)
+
+| Name | What it does |
+|---|---|
+| `check_stencil(offsets, weights, deriv, claimed=None, divisor=1)` | Consistency, scale and order of a finite-difference stencil from its Taylor moments. |
+| `stencil_moments`, `stencil_order` | The moments and the order on their own. |
+| `check_flux(flux, physical, states, upwind_pairs=(), downwind_pairs=(), mirror=None)` | Consistency, upwinding and mirror symmetry of a numerical flux. |
 
 ## Runge-Kutta tables (`physverify.butcher`)
 
-`check_tableau`, `tableau_order`, `order_residuals`, `linear_order`, `stage_order`, `stability_function`, `stability_polynomials`, `r_infinity`, `a_stability_margin`, `is_stiffly_accurate`. See [Runge-Kutta tables](checks/runge-kutta.md).
+`check_tableau` (with `embedded=`, `claimed_embedded=`, `symplectic=`), `square_tableau`, `symplectic_residual`, `TABLES`, `compare_tableau`, `tableau_order`, `order_residuals`, `linear_order`, `stage_order`, `stability_function`, `stability_polynomials`, `r_infinity`, `a_stability_margin`, `is_stiffly_accurate`. See [Runge-Kutta tables](checks/runge-kutta.md).
 
 ## Loading code (`physverify.loaders`)
 
