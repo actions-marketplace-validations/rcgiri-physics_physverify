@@ -65,6 +65,17 @@ See [Identities and round trips](checks/identities.md) and [Hidden defaults, sca
 | `stencil_moments`, `stencil_order` | The moments and the order on their own. |
 | `check_flux(flux, physical, states, upwind_pairs=(), downwind_pairs=(), mirror=None)` | Consistency, upwinding and mirror symmetry of a numerical flux. |
 
+## Operator invariants (`physverify.operators`)
+
+Checks that need no exact solution. See [Operator invariants](checks/operator-invariants.md).
+
+| Name | What it does |
+|---|---|
+| `check_nullspace(operator, shape, field=None, interior=None)` | A matrix or function maps a constant (or another null-space field) to zero at interior points. |
+| `check_uniform_state(step, state, n_steps=10)` | A uniform state with no flow or source is unchanged by time stepping. |
+| `check_advection_direction(evolve, x, u, t)` | A feature carried by velocity u moves by u t, in the direction of u (periodic 1-D grid). |
+| `check_force_gradient(potential, force, r)` | A conservative force equals -dU/dr (central difference). |
+
 ## Runge-Kutta tables (`physverify.butcher`)
 
 `check_tableau` (with `embedded=`, `claimed_embedded=`, `symplectic=`), `square_tableau`, `symplectic_residual`, `TABLES`, `compare_tableau`, `tableau_order`, `order_residuals`, `linear_order`, `stage_order`, `stability_function`, `stability_polynomials`, `r_infinity`, `a_stability_margin`, `is_stiffly_accurate`. See [Runge-Kutta tables](checks/runge-kutta.md).
