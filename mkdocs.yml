@@ -66,6 +66,7 @@ nav:
       - Exact references: checks/exact-references.md
       - Identities and round trips: checks/identities.md
       - Hidden defaults, scale, stencils and fluxes: checks/defaults-scale-stencils.md
+      - Operator invariants: checks/operator-invariants.md
       - Statistics and Monte Carlo: checks/statistics.md
   - Convergence-study pitfalls: pitfalls.md
   - Recipes: recipes.md
