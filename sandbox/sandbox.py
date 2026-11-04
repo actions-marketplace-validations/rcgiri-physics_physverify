@@ -191,6 +191,11 @@ def deps(repo_id, packages=(), clean=False):
     hint = stack_hint("".join(out)) if rc else ""
     if hint:
         print(f"physverify sandbox: {hint}")
+    # pip's last lines are often only its upgrade notice, which reads the same after a success and a failure
+    if rc == 0:
+        print(f"physverify sandbox: installed into {folder('deps', repo_id)}")
+    else:
+        print(f"physverify sandbox: install failed (exit {rc}); nothing new may be in {folder('deps', repo_id)}")
     return rc
 
 
