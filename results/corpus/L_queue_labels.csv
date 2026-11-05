@@ -1,0 +1,55 @@
+id,label,reason
+L282,testable but not tested,JAX tensor-network variational optimisation; installable but too heavy for the sandbox time limit
+L293,out of scope,analysis of molecular dynamics trajectories (needs the author's or other trajectory files)
+L303,deep-testable,demagnetisation/moment method; exact case: sphere in a uniform field
+L314,deep-testable,Barnes-Hut N-body; energy conservation and two-body orbit (earlier clone timed out: clone only the code)
+L325,out of scope,visualisation of a spacetime metric
+L326,deep-testable,samples hydrogen orbitals; exact radial and angular densities (doubt: may be plotting only)
+L327,deep-testable,Biot-Savart integrator; exact fields of wire and loop
+L328,deep-testable,stochastic models (Brownian and active particles); exact mean-square displacement
+L329,deep-testable,SDE integrators with stated strong and weak orders; geometric Brownian motion is exact
+L330,needs hardware,free-energy workflow that needs an NVIDIA GPU with CUDA
+L331,deep-testable,finite-difference PDE solver; exact solutions of heat and advection equations
+L332,deep-testable,diffusion-equation room acoustics (FVM and FDM); exact decay in a uniform room
+L333,deep-testable,quantum-well solver; exact levels of square and harmonic wells
+L334,deep-testable,2D HP lattice Monte Carlo; exact enumeration for short chains (doubt: 2012 code may need Python 2)
+L335,testable but not tested,Gutzwiller mean field; needs a Cython build (no wheel)
+L336,deep-testable,JAX discrete-element method; energy and momentum in elastic collisions (CPU path)
+L337,testable but not tested,coupled Maxwell-Schrodinger solvers; depends on packages with no wheels (set-up too heavy)
+L338,out of scope,download script (not physics)
+L339,out of scope,equipment communication protocol (not physics)
+L340,deep-testable,orbital-mechanics scripts; exact Hohmann transfer delta-v (doubt: partly pygame visualisation)
+L341,testable but not tested,validation cases that need an external multiphysics solver package (to confirm)
+L342,testable but not tested,divertor geometry optimisation; needs equilibrium data files
+L343,out of scope,toy visualisation script
+L344,deep-testable,point-charge electrostatics; Coulomb field and potential exact
+L345,out of scope,interactive field editor and visualiser (C++ GUI)
+L346,deep-testable,quantum chemistry on circuits; exact small cases (H2 full CI)
+L347,deep-testable,analytical and semi-analytical welding temperature models; Rosenthal-type closed forms
+L348,needs hardware,discontinuous Galerkin fast spectral solver; needs CUDA (to confirm)
+L349,deep-testable,single-script fluid simulation; mass conservation (doubt: may be visualisation only)
+L350,deep-testable,nudged elastic band; known saddle points of the Muller-Brown surface
+L351,deep-testable,JAX P3M N-body; linear growth and force law (CPU path)
+L352,testable but not tested,stream temperature model; needs site input data files
+L353,deep-testable,finite-element beam modal analysis; exact cantilever modes
+L354,out of scope,supporting scripts for a manuscript; needs LAMMPS and the authors' data
+L355,deep-testable,Krylov time evolution; exact matrix exponential for small Hamiltonians
+L356,deep-testable,tight-binding Schrodinger-Poisson for 2D electron systems; exact limits (doubt: may need input files)
+L357,deep-testable,2D explicit heat equation; exact mode decay and stability limit
+L358,out of scope,industry tracker (not physics)
+L359,deep-testable,JAX particle-field molecular dynamics; energy conservation
+L360,out of scope,driver for an external MD program (GROMACS)
+L361,deep-testable,star-cluster N-body; energy conservation (CPU path)
+L362,deep-testable,steady advection-diffusion solver; exact Gaussian plume limit
+L363,out of scope,neural-network diffusion sampler
+L364,deep-testable,flash calculations with equations of state; exact pure-component and ideal-solution limits
+L365,deep-testable,quantum key distribution Monte Carlo; exact error rates (BB84 intercept-resend 25 percent)
+L366,deep-testable,2D FDTD; Fresnel reflection and Courant limit (doubt: C++ core needs a wheel)
+L367,testable but not tested,repository no longer available (HTTP 404)
+L368,out of scope,client and server wrapper; the physics engine is not in this repository
+L369,deep-testable,macrospin magnetisation dynamics; exact precession frequency (doubt: GUI-first)
+L370,deep-testable,stochastic PDE exponential steppers; exact Ornstein-Uhlenbeck variance
+L371,deep-testable,heat conduction solver behind a viewer; exact 1D conduction
+L372,testable but not tested,phonon Monte Carlo; needs ab-initio input data files
+L373,testable but not tested,calibration of ocean mixing closures; needs reference profile data
+L374,deep-testable,cable thermal model; exact steady state and RC transient
