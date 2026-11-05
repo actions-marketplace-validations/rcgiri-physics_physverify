@@ -397,6 +397,24 @@ def scan_literals(path: Path, tree, rel: str, source: str) -> list[Finding]:
             text = ast.get_source_segment(source, n) or ""
             out.append(Finding("literals", WARN, rel, n.lineno,
                                f"{text.strip()}: ^ is exclusive or in Python, not a power (use **)"))
+        # A literal list, tuple, number or string indexed with a tuple, or called, raises TypeError when the line
+        # runs; it is nearly always a lost comma or a lost name (corpus repo L313: `[c[0][...], [0][0,0,:,:]]`).
+        # CPython warns about the same cases at compile time, but only when the file is compiled, and the warning
+        # is easy to miss.
+        literal = (ast.List, ast.Tuple, ast.Constant, ast.ListComp, ast.Dict, ast.Set)
+        if isinstance(n, ast.Subscript) and isinstance(n.value, literal) and not isinstance(n.value, ast.Dict) \
+                and (isinstance(n.slice, ast.Tuple) or (isinstance(n.value, (ast.List, ast.Tuple, ast.ListComp))
+                                                        and isinstance(n.slice, ast.Constant) and isinstance(n.slice.value, str))):
+            text = ast.get_source_segment(source, n) or ""
+            out.append(Finding("literals", WARN, rel, n.lineno,
+                               f"{text.strip()[:60]}: indexing a literal {type(n.value).__name__.lower()} with a tuple or"
+                               " string raises TypeError; a comma or a name is probably missing"))
+        if isinstance(n, ast.Call) and isinstance(n.func, literal) \
+                and not (isinstance(n.func, ast.Constant) and n.func.value is None):
+            text = ast.get_source_segment(source, n) or ""
+            out.append(Finding("literals", WARN, rel, n.lineno,
+                               f"{text.strip()[:60]}: a literal is called, which raises TypeError;"
+                               " a comma is probably missing between two items"))
         if isinstance(n, ast.Compare):
             for op, right in zip(n.ops, n.comparators):
                 for side in (n.left, right):
