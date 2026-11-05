@@ -482,6 +482,22 @@ def test_literal_typos(tmp_path):
     assert "1e-5" in f[0].message and "exclusive or" in f[1].message and "never" in f[2].message
 
 
+def test_missing_comma_literals(tmp_path):
+    """Corpus repo L313: `[c[0][0,0,:,:], [0][0,0,:,:]]` lost the name `a`; a tuple of tuples that lost a comma
+    calls a tuple. Both raise TypeError when run. Ordinary indexing and dict literals stay quiet."""
+    _write(tmp_path, "mc.py", '''
+        tensors = [c[0][0,0,:,:],[0][0,0,:,:]]
+        table = (
+            ("Si", "epsr", 11.7)
+            ("Si", "NC", 3e19),
+        )
+        ok = [1, 2, 3][0] + {"a": 1}["a"] + x[0, 0] + "abc"[1:]
+        ''')
+    f = _by_stage(scan(tmp_path)[0], "literals")
+    assert [x.line for x in f] == [2, 4]
+    assert "comma or a name" in f[0].message and "literal is called" in f[1].message
+
+
 def test_unit_table_dimensions(tmp_path):
     _write(tmp_path, "physical.py", '''
         from astropy.units import si

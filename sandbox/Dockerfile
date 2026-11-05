@@ -3,8 +3,10 @@
 FROM python@sha256:a6e34c598f2467ed0e9a8d349809fcd8b5c603269512df273a0bb1784edc11b1
 
 # System libraries some scientific wheels link against (Taichi needs libX11 even when headless; DEVSIM loads a
-# BLAS/LAPACK at run time and finds none in the NumPy/SciPy wheels, whose OpenBLAS symbols are prefixed).
-RUN apt-get update && apt-get install -y --no-install-recommends libx11-6 libgl1 libopenblas0 liblapack3 \
+# BLAS/LAPACK at run time and finds none in the NumPy/SciPy wheels, whose OpenBLAS symbols are prefixed;
+# mpi4py wheels load libmpi at run time, and the mpich/openmpi wheels' libraries are data files that
+# `pip install --target` leaves out, so codes that import mpi4py need a system MPI even for one process).
+RUN apt-get update && apt-get install -y --no-install-recommends libx11-6 libgl1 libopenblas0 liblapack3 libmpich12 \
     && rm -rf /var/lib/apt/lists/*
 
 # Common scientific stack, so most repositories need no extra installs. `sandbox.py build --stack latest`
