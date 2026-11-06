@@ -114,7 +114,7 @@ def test_ito_wrong_integrals():
 
 
 def test_ito_false_alarm_rate():
-    fails = sum(not check_ito_integrals(lambda p: fine_integrals(p, seed=1000 * s + p), (100, 400)).ok for s in range(30))
+    fails = sum(not check_ito_integrals(lambda p: fine_integrals(p, seed=1000 * s + p), (100, 400)).ok for s in range(30))  # noqa: B023 (called in this iteration)
     assert fails == 0
 
 
