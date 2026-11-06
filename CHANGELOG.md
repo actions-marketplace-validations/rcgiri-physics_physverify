@@ -3,6 +3,8 @@
 ## Unreleased
 
 - **New: `physverify.operators`**, invariants of discretised operators and solvers that need no exact solution (tests in `tests/test_operators.py`): `check_nullspace` (a discrete operator maps a constant to zero in the interior), `check_uniform_state` (a still, uniform state stays unchanged), `check_advection_direction` (a feature moves by u t, not -u t) and `check_force_gradient` (F = -dU/dr). In the 2026-11-01 corpus sessions they found four bugs that exact-solution comparisons had missed or needed far more work for, and passed on the correct codes they were tried on.
+- **New checks from the 2026-11-06 corpus session** (tests in `tests/test_new_checks_2026_11.py`, docs in `docs/checks/numerical-controls.md`): `steps.check_step_independence` (a quantity at a fixed physical time settles as dt shrinks), `steps.check_tolerance_response` (an adaptive solver's error follows its tolerance), `stochastic.ito.check_ito_integrals` (exact Itô identities and isometry, with a residual that must fall with the series length; 2 false alarms in 300 runs on correct integrals at the settings stated in the docs) and `operators.check_path` (segment lengths and closure of a built path). Each reproduced its finding at the pinned commit of the repository where it was found, and passed that repository's correct parts.
+- **`scan`:** `jnp.clip(..., a_min=, a_max=)` is a WARN, since current JAX raises TypeError for these keywords.
 - **`scan`:** the snippet-folder rule no longer applies inside a package (a folder with `__init__.py`), where a name defined in a sibling module but never imported is a real NameError; in 0.7.0 it hid such WARNs.
 
 ## 0.7.0 (2026-10-31)
