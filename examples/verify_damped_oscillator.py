@@ -7,9 +7,9 @@
 The reference right-hand side below is written independently of the solver.
 """
 
+import damped_oscillator as solver
 import numpy as np
 
-import damped_oscillator as solver
 from physverify import ManufacturedODE, ode_checks
 
 OMEGA, GAMMA = 3.0, 0.4

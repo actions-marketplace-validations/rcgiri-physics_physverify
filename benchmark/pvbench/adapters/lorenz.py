@@ -17,11 +17,12 @@ from pathlib import Path
 
 import numpy as np
 
-from physverify.checks import EXACT, FAIL, PASS, Check, Result
+from physverify.checks import EXACT, FAIL, Check, Result
 from physverify.loaders import load_module_from_path
 from physverify.mms import ManufacturedODE
-from ..problems._common import make_integrate
 from physverify.studies import ode_checks
+
+from ..problems._common import make_integrate
 from . import sibling_project
 
 ENV_VAR = "PHYSVERIFY_LORENZ_DIR"

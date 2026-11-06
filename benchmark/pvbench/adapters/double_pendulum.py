@@ -11,9 +11,10 @@ import numpy as np
 
 from physverify.checks import Check
 from physverify.loaders import load_module_from_path
+from physverify.studies import ode_checks
+
 from ..problems import pendulum as P
 from ..problems._common import make_integrate
-from physverify.studies import ode_checks
 from . import sibling_project
 
 ENV_VAR = "PHYSVERIFY_PENDULUM_DIR"

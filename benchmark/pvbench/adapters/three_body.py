@@ -26,9 +26,10 @@ import numpy as np
 from physverify.checks import EXACT, FAIL, PASS, Check, Result
 from physverify.mms import ManufacturedODE, max_abs_error, zero_source
 from physverify.order import check_exact, check_order
-from ..problems._common import make_integrate
 from physverify.steppers import integrate_fixed, rk4
 from physverify.studies import invariant_study, ode_checks, reference_study
+
+from ..problems._common import make_integrate
 from . import sibling_project
 
 ENV_VAR = "PHYSVERIFY_THREE_BODY_DIR"

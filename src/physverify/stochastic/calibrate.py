@@ -23,8 +23,6 @@ import math
 import sys
 from pathlib import Path
 
-import numpy as np
-
 from ..checks import FAIL
 from . import exact as X
 from .checks import distribution_comparisons, moment_comparisons

@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **CI:** a Ruff job (rules F, B, UP, I) runs on every push and pull request; unused imports and a dead variable removed.
 - **`scan` summary:** counts the files scanned (also `files_scanned` in the JSON), counts files with a syntax error as not parsed, and says so when a folder has no Python files instead of looking like a clean result.
 - **Fixed `check_order` and `check_exact`:** negative errors were taken as below the noise floor, so signed errors that grew gave EXACT, which counts as a pass. The size of each error is now used.
 - **Fixed `check_order`:** a correct code refined by a small ratio (1.05 or 1.1) was reported as "error does not decrease"; the limit now follows the refinement ratio.

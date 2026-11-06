@@ -14,7 +14,7 @@ or a sibling comparison can pass when both sides share the same mistake.
 
 from __future__ import annotations
 
-from typing import Callable, Iterable
+from collections.abc import Callable, Iterable
 
 import numpy as np
 

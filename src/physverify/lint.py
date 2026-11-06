@@ -153,7 +153,7 @@ def scan_names(path: Path, tree, rel: str, source: str = "") -> list[Finding]:
         if not (isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and n.id not in known and id(n) not in guarded):
             continue
         if 0 < n.lineno <= len(lines_text) and _NOQA.search(lines_text[n.lineno - 1]):
-            continue  # the authors marked it as known (# noqa: F821)
+            continue  # the authors marked it as known (a noqa comment for F821)
         if id(n) in annotations:
             if not lazy:
                 in_annotation.setdefault(n.id, []).append(n.lineno)

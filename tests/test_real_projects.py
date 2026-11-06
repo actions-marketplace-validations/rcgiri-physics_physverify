@@ -6,8 +6,8 @@ PHYSVERIFY_PROJECTILE_DIR / PHYSVERIFY_PENDULUM_DIR to point somewhere else.
 
 import pytest
 
-from pvbench.adapters import double_pendulum, projectile_v2
 from physverify.checks import run_check
+from pvbench.adapters import double_pendulum, projectile_v2
 
 projectile_missing = not projectile_v2.source_path().is_file()
 pendulum_missing = not double_pendulum.source_path().is_file()

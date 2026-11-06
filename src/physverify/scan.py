@@ -1090,8 +1090,8 @@ def scan(path, *, stages=STAGES) -> tuple[list[Finding], list[str]]:
             continue
         parsed.append((rel, tree))
         runs = (("constants", scan_constants), ("tables", scan_tables), ("tables", scan_code_tables),
-                ("grid", scan_grid), ("pairs", scan_pairs), ("names", lambda f, t, r: lint.scan_names(f, t, r, text)), ("api", lint.scan_api),
-                ("literals", lambda f, t, r: lint.scan_literals(f, t, r, text)), ("units", lint.scan_units))
+                ("grid", scan_grid), ("pairs", scan_pairs), ("names", lambda f, t, r: lint.scan_names(f, t, r, text)), ("api", lint.scan_api),  # noqa: B023 (called in this iteration)
+                ("literals", lambda f, t, r: lint.scan_literals(f, t, r, text)), ("units", lint.scan_units))  # noqa: B023
         for stage, run in runs:
             if stage in stages:
                 try:

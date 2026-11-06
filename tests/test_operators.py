@@ -4,8 +4,12 @@
 import numpy as np
 import pytest
 
-from physverify.operators import (check_advection_direction, check_force_gradient, check_nullspace,
-                                  check_uniform_state)
+from physverify.operators import (
+    check_advection_direction,
+    check_force_gradient,
+    check_nullspace,
+    check_uniform_state,
+)
 
 
 def laplacian_1d(n, dx):
