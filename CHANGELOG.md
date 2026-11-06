@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+- **Fixed `check_order` and `check_exact`:** negative errors were taken as below the noise floor, so signed errors that grew gave EXACT, which counts as a pass. The size of each error is now used.
+- **Fixed `check_order`:** a correct code refined by a small ratio (1.05 or 1.1) was reported as "error does not decrease"; the limit now follows the refinement ratio.
+- **Fixed `gci`:** when the change between grids does not shrink, it returned a negative or huge band with no warning; it now returns nan with `not_converging` true.
+
 - **New: `physverify.operators`**, invariants of discretised operators and solvers that need no exact solution (tests in `tests/test_operators.py`): `check_nullspace` (a discrete operator maps a constant to zero in the interior), `check_uniform_state` (a still, uniform state stays unchanged), `check_advection_direction` (a feature moves by u t, not -u t) and `check_force_gradient` (F = -dU/dr). In the 2026-11-01 corpus sessions they found four bugs that exact-solution comparisons had missed or needed far more work for, and passed on the correct codes they were tried on.
 - **`scan`:** the snippet-folder rule no longer applies inside a package (a folder with `__init__.py`), where a name defined in a sibling module but never imported is a real NameError; in 0.7.0 it hid such WARNs.
 
