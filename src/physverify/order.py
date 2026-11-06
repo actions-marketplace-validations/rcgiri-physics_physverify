@@ -36,15 +36,22 @@ def gci(f_fine: float, f_medium: float, f_coarse: float, r: float, *, safety: fl
     """Grid convergence index of three solutions on grids refined by the constant ratio r (Roache 1994;
     Celik et al., J. Fluids Eng. 130, 078001, 2008): the observed order p = ln(e32/e21) / ln r, the Richardson
     extrapolate, and GCI_fine = safety |e21 / f_fine| / (r^p - 1), a relative error band on the fine solution.
-    Oscillatory convergence (e21 and e32 of opposite sign) is reported, and then p is nan."""
+    Oscillatory convergence (e21 and e32 of opposite sign) is reported, and then p is nan. So is the case where
+    the change between grids does not shrink on refinement (`not_converging`): the formula would give p <= 0 and
+    a negative or huge error band, which means nothing."""
     e21, e32 = f_medium - f_fine, f_coarse - f_medium
     if e21 == 0 or e32 == 0 or e21 * e32 < 0:
         return {"order": float("nan"), "extrapolated": float("nan"), "gci_fine": float("nan"),
-                "oscillatory": e21 * e32 < 0, "converged": e21 == 0}
-    p = np.log(abs(e32 / e21)) / np.log(r)
+                "oscillatory": e21 * e32 < 0, "converged": e21 == 0, "not_converging": False}
+    ratio = abs(e32 / e21)
+    if ratio <= 1 or np.isclose(ratio, 1.0):
+        return {"order": float("nan"), "extrapolated": float("nan"), "gci_fine": float("nan"),
+                "oscillatory": False, "converged": False, "not_converging": True}
+    p = np.log(ratio) / np.log(r)
     ext = f_fine + (f_fine - f_medium) / (r ** p - 1)
     g = safety * abs(e21 / f_fine) / (r ** p - 1) if f_fine != 0 else float("nan")
-    return {"order": float(p), "extrapolated": float(ext), "gci_fine": float(g), "oscillatory": False, "converged": False}
+    return {"order": float(p), "extrapolated": float(ext), "gci_fine": float(g), "oscillatory": False, "converged": False,
+            "not_converging": False}
 
 
 def effective_floor(floor: float, scale: float, rel: float = 1e-13) -> float:
@@ -72,14 +79,14 @@ def check_exact(hs, errors, *, floor: float = 1e-12, scale: float = 1.0) -> Orde
     as the scheme's own truncation error and shrinks at the same rate; this
     can, because the expected error is zero rather than small.
 
-    EXACT  every error is at most `floor`
+    EXACT  every error is at most `floor` in size
     FAIL   some error is larger, or non-finite
 
     `scale` is the size of the solution; see `effective_floor`.
     """
     floor = effective_floor(floor, scale)
     hs = np.asarray(hs, dtype=float)
-    errs = np.asarray(errors, dtype=float)
+    errs = np.abs(np.asarray(errors, dtype=float))  # a signed error of -1 is a large error, not a small one
     order = np.argsort(-hs)
     hs, errs = hs[order], errs[order]
     base = dict(expected=float("inf"), hs=tuple(hs), errors=tuple(errs),
@@ -118,6 +125,9 @@ def check_order(
     FAIL      order too low or too high, error plateau, or non-finite error
     INCONCLUSIVE  fewer than two resolutions are above the noise floor
 
+    Errors may be signed (computed minus exact): their sizes are used, so a large negative error is not
+    taken for round-off.
+
     `floor` is the error level below which round-off dominates, for a solution
     of size about 1. Pass `scale` (the size of the solution, for example the
     largest absolute value of the exact answer) and the floor grows with it.
@@ -134,7 +144,7 @@ def check_order(
         tol_low = tol_high = float(tol)
     floor = effective_floor(floor, scale)
     hs = np.asarray(hs, dtype=float)
-    errs = np.asarray(errors, dtype=float)
+    errs = np.abs(np.asarray(errors, dtype=float))
     if hs.shape != errs.shape:
         return OrderResult(INCONCLUSIVE, f"{hs.size} step sizes but {errs.size} errors; they must match",
                            expected=float(expected), hs=tuple(hs), errors=tuple(errs))
@@ -161,7 +171,9 @@ def check_order(
         return OrderResult(INCONCLUSIVE, f"fewer than 2 resolutions above the noise floor ({floor:.2g}); the errors are"
                            f" near round-off already (largest {errs.max():.2g}), so use coarser resolutions", **base)
 
-    if e_m[-2] / e_m[-1] < 1.2:
+    # "No decrease" is a drop below 1.2 for halved steps (a local order of log2 1.2 = 0.26). With a smaller
+    # refinement ratio even a correct code drops less, so the same local order sets the limit there.
+    if e_m[-2] / e_m[-1] < min(1.2, (h_m[-2] / h_m[-1]) ** np.log2(1.2)):
         msg = f"error does not decrease with resolution (about {e_m[-1]:.3g} at the finest level)"
         if e_m[0] < 1e3 * floor:
             msg += ("; even the coarsest error is within a factor 1000 of the noise floor, so round-off may already"
