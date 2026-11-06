@@ -13,8 +13,14 @@ import sys
 import time
 from pathlib import Path
 
-from pvbench.adapters import double_pendulum, lorenz, projectile_v1, projectile_v2, three_body
 from physverify.checks import run_check
+from pvbench.adapters import (
+    double_pendulum,
+    lorenz,
+    projectile_v1,
+    projectile_v2,
+    three_body,
+)
 
 ADAPTERS = {
     "projectile": projectile_v2,

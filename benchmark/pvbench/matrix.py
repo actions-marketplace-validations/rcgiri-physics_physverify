@@ -18,7 +18,8 @@ from collections import Counter
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from physverify.checks import FAIL, FAMILIES, Check, Result, run_check
+from physverify.checks import FAIL, FAMILIES, run_check
+
 from .problems import heat1d, kepler, pendulum, projectile, sod
 
 PROBLEMS = {m.NAME: m for m in (projectile, pendulum, kepler, heat1d, sod)}

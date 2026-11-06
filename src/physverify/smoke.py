@@ -30,7 +30,9 @@ class SmokeResult:
 
 
 def _scripts(path: Path) -> list[Path]:
-    from .scan import python_files  # skips virtual environments and build output below `path` (not above it)
+    from .scan import (
+        python_files,  # skips virtual environments and build output below `path` (not above it)
+    )
 
     if path.is_file():
         return [path]

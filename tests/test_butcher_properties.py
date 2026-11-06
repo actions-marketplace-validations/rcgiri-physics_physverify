@@ -4,8 +4,16 @@ import math
 
 import numpy as np
 
-from physverify.butcher import (a_stability_margin, check_tableau, is_stiffly_accurate, linear_order, r_infinity,
-                                stability_function, stage_order, tableau_order)
+from physverify.butcher import (
+    a_stability_margin,
+    check_tableau,
+    is_stiffly_accurate,
+    linear_order,
+    r_infinity,
+    stability_function,
+    stage_order,
+    tableau_order,
+)
 from physverify.checks import FAIL, PASS
 
 S6, S3, G = math.sqrt(6), math.sqrt(3), 1 - 1 / math.sqrt(2)

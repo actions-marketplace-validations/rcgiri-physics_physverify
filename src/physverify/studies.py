@@ -2,12 +2,18 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 import numpy as np
 
 from .checks import FAIL, PASS, Check, OrderResult, Result, within_budget
-from .mms import ManufacturedODE, max_abs_error, mms_order_study, mms_trajectory_study, zero_source
+from .mms import (
+    ManufacturedODE,
+    max_abs_error,
+    mms_order_study,
+    mms_trajectory_study,
+    zero_source,
+)
 from .order import check_exact, check_order
 from .steppers import integrate_fixed, rk4
 

@@ -16,7 +16,13 @@ from physverify.stochastic import checks as K
 from physverify.stochastic import exact as X
 from physverify.stochastic import reference as R
 from physverify.stochastic.sampler import IsingSampler
-from physverify.stochastic.stats import Comparison, compare_chain_means, t_critical, tau_int, verdict
+from physverify.stochastic.stats import (
+    Comparison,
+    compare_chain_means,
+    t_critical,
+    tau_int,
+    verdict,
+)
 
 slow = pytest.mark.skipif(not os.environ.get("PHYSVERIFY_SLOW"), reason="set PHYSVERIFY_SLOW=1 for the slow Ising tests")
 

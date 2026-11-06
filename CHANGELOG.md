@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **CI:** a Ruff job (rules F, B, UP, I) runs on every push and pull request; unused imports and a dead variable removed.
+
 - **New: `physverify.operators`**, invariants of discretised operators and solvers that need no exact solution (tests in `tests/test_operators.py`): `check_nullspace` (a discrete operator maps a constant to zero in the interior), `check_uniform_state` (a still, uniform state stays unchanged), `check_advection_direction` (a feature moves by u t, not -u t) and `check_force_gradient` (F = -dU/dr). In the 2026-11-01 corpus sessions they found four bugs that exact-solution comparisons had missed or needed far more work for, and passed on the correct codes they were tried on.
 - **`scan`:** the snippet-folder rule no longer applies inside a package (a folder with `__init__.py`), where a name defined in a sibling module but never imported is a real NameError; in 0.7.0 it hid such WARNs.
 

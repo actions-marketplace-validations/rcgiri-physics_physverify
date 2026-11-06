@@ -9,8 +9,8 @@ from __future__ import annotations
 
 import numpy as np
 
-from .studies import ode_checks
 from .mms import ManufacturedODE
+from .studies import ode_checks
 
 OMEGA, GAMMA = 3.0, 0.4
 

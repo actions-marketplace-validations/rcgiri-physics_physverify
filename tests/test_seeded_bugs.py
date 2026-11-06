@@ -8,7 +8,7 @@ baselines must never raise a false alarm.
 
 import pytest
 
-from pvbench.matrix import PROBLEMS, evaluate, Row
+from pvbench.matrix import PROBLEMS, Row, evaluate
 
 
 @pytest.fixture(scope="module")

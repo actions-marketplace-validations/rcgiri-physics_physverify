@@ -18,6 +18,7 @@ from physverify.checks import Check
 from physverify.loaders import load_module_from_path
 from physverify.order import check_order
 from physverify.steppers import integrate_fixed, rk4
+
 from . import sibling_project
 
 ENV_VAR = "PHYSVERIFY_PROJECTILE_DIR"

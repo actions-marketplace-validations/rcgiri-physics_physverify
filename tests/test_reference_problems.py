@@ -7,9 +7,9 @@ import numpy as np
 import pytest
 
 from physverify.mms import zero_source
+from physverify.steppers import integrate_fixed, rk4
 from pvbench.problems import heat1d, pendulum, projectile
 from pvbench.problems._common import make_integrate
-from physverify.steppers import integrate_fixed, rk4
 
 
 def test_pendulum_explicit_reference_matches_mass_matrix_form():

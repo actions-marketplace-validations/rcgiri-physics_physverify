@@ -730,9 +730,11 @@ def test_download_at_import_is_a_note(tmp_path):
 
 
 def test_probe_call_copies_array_inputs():
-    import numpy as np
-    from physverify.probes import _Fn
     import ast
+
+    import numpy as np
+
+    from physverify.probes import _Fn
     def step(u):
         u += 1.0
         return u

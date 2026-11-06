@@ -43,7 +43,15 @@ def expand_specs(patterns) -> list[str]:
 
 
 def _cmd_run(args) -> int:
-    from .report import NOTE, load_spec, run_checks, to_html, to_json, to_markdown, to_text
+    from .report import (
+        NOTE,
+        load_spec,
+        run_checks,
+        to_html,
+        to_json,
+        to_markdown,
+        to_text,
+    )
 
     try:
         args.specs = expand_specs(args.specs)
