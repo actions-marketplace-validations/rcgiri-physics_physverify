@@ -340,6 +340,10 @@ def scan_api(path: Path, tree, rel: str) -> list[Finding]:
         if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr in _STACKERS                 and isinstance(n.func.value, ast.Name) and n.func.value.id in np_names                 and n.args and isinstance(n.args[0], ast.GeneratorExp):
             out.append(Finding("api", WARN, rel, n.lineno, f"{n.func.value.id}.{n.func.attr} is given a generator, which"
                                                            " raises TypeError since NumPy 1.24; pass a list ([... for ...])"))
+        # jnp.clip(x, a_min=, a_max=): current JAX rejects these keywords (corpus repo L329 could not run on it)
+        if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute) and n.func.attr == "clip"                 and _src_text(n.func.value) in ("jnp", "jax.numpy")                 and any(k.arg in ("a_min", "a_max") for k in n.keywords):
+            out.append(Finding("api", WARN, rel, n.lineno, f"{_src_text(n.func)}(..., a_min=, a_max=): current JAX raises"
+                                                           " TypeError for these keywords; use min= and max=, or pass them by position"))
         # scipy and Python modules that were removed
         if isinstance(n, ast.ImportFrom) and n.module:
             for mod, names in _SCIPY.items():

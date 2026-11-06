@@ -14,6 +14,9 @@ In the 2026-11-01 corpus sessions these four found four bugs that exact-solution
 needed far more work for: a scrambled polar-grid diffusion matrix (row sums 22 and 44 instead of 0), a
 Lax-Wendroff scheme that heated still water by 0.9 K in 5 s, an Euler solver that moved fluid at -u, and a
 screened-Coulomb force at 36-59 % of -dU/dr. Each passed on the correct codes it was tried on.
+
+`check_path` tests the geometry a builder produced: a wire or path has no jumps and closes where it should (corpus
+session of 2026-11-06: a wire helper that always continued from vertex 1 gave a square coil 39 % too little field).
 """
 
 from __future__ import annotations
@@ -165,3 +168,31 @@ def check_force_gradient(potential, force, r, *, rel_step: float = 1e-6, rtol: f
         return Result(FAIL, f"F != -dU/dr at {int(bad.sum())} of {len(r)} separations; at r = {r[i]:.4g}"
                             f" F = {got[i]:.6g} but -dU/dr = {ref[i]:.6g} (ratio {ratio:.4g})")
     return Result(PASS, f"F = -dU/dr at all {len(r)} separations (central difference, rtol {rtol:g})")
+
+
+def check_path(vertices, *, segment_lengths=None, closed: bool = False, rtol: float = 1e-8) -> Result:
+    """A path built by a helper has the segments it was asked for: no jumps, and closed if it should be.
+
+    `vertices` has shape (n, dim). `segment_lengths` is one length or one per segment. A correct solver gives a wrong
+    answer on a wrong path, so test the builder separately from the field or transport calculation.
+    """
+    v = np.asarray(vertices, dtype=float)
+    if v.ndim != 2 or len(v) < 2:
+        raise ValueError("vertices must have shape (n, dim) with n >= 2")
+    lengths = np.linalg.norm(np.diff(v, axis=0), axis=1)
+    size = float(np.max(np.abs(v - v[0]))) or 1.0
+    if segment_lengths is not None:
+        want = np.broadcast_to(np.asarray(segment_lengths, dtype=float), lengths.shape)
+        wrong = np.nonzero(np.abs(lengths - want) > rtol * np.maximum(want, size))[0]
+        if wrong.size:
+            k = int(wrong[0])
+            return Result(FAIL, f"segment {k} from {v[k].tolist()} to {v[k + 1].tolist()} has length {lengths[k]:.6g},"
+                                f" expected {want[k]:.6g} ({wrong.size} of {lengths.size} segments are wrong); the path jumps"
+                                " or a segment started from the wrong vertex")
+    if closed:
+        gap = float(np.linalg.norm(v[-1] - v[0]))
+        if gap > rtol * size:
+            return Result(FAIL, f"the path should close but ends {gap:.6g} from its start: {v[0].tolist()} to {v[-1].tolist()}")
+    what = "and closes" if closed else "and is not required to close"
+    return Result(PASS, f"the {lengths.size} segments have the expected lengths {what}" if segment_lengths is not None
+                  else f"the path of {lengths.size} segments closes" if closed else f"the path has {lengths.size} segments; no property was requested")

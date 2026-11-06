@@ -80,3 +80,16 @@ def test_pytest_plugin_collects_checks_and_reports_failures(example_dir, pyteste
     result = pytester.runpytest_subprocess(*plugin_args)
     result.assert_outcomes(failed=4)
     result.stdout.fnmatch_lines(["*FAIL: error does not decrease*"])
+
+
+def test_scan_summary_counts_files_and_unparsable_files(tmp_path, capsys):
+    (tmp_path / "bad.py").write_text("def f(:\n")
+    (tmp_path / "good.py").write_text("x = 1\n")
+    assert main(["scan", str(tmp_path)]) == 1
+    assert "2 files scanned: 1 warnings, 0 notes, 1 files not parsed" in capsys.readouterr().out
+
+
+def test_scan_of_an_empty_folder_says_nothing_was_scanned(tmp_path, capsys):
+    assert main(["scan", str(tmp_path), "--json", str(tmp_path / "out.json")]) == 0
+    assert "nothing was scanned" in capsys.readouterr().out
+    assert json.loads((tmp_path / "out.json").read_text())["files_scanned"] == 0

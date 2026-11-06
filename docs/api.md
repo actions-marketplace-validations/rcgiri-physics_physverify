@@ -75,6 +75,17 @@ Checks that need no exact solution. See [Operator invariants](checks/operator-in
 | `check_uniform_state(step, state, n_steps=10)` | A uniform state with no flow or source is unchanged by time stepping. |
 | `check_advection_direction(evolve, x, u, t)` | A feature carried by velocity u moves by u t, in the direction of u (periodic 1-D grid). |
 | `check_force_gradient(potential, force, r)` | A conservative force equals -dU/dr (central difference). |
+| `check_path(vertices, segment_lengths=None, closed=False)` | A built wire or path has the expected segment lengths and closes if it should. |
+
+## Numerical controls (`physverify.steps`, `physverify.stochastic.ito`)
+
+See [Numerical controls, paths and Itô integrals](checks/numerical-controls.md).
+
+| Name | What it does |
+|---|---|
+| `check_step_independence(run, dts, rtol=0.05, z=4.0)` | A quantity at a fixed physical time settles as dt shrinks; otherwise reports value ~ dt^k. |
+| `check_tolerance_response(run, tols, min_slope=0.5, floor=0.0)` | An adaptive solver's error follows its tolerance. |
+| `check_ito_integrals(generate, ps=(None,), h=1.0)` | Iterated Itô integrals satisfy exact identities and the isometry; a residual must fall with the series length. |
 
 ## Runge-Kutta tables (`physverify.butcher`)
 
