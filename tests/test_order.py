@@ -1,7 +1,10 @@
+import math
+
 import numpy as np
+import pytest
 
 from physverify.checks import EXACT, FAIL, INCONCLUSIVE, PASS
-from physverify.order import check_exact, check_order, fit_order, pairwise_orders
+from physverify.order import check_exact, check_order, fit_order, gci, pairwise_orders
 
 HS = [0.1, 0.05, 0.025, 0.0125]
 
@@ -82,3 +85,33 @@ def test_only_points_above_the_floor_are_fitted():
     errs = [3.0 * h**4 for h in hs]
     errs[-1] = 5e-15  # round-off: must not drag the fit down
     assert check_order(hs, errs, 4.0).status == PASS
+
+
+def test_signed_errors_use_their_size():
+    """A large negative error is not round-off (it used to give EXACT, which counts as a pass)."""
+    assert check_order([0.1, 0.05, 0.025], [-1.0, -2.0, -4.0], 2.0).status == FAIL
+    signed = check_order([0.1, 0.05, 0.025], [-1e-2, 2.5e-3, -6.25e-4], 2.0)
+    assert signed.status == PASS
+    assert abs(signed.fitted - 2.0) < 1e-9
+    assert check_exact([0.1, 0.05], [-1.0, -1.0]).status == FAIL
+
+
+@pytest.mark.parametrize("ratio", [1.05, 1.1, 1.3, 1.5, 2.0, 3.0, 4.0])
+@pytest.mark.parametrize("p", [1.0, 2.0, 4.0])
+def test_correct_order_passes_at_any_refinement_ratio(ratio, p):
+    hs = [0.1 / ratio**i for i in range(5)]
+    assert check_order(hs, [0.3 * h**p for h in hs], p).status == PASS
+
+
+@pytest.mark.parametrize("ratio", [1.05, 1.1, 2.0])
+def test_plateau_fails_at_any_refinement_ratio(ratio):
+    hs = [0.1 / ratio**i for i in range(5)]
+    assert check_order(hs, [2e-2] * 5, 2.0).status == FAIL
+
+
+def test_gci_flags_change_that_does_not_shrink():
+    for fine, medium, coarse in [(1.0, 1.1, 1.101), (1.0, 1.1, 1.2)]:
+        g = gci(fine, medium, coarse, 2.0)
+        assert g["not_converging"]
+        assert math.isnan(g["order"]) and math.isnan(g["gci_fine"])
+    assert not gci(1.01, 1.04, 1.16, 2.0)["not_converging"]

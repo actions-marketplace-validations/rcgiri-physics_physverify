@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+- **`scan` summary:** counts the files scanned (also `files_scanned` in the JSON), counts files with a syntax error as not parsed, and says so when a folder has no Python files instead of looking like a clean result.
+- **Fixed `check_order` and `check_exact`:** negative errors were taken as below the noise floor, so signed errors that grew gave EXACT, which counts as a pass. The size of each error is now used.
+- **Fixed `check_order`:** a correct code refined by a small ratio (1.05 or 1.1) was reported as "error does not decrease"; the limit now follows the refinement ratio.
+- **Fixed `gci`:** when the change between grids does not shrink, it returned a negative or huge band with no warning; it now returns nan with `not_converging` true.
+
 - **New: `physverify.operators`**, invariants of discretised operators and solvers that need no exact solution (tests in `tests/test_operators.py`): `check_nullspace` (a discrete operator maps a constant to zero in the interior), `check_uniform_state` (a still, uniform state stays unchanged), `check_advection_direction` (a feature moves by u t, not -u t) and `check_force_gradient` (F = -dU/dr). In the 2026-11-01 corpus sessions they found four bugs that exact-solution comparisons had missed or needed far more work for, and passed on the correct codes they were tried on.
 - **New checks from the 2026-11-06 corpus session** (tests in `tests/test_new_checks_2026_11.py`, docs in `docs/checks/numerical-controls.md`): `steps.check_step_independence` (a quantity at a fixed physical time settles as dt shrinks), `steps.check_tolerance_response` (an adaptive solver's error follows its tolerance), `stochastic.ito.check_ito_integrals` (exact Itô identities and isometry, with a residual that must fall with the series length; 2 false alarms in 300 runs on correct integrals at the settings stated in the docs) and `operators.check_path` (segment lengths and closure of a built path). Each reproduced its finding at the pinned commit of the repository where it was found, and passed that repository's correct parts.
 - **`scan`:** `jnp.clip(..., a_min=, a_max=)` is a WARN, since current JAX raises TypeError for these keywords.
