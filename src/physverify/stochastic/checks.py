@@ -36,7 +36,7 @@ import numpy as np
 from ..checks import EXACT, FAIL, INCONCLUSIVE, PASS, Check, Result
 from . import exact as X
 from . import reference as R
-from .stats import ALPHA_CHECK, Comparison, compare_chain_means, t_critical, verdict
+from .stats import ALPHA_CHECK, Comparison, compare_chain_means, verdict
 
 RESOLUTION = 0.02  # smallest deviation in a per-spin average (or a probability) that a statistical check must resolve
 T_LOW, T_HIGH = 1.8, 3.0
@@ -290,7 +290,6 @@ def symmetry(sampler, *, L=4, T=T_HIGH, n_chains=256, n_sweeps=150, burn_in=100,
         state = sampler.init(L, n_chains, "hot", rng, 0.0)
         for _ in range(burn_in):
             sampler.sweep(state, T, 0.0, rng)
-        n = L * L
         bond_sum = np.zeros((n_chains, 2, L, L))
         site_sum = np.zeros((n_chains, L, L))
         for _ in range(n_sweeps):

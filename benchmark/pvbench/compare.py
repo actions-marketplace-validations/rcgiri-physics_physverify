@@ -26,6 +26,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 from physverify.checks import run_check
+
 from .matrix import PROBLEMS
 
 STRATEGIES = {

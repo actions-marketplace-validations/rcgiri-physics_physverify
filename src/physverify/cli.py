@@ -43,7 +43,15 @@ def expand_specs(patterns) -> list[str]:
 
 
 def _cmd_run(args) -> int:
-    from .report import NOTE, load_spec, run_checks, to_html, to_json, to_markdown, to_text
+    from .report import (
+        NOTE,
+        load_spec,
+        run_checks,
+        to_html,
+        to_json,
+        to_markdown,
+        to_text,
+    )
 
     try:
         args.specs = expand_specs(args.specs)
@@ -129,7 +137,7 @@ def _cmd_scan(args) -> int:
     import json
 
     from .probes import DEFAULT_PROBES, PROBES, probe
-    from .scan import STAGES, WARN, scan, to_dict
+    from .scan import STAGES, WARN, python_files, scan, to_dict
 
     known = STAGES + PROBES if args.run else STAGES
     stages = args.only.split(",") if args.only else (STAGES + DEFAULT_PROBES if args.run else STAGES)
@@ -142,12 +150,13 @@ def _cmd_scan(args) -> int:
         print(f"physverify: {args.path} does not exist", file=sys.stderr)
         return 2
     findings, unparsed = scan(args.path, stages=[s for s in stages if s in STAGES])
+    count = len(python_files(args.path))
     probes = [s for s in stages if s in PROBES]
     if probes:
         print("physverify: --run calls the code; use it only on code you trust or inside the sandbox", file=sys.stderr)
         findings += probe(args.path, probes=probes, timeout=args.timeout)
     if args.json:
-        text = json.dumps(to_dict(findings, unparsed), indent=1)
+        text = json.dumps({**to_dict(findings, unparsed), "files_scanned": count}, indent=1)
         if args.json == "-":
             print(text)
         else:
@@ -161,7 +170,11 @@ def _cmd_scan(args) -> int:
         skip = sum(f.level == "SKIP" for f in findings)
         ran = (f", {skip} skipped (not passed)" if probes else "")
         how = "the probes called the code with small inputs" if probes else "the scan reads the code and runs nothing"
-        print(f"{warn} warnings, {len(findings) - warn - skip} notes{ran}, {len(unparsed)} files not parsed"
+        broken = len(unparsed) + sum(f.stage == "names" and "does not parse" in f.message for f in findings)
+        if not count:
+            print(f"physverify: no Python files found in {args.path}; nothing was scanned")
+            return 0
+        print(f"{count} files scanned: {warn} warnings, {len(findings) - warn - skip} notes{ran}, {broken} files not parsed"
               f" ({how}; a clean scan means only that these patterns were not found)")
     return 1 if any(f.level == WARN for f in findings) else 0
 

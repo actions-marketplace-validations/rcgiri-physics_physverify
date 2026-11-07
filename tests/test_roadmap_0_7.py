@@ -5,7 +5,13 @@ import textwrap
 import numpy as np
 import pytest
 
-from physverify.butcher import TABLES, check_tableau, compare_tableau, square_tableau, symplectic_residual
+from physverify.butcher import (
+    TABLES,
+    check_tableau,
+    compare_tableau,
+    square_tableau,
+    symplectic_residual,
+)
 from physverify.order import fit_order_error, gci
 from physverify.specscan import reference_notes
 

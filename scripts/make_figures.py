@@ -10,8 +10,8 @@ requires the committed file to match, so the figure cannot go stale.
 import math
 from pathlib import Path
 
-from physverify.demo import checks
 from physverify.checks import run_check
+from physverify.demo import checks
 
 OUT = Path(__file__).resolve().parents[1] / "docs" / "images" / "convergence.svg"
 W, H, L, R, T, B = 560, 340, 70, 30, 40, 50  # size and margins

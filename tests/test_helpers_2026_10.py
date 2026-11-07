@@ -10,7 +10,6 @@ from physverify.identities import check_scale, check_vec_convention, vary_one
 from physverify.references import zernike_osa
 from physverify.stencils import check_stencil, stencil_order
 
-
 # --- vary_one: a bug hidden by symmetric defaults ---
 
 def _dy_buggy(Lx, Ly, n):

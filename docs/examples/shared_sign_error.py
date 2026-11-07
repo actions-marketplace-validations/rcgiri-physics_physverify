@@ -8,7 +8,12 @@ not from the code, and fails.
 
 import numpy as np
 
-from physverify import ManufacturedODE, invariant_study, mms_order_study, reference_study
+from physverify import (
+    ManufacturedODE,
+    invariant_study,
+    mms_order_study,
+    reference_study,
+)
 
 OMEGA = 2.0
 

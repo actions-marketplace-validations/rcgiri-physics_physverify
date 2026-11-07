@@ -15,16 +15,21 @@ Cases and the real codes they come from are listed in results/corpus/SUMMARY.md 
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
-from typing import Callable
 
 import numpy as np
 
 from physverify.butcher import check_tableau
-from physverify.checks import FAIL, PASS, Result, run_check, Check
+from physverify.checks import Check, Result, run_check
 from physverify.mms import ManufacturedODE
 from physverify.order import check_order
-from physverify.studies import backward_mms_study, balance_check, size_sweep_check, time_grid_check
+from physverify.studies import (
+    backward_mms_study,
+    balance_check,
+    size_sweep_check,
+    time_grid_check,
+)
 
 # --- Butcher tables ---------------------------------------------------------------------------------
 

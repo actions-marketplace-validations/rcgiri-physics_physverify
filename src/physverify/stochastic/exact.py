@@ -18,7 +18,7 @@ onsager      the infinite-lattice energy, critical temperature and Yang's
 from __future__ import annotations
 
 import math
-from functools import lru_cache
+from functools import cache
 
 import numpy as np
 
@@ -29,7 +29,7 @@ T_C = 2.0 / math.log(1.0 + math.sqrt(2.0))  # Onsager, about 2.2692
 # --- enumeration ---
 
 
-@lru_cache(maxsize=None)
+@cache
 def density_of_states(L: int):
     """Exact counts g[(E_bond + 2N) / 2, (M + N) / 2] for J = 1, as an integer array.
 

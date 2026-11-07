@@ -165,8 +165,8 @@ def test_stub_modules_provide_names_and_keep_decorated_functions():
 
     names = stub_modules({"no_such_pkg_xyz.metrics": ["score"], "no_such_web_xyz": ["Flask"]})
     try:
-        from no_such_pkg_xyz.metrics import score  # noqa: F401  (a parent package is created too)
         import no_such_web_xyz
+        from no_such_pkg_xyz.metrics import score  # noqa: F401  (a parent package is created too)
 
         app = no_such_web_xyz.Flask(__name__)
 

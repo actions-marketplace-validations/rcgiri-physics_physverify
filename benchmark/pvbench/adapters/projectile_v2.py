@@ -16,8 +16,9 @@ import numpy as np
 from physverify.checks import Check
 from physverify.loaders import load_module_from_path
 from physverify.mms import zero_source
-from ..problems import projectile as P
 from physverify.studies import ode_checks
+
+from ..problems import projectile as P
 from . import sibling_project
 
 ENV_VAR = "PHYSVERIFY_PROJECTILE_DIR"

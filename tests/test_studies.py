@@ -4,9 +4,9 @@ import pytest
 from physverify.checks import EXACT, FAIL, PASS
 from physverify.mms import ManufacturedODE, mms_trajectory_study
 from physverify.order import check_order, effective_floor
-from pvbench.problems._common import make_integrate
 from physverify.steppers import euler, midpoint, rk4
 from physverify.studies import close_result, patch_study
+from pvbench.problems._common import make_integrate
 
 
 def rhs(t, y):

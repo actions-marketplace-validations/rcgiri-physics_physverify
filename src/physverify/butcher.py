@@ -13,14 +13,14 @@ were slower to adjudicate than this check.
 
 from __future__ import annotations
 
-from functools import lru_cache
+from functools import cache
 
 import numpy as np
 
 from .checks import FAIL, PASS, Result
 
 
-@lru_cache(maxsize=None)
+@cache
 def trees(order: int) -> tuple:
     """All rooted trees with `order` vertices, each a sorted tuple of child subtrees."""
     if order == 1:
