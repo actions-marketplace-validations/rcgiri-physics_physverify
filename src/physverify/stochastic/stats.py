@@ -137,3 +137,42 @@ def verdict(comparisons, alpha: float = ALPHA_CHECK) -> Result:
             f"{len(unresolved)} of {m} comparisons (first: {unresolved[0]}) {level}",
         )
     return Result(PASS, f"all {m} comparisons agree; largest: {detail} {level}")
+
+
+def detectable_deviation(atol: float, std: float, n: int, *, power: float = 0.9) -> float:
+    """Smallest true deviation of a mean that the test |mean - exact| <= atol fails with probability `power`.
+
+    The sample mean has standard error std / sqrt(n), so a deviation d is caught with probability `power` when
+    d >= atol + z_power * std / sqrt(n) (normal approximation). A moment test whose tolerance comes from the sample
+    size can pass while a term is wrong: in one stochastic-integrator test atol was 0.078 and a deviation of 0.049
+    from a wrong term passed. Report this number next to such a test.
+    """
+    z = math.sqrt(2) * _erfinv(2 * power - 1)
+    return float(atol + z * std / math.sqrt(n))
+
+
+def _erfinv(y: float) -> float:
+    lo, hi = -6.0, 6.0
+    for _ in range(100):
+        mid = (lo + hi) / 2
+        lo, hi = (mid, hi) if math.erf(mid) < y else (lo, mid)
+    return (lo + hi) / 2
+
+
+def check_moment(values, exact: float, atol: float, *, resolution: float | None = None, power: float = 0.9) -> Result:
+    """The mean of independent `values` is within `atol` of `exact`, with the size of deviation the test can see.
+
+    FAIL when |mean - exact| > atol. INCONCLUSIVE when it passes but a deviation of `resolution` (the smallest
+    error that matters for the physics) would pass too with probability above 1 - `power`. PASS otherwise.
+    """
+    v = np.asarray(values, dtype=float).ravel()
+    mean, std, n = float(np.mean(v)), float(np.std(v, ddof=1)), v.size
+    dev = abs(mean - exact)
+    seen = detectable_deviation(atol, std, n, power=power)
+    msg = f"mean {mean:.6g}, exact {exact:.6g}, |difference| {dev:.3g}, tolerance {atol:.3g}; " \
+          f"this test catches a deviation of {seen:.3g} or more {power:.0%} of the time"
+    if dev > atol:
+        return Result(FAIL, msg)
+    if resolution is not None and seen > resolution:
+        return Result(INCONCLUSIVE, msg + f", larger than the resolution {resolution:.3g}: loosen nothing, use more samples or a smaller atol")
+    return Result(PASS, msg)
