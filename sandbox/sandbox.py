@@ -2,8 +2,11 @@
 
     python -I sandbox/sandbox.py build [--stack latest]                 # --stack latest: newest NumPy/SciPy, tag :latest-stack
     python -I sandbox/sandbox.py fetch  <id> <git-url> <commit>   # clone on the host, no hooks, no checkout of LFS
-    python -I sandbox/sandbox.py deps   [--clean] <id> [package ...]  # optional: wheels-only install, network on;
-                                                                 # --clean empties deps/<id> first
+    python -I sandbox/sandbox.py deps   [--clean] [--source] [--prefix] <id> [package ...]
+                                                                 # optional install, network on, wheels only;
+                                                                 # --clean empties deps/<id> first, --source allows
+                                                                 # sdists and git+ URLs (built in the container),
+                                                                 # --prefix for wheels with files outside site-packages
     python -I sandbox/sandbox.py run    [--read-only-repo] [--py314-shim] <id> <script> [args ...]  # network off
 
 Folders (under %LOCALAPPDATA%/physverify-corpus or $PHYSVERIFY_CORPUS):
@@ -35,6 +38,7 @@ IMAGE = os.environ.get("PHYSVERIFY_IMAGE", DEFAULT_IMAGE)
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = Path(os.environ.get("PHYSVERIFY_CORPUS") or Path(os.environ.get("LOCALAPPDATA", Path.home())) / "physverify-corpus")
 TIME_LIMIT = int(os.environ.get("PHYSVERIFY_TIME_LIMIT", "900"))  # seconds per run
+MEMORY = os.environ.get("PHYSVERIFY_MEMORY", "2g")  # per container, e.g. 4g for a large install
 DEPS_TIME_LIMIT = int(os.environ.get("PHYSVERIFY_DEPS_TIME_LIMIT", "2400"))  # seconds per install (JAX, Qiskit on a slow link)
 
 LOCKDOWN = [
@@ -43,8 +47,8 @@ LOCKDOWN = [
     "--cap-drop=ALL",
     "--security-opt=no-new-privileges",
     "--pids-limit=256",
-    "--memory=2g",
-    "--memory-swap=2g",
+    f"--memory={MEMORY}",
+    f"--memory-swap={MEMORY}",
     "--cpus=2",
     "--ulimit=nofile=1024:1024",
     "--ulimit=fsize=1073741824",  # no file over 1 GB
@@ -108,8 +112,8 @@ def oom_note(rc):
     """Exit code 137 is SIGKILL; with no time limit reached it is almost always the 2 GB memory limit, and
     the container then dies with no message of its own."""
     if rc == 137:
-        print("physverify sandbox: the run was killed (exit 137), most likely by the 2 GB memory limit;"
-              " use smaller grids or fewer stored frames")
+        print(f"physverify sandbox: the run was killed (exit 137), most likely by the {MEMORY} memory limit;"
+              " use smaller grids or fewer stored frames, or set PHYSVERIFY_MEMORY=4g")
     return rc
 
 
@@ -155,8 +159,13 @@ def fetch(repo_id, url, commit):
     return 0
 
 
-def deps(repo_id, packages=(), clean=False):
+def deps(repo_id, packages=(), clean=False, source=False, prefix=False):
     """Install the repo's requirements.txt, or the named packages, into deps/<id>, wheels only, so no setup.py runs.
+
+    `source=True` (`deps --source`) also allows sdists and `git+https://` requirements; their build scripts
+    run inside this locked-down container, never on the host. `prefix=True` (`deps --prefix`) installs with
+    `pip --prefix` instead of `--target`, for wheels that put files outside site-packages (`../` entries in
+    RECORD, as netgen/NGSolve do); `run` then adds that site-packages and lib folder to the paths.
 
     The image's own packages are passed as constraints: a dependency that needs a different NumPy fails here
     instead of silently shadowing the image's version during `run`.
@@ -185,7 +194,8 @@ def deps(repo_id, packages=(), clean=False):
     out: list = []
     rc = timed(["run", *lockdown, "--name", name, *mounts, "-v", f"{folder('deps', repo_id)}:/deps:rw",
                 "-v", f"{cache}:/pip-cache:rw", "-e", "PIP_CACHE_DIR=/pip-cache",
-                IMAGE, "pip", "install", "--progress-bar=off", "--only-binary=:all:", "--target=/deps",
+                IMAGE, "pip", "install", "--progress-bar=off", *([] if source else ["--only-binary=:all:"]),
+                "--prefix=/deps" if prefix else "--target=/deps",
                 "--constraint=/opt/constraints.txt", *what],
                name, DEPS_TIME_LIMIT, keep=out)
     hint = stack_hint("".join(out)) if rc else ""
@@ -225,6 +235,10 @@ def run(repo_id, script, extra, *, read_only_repo=False, py314_shim=False):
     # wheels that bundle their own OpenMP runtime (qiskit-aer) fail to load it late ("cannot allocate
     # memory in static TLS block"); preloading it at start-up is the usual fix
     gomp = sorted(deps_dir.glob("*.libs/libgomp*.so*"))
+    # a `deps --prefix` install: its site-packages and shared libraries are below /deps/lib
+    site = sorted(deps_dir.glob("lib/python3*/site-packages"))
+    prefix_env = ["-e", f"PYTHONPATH=/deps:/deps/{site[-1].relative_to(deps_dir).as_posix()}",
+                  "-e", "LD_LIBRARY_PATH=/deps/lib"] if site else []
     preload = ["-e", f"LD_PRELOAD=/deps/{gomp[0].relative_to(deps_dir).as_posix()}"] if gomp else []
     if py314_shim and read_only_repo:
         sys.exit("--py314-shim edits the copy, so it cannot be used with --read-only-repo")
@@ -235,7 +249,7 @@ def run(repo_id, script, extra, *, read_only_repo=False, py314_shim=False):
                       "-e", "PHYSVERIFY_REPO_SRC=/repo-src", "-e", "PHYSVERIFY_REPO=/tmp/repo",
                       *(["-e", "PHYSVERIFY_PY314_SHIM=1"] if py314_shim else [])]
         start = ["python", "/pv/runner.py"]
-    args = ["run", *LOCKDOWN, "--network=none", "--name", name, *preload, *repo_mount,
+    args = ["run", *LOCKDOWN, "--network=none", "--name", name, *preload, *prefix_env, *repo_mount,
             "-v", f"{deps_dir}:/deps:ro",
             "-v", f"{script.parent}:/work:ro", "-v", f"{folder('out', repo_id)}:/out:rw",
             *[a for k in os.environ.get("PHYSVERIFY_PASS_ENV", "").split(",") if k for a in ("-e", f"{k}={os.environ[k]}")], "-e", f"PHYSVERIFY_REPO_COMMIT={head(repo)}", IMAGE, *start, f"/work/{script.name}", *extra]
@@ -256,10 +270,13 @@ def main(argv):
             return build()
     if cmd == "fetch" and len(rest) == 3:
         return fetch(*rest)
-    if cmd == "deps" and rest[:1] == ["--clean"] and len(rest) >= 2:
-        return deps(rest[1], rest[2:], clean=True)
-    if cmd == "deps" and len(rest) >= 1:
-        return deps(rest[0], rest[1:])
+    if cmd == "deps":
+        flags = {"--clean": "clean", "--source": "source", "--prefix": "prefix"}
+        opts = {}
+        while rest and rest[0] in flags:
+            opts[flags[rest.pop(0)]] = True
+        if rest:
+            return deps(rest[0], rest[1:], **opts)
     if cmd == "run":
         flags = {"--read-only-repo": "read_only_repo", "--py314-shim": "py314_shim"}
         opts = {}
