@@ -17,7 +17,14 @@ physverify does not introduce a new verification method. Its checks are standard
 - **[MASA](https://github.com/manufactured-solutions/MASA)** (C++): a library of manufactured solutions.
 - **[ExactPack](https://github.com/lanl/ExactPack)** (Los Alamos): exact solutions for hydrodynamics benchmarks such as Sod and Sedov.
 - **The [MOOSE](https://mooseframework.inl.gov/) `mms` Python module**: SymPy source terms and convergence plots for MOOSE applications.
+- **[physics-lint](https://tyy0811.github.io/physics-lint/)** checks trained neural PDE surrogates for residual, conservation, boundary-condition, positivity and symmetry violations, with rule IDs and SARIF output for CI. It targets learned models; physverify targets numerical solvers.
+- **[noether-guard](https://docs.rs/crate/noether-guard/)** (Rust) describes itself as a linter for conservation laws in simulations, based on Noether's theorem.
+- **[convergence](https://pypi.org/project/convergence/)** (PyPI) computes the observed order and the grid convergence index from a grid study, a port of the NASA verification tutorial code; `physverify.studies.gci` does the same calculation.
 - **Floating-point tools** such as [Verificarlo](https://github.com/verificarlo/verificarlo), [Verrou](https://github.com/edf-hpc/verrou) and [Herbie](https://github.com/herbie-fp/herbie) find rounding and precision errors, a different class of bug from the wrong equations physverify looks for. The two approaches complement each other.
+
+## AI code review
+
+LLM-written unit tests have been compared with human ones on general Python bugs (arXiv 2606.08588), and generic review prompts have been criticised for simulation code (arXiv 2605.09360). Neither uses physics codes with known defects. physverify's [pilot comparison](results.md) did, on 20 repositories; see [Checking an AI code review](ai-review.md) for how the two are used together.
 
 ## Exact references
 
