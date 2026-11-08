@@ -1,6 +1,6 @@
 # Checking a 2D Ising Monte Carlo code
 
-`physverify.stochastic` checks samplers of the 2D Ising model. It implements the plan in [plan_ising.md](plan_ising.md), apart from the optional scaling check.
+`physverify.stochastic` checks samplers of the 2D Ising model. It implements the [design notes](https://github.com/rcgiri-physics/physverify/blob/main/docs/plan_ising.md), apart from the optional scaling check.
 
 A Monte Carlo code has no step size, and its output is random. Correct means the chain samples the Boltzmann distribution. So the order-of-convergence machinery of the rest of physverify does not apply. The checks below fall into two groups:
 - **exact:** a correct code gives exactly the expected answer;

@@ -105,7 +105,7 @@ How to read this:
 
 ## Stochastic codes: the 2D Ising model
 
-Monte Carlo codes have no step size and give random output, so they need a different kind of check. `physverify.stochastic` implements [docs/plan_ising.md](plan_ising.md); [docs/ising.md](ising.md) describes the interface and the checks.
+Monte Carlo codes have no step size and give random output, so they need a different kind of check. `physverify.stochastic` implements the [design notes](https://github.com/rcgiri-physics/physverify/blob/main/docs/plan_ising.md); [docs/ising.md](ising.md) describes the interface and the checks.
 
 - **Exact references.** These are complete enumeration (L up to 5), Kaufman's finite-torus partition function, and Onsager's infinite-lattice energy. The three routes were cross-checked against each other first: log Z agrees to about 1e-15, and the energies agree to 1e-11 away from T_c.
 - **Checks.** Three are exact:

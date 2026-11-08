@@ -4,7 +4,7 @@ This page is for someone who has a physics simulation (their own, a student's, o
 
 ## What physverify does, in one paragraph
 
-A simulation can run, make a nice plot, and still be wrong: a sign flipped, a factor of 2 missing, a time step that makes it first order instead of fourth. physverify checks the things that must be true if the code solves the equations it claims to: that the error shrinks at the promised rate when the step is made smaller, that energy is kept when it should be, that a Runge-Kutta table really has its stated order. It cannot prove code is correct; a PASS says only that the tested properties hold ([What a PASS means](assumptions.md)).
+A simulation can run, make a nice plot, and still be wrong: a sign flipped, a factor of 2 missing, a time step that makes it first order instead of fourth. physverify checks the things that must be true if the code solves the equations it claims to: that the error shrinks at the promised rate when the step is made smaller, that energy is kept when it should be, that a Runge-Kutta table really has its stated order. It is also the way to settle a suspected bug, from your own reading or from an AI review: write the claim as a check and run it ([Checking an AI code review](ai-review.md)). It cannot prove code is correct; a PASS says only that the tested properties hold ([What a PASS means](assumptions.md)).
 
 ## 1. Install Python and physverify
 

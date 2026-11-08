@@ -12,6 +12,12 @@ Thanks for your interest. physverify is actively evolving, and contributions and
 6. **Exact reference solutions** from your field (with a citation), for `physverify.references`.
 7. **Run `physverify scan` on code you know** and tell us about every WARN: real, harmless, or a false alarm. This is how each check gets a false-alarm rate on real code (see "Test each feature on as many repositories as possible" in [ROADMAP.md](ROADMAP.md)).
 
+8. **An AI review run, with any model you have (free tiers are fine).** Pick a public physics repository with a bug that its maintainers have since fixed and that is documented in an issue or commit. Export the commit before the fix without its history (`git archive <commit> | tar -x -C review/`), open a new chat, and give the model read-only access with exactly this prompt:
+
+   > Review this physics simulation repository for bugs in the physics or numerics. For each: file, line, what is wrong, how sure you are (high/medium/low). Bugs only, no style.
+
+   Send us the model name, the date, the repository and both commits, and the full answer, in a [trial report](https://github.com/rcgiri-physics/physverify/issues/new?template=trial_report.md). Runs on a repository without a known bug are just as useful, because they measure false alarms. We score every run the same way and check unmatched claims with a run before counting them ([Checking an AI code review](https://rcgiri-physics.github.io/physverify/ai-review/)).
+
 Everyone taking part is asked to follow the [code of conduct](CODE_OF_CONDUCT.md). Questions are welcome as [question issues](https://github.com/rcgiri-physics/physverify/issues/new?template=question.md). If you work with an AI assistant, point it to [AGENTS.md](AGENTS.md), and say in the pull request that it helped.
 
 ## Reporting a problem
