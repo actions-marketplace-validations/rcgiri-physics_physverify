@@ -36,9 +36,9 @@ So static rules will not catch up with a reader: most physics defects are a wron
 
 Open issues in this order (nothing is scheduled):
 
-- **First:** `physverify confirm` (new); #32 declarative spec; #31 does physverify help coding agents; #28 `physverify mutate`; #30 held-out and outside-written bugs; #8, #9, #25 trust in the order checks and the seeded-bug misses; #24 2D/3D heat; #26 IMEX; #27 units; #36 agent skill.
+- **First:** #54 `physverify confirm`; #32 declarative spec; #31 does physverify help coding agents; #28 `physverify mutate`; #30 held-out and outside-written bugs; #8, #9, #25 trust in the order checks and the seeded-bug misses; #24 2D/3D heat; #26 IMEX; #27 units; #36 agent skill.
 - **Next:** #19 Phase 3 steppers without a spec; #20 dependencies before `scan --run`; #29 findings ledger; #33 related work (add the AI-review comparison); #38 C/C++/Fortran bridge.
-- **When convenient:** scan rules from the pilot (new); #14, #15, #16 scan in CI; #17 notebooks; #18 stencil literals; #11, #12, #13 CI and typing; #21, #22, #23 refactors; #34, #35, #37 docs and packaging.
+- **When convenient:** #55 scan rules from the pilot; #14, #15, #16 scan in CI; #17 notebooks; #18 stencil literals; #11, #12, #13 CI and typing; #21, #22, #23 refactors; #34, #35, #37 docs and packaging.
 
 The sections below are the October plan; the targets there are kept as a record, not as goals.
 
