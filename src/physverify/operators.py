@@ -196,3 +196,19 @@ def check_path(vertices, *, segment_lengths=None, closed: bool = False, rtol: fl
     what = "and closes" if closed else "and is not required to close"
     return Result(PASS, f"the {lengths.size} segments have the expected lengths {what}" if segment_lengths is not None
                   else f"the path of {lengths.size} segments closes" if closed else f"the path has {lengths.size} segments; no property was requested")
+
+
+def stretched_grid(n: int, a: float = 0.0, b: float = 1.0, *, ratio: float = 1.1):
+    """n + 1 nodes from a to b whose spacings grow by `ratio` from one cell to the next.
+
+    Run the operator invariants (`check_nullspace`, `check_uniform_state`) on such a grid as well as a uniform
+    one: a west-face coefficient built from the east spacing gives the right answer whenever the spacings are
+    equal, so it is invisible on a uniform grid (corpus study: row sums 24 to 184 instead of 0 on a stretched
+    grid, exactly 0 on a uniform one). For a second-derivative operator pass a linear field too: it is in the
+    null space on any grid, and a wrong spacing shows up there even when a constant still gives zero.
+    """
+    if n < 1 or ratio <= 0:
+        raise ValueError("need n >= 1 and ratio > 0")
+    h = ratio ** np.arange(n)
+    x = np.concatenate([[0.0], np.cumsum(h)])
+    return a + (b - a) * x / x[-1]
