@@ -22,3 +22,9 @@ The second interval assumes half the real noise, so it is far too narrow and cov
 ## Monte Carlo samplers
 
 `physverify.stochastic` checks samplers of the 2D Ising model against exact enumeration, detailed balance and a reference replay with the same random numbers. All 21 seeded bugs in its benchmark were caught with no false alarms. See [Ising checks](../ising.md).
+
+## Direction sampling and moment tests
+
+`physverify.stochastic.directions.check_direction_sampler(sample, law=, normal=)` draws directions from `sample(rng, n) -> (n, 3)` and tests the cosine to the normal against the isotropic, hemisphere or Lambertian (cosine-weighted) law with a Kolmogorov-Smirnov test, and the azimuth for uniformity. On correct samplers at alpha = 1e-3 it gave 1 false alarm in 4000 runs. A Lambertian sampler written as mu = xi instead of mu = sqrt(xi) fails, and so does one with mean mu 0.700 instead of 2/3 at the default 200 000 directions.
+
+`physverify.stochastic.stats.check_moment(values, exact, atol, resolution=)` compares a sample mean with an exact value and says how large a deviation the test would catch (`detectable_deviation`). A tolerance set from the sample size can let a wrong term pass; with `resolution` given, such a test is INCONCLUSIVE instead of PASS.

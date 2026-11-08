@@ -58,6 +58,7 @@ physverify scan path/to/the/project
 | **tables**: Runge-Kutta methods that do not have the order their name says, whether written as a table or as stages in code (`k2 = h*f(t + h/2, y + k1/2)`), or whose stages disagree with the table in their own docstring | a method called "order 3" that is only order 2 |
 | **grid**: a spacing that does not match its grid | `x = linspace(0, L, N)` with `dx = L/N` (it is `L/(N-1)`) |
 | **pairs**: functions that should undo each other | `cart_to_polar` and `polar_to_cart` |
+| **flow**: statements in the wrong order or on the wrong grid side | `uw = u/(DXp + DXe)` for a west face, `u_mid = u` then `u_mid += ...` while `u` is still used |
 | **names, api, literals, units**: code that cannot run as written, or a typo that changes a number | a misspelt variable, `np.NaN` (removed in NumPy 2), `1e0 - 5` meant as `1e-5`, a unit table that calls J m^2 "surface tension" |
 
 Each line is a `WARN` (very likely a mistake) or a `NOTE` (worth one look). Nothing found does not mean the code is right; most bugs need step 4.

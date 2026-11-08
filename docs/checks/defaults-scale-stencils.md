@@ -39,6 +39,12 @@ The test returns a `Result`, a bool, or a `(got, reference)` pair. Choose the ch
 ```python
 from physverify.stencils import check_stencil
 check_stencil([-2, -1, 0, 1, 2], [1, -8, 0, 8, -1], deriv=1, divisor=12, claimed=4)   # PASS, order 4
+
+from physverify.stencils import check_quadrature
+import numpy as np
+x, w = np.polynomial.legendre.leggauss(3)
+check_quadrature(x, w, claimed=5)                          # PASS: Gauss, exact to degree 2n-1
+check_quadrature(x, w, claimed=5, alpha=1, beta=0)         # FAIL: rule built for another weight
 check_stencil([-1, 1], [-1, 1], deriv=1)    # FAIL: 2 times the first derivative (the 1/2 is missing)
 ```
 

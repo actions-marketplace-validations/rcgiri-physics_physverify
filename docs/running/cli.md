@@ -64,6 +64,7 @@ Reads every `.py` file with Python's `ast` module and **runs nothing**, so it is
 | `api` | features removed from NumPy (`np.NaN`, `np.float`, `np.product`, `np.array(x, copy=False)`), SciPy (`scipy.integrate.simps`, `scipy.misc`) and Python (`imp`, `distutils`) | WARN; deprecated ones (`np.trapz`) NOTE |
 | `literals` | `1e0 - 5` (meant `1e-5`?), `x ^ 2` (exclusive or, not a power), `x == np.nan` (never true) | WARN |
 | `units` | a table of (unit expression, "physical type") whose dimension does not match the name, such as `(si.W * si.m**2 / si.Hz, "surface tension")` | WARN |
+| `flow` | statement order in a function: a west/south coefficient built only from east/north spacings, and an eager `@numba.jit(signature)` on a function that calls SciPy (WARN); a local bound only inside an `if` and read after it, `A = B` followed by an in-place change of `A` and a read of `B`, `factorial2(2*n - 1)` (0 at n = 0 in current SciPy) and `int(tmax / dt)` (NOTE) | WARN / NOTE |
 | `pairs` | functions whose names say they undo each other (`x_to_y` / `y_to_x`, `s2z` / `z2s`), to check with `identities.check_roundtrip` | NOTE |
 
 From Python, `physverify.scan.extract_tables(path)` returns every table the scan found (A, b, c, the claimed order and its source), to pass on to `check_tableau` for stage order or stability claims.
