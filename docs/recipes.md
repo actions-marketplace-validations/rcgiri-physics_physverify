@@ -81,6 +81,56 @@ def test_tableau(name):
 
 Add `physverify>=0.4` to the test dependencies only; the library itself does not need it.
 
+## A 1D heat (diffusion) code
+
+Make up a smooth u(x, t) that meets the boundary conditions, add the source s = u_t - u_xx that makes it a solution, and measure the error at several grid sizes. An explicit scheme with dt proportional to dx² should be second order in dx. Here the bug is a grid spacing taken from the number of points instead of the number of intervals; the solver still runs and looks smooth.
+
+```python
+--8<-- "docs/examples/heat_order.py"
+```
+
+Output:
+
+```text
+--8<-- "docs/examples/output/heat_order.txt"
+```
+
+![Error against grid spacing: the correct heat solver follows the slope-2 line, the one with the spacing taken from the number of points levels off at order 1](images/heat_order.svg)
+
+If the code has no source-term hook, see [A code with no source-term hook](#a-code-with-no-source-term-hook). Check the heat budget too (insulated walls must not leak): [Conserved quantities and budgets](checks/conservation.md).
+
+## An inference code (fits, posteriors, error bars)
+
+An interval with a stated level should contain the truth that often. Simulate data from a known truth many times, ask the code for its interval each time, and count. Draw the truth from the prior the analysis assumes; for a frequentist interval a fixed truth works too. The second fit below assumes unit noise when the noise is 0.3, so its intervals are far too wide; the coverage is 100% instead of 68%.
+
+```python
+--8<-- "docs/examples/inference_coverage.py"
+```
+
+Output:
+
+```text
+--8<-- "docs/examples/output/inference_coverage.txt"
+```
+
+Coverage that is too high is a bug as well: the error bars overstate the uncertainty. A PASS says only that the intervals have the right size on average for this model; see [Statistics and Monte Carlo](checks/statistics.md).
+
+## A Monte Carlo sampler
+
+Compare a sampled average with a value known exactly, using independent chains: the spread of the chain means is an honest standard error even when each chain is autocorrelated. The buggy sampler below uses a proposal that is not symmetric and leaves out the Hastings factor, so it samples the wrong distribution while looking well mixed.
+
+```python
+--8<-- "docs/examples/mc_sampler.py"
+```
+
+Output:
+
+```text
+--8<-- "docs/examples/output/mc_sampler.txt"
+```
+
+For 2D Ising samplers there are ready-made checks against Onsager's and Kaufman's exact results: [Ising checks](ising.md).
+
 ## A slow code
 
 Give each check a time budget so one slow check does not use up the whole run:

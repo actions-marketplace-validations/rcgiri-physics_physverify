@@ -1,6 +1,6 @@
 # API overview
 
-The functions most specs need. Each has a docstring with the details: `help(physverify.studies.reference_study)` and so on.
+The functions most specs need. Each has a docstring with the details, collected in the [API reference](reference/index.md) (or `help(physverify.studies.reference_study)` and so on).
 
 ## Building checks
 

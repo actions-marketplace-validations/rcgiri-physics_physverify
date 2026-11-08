@@ -29,6 +29,20 @@ theme:
 hooks:
   - docs/hooks.py
 
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            show_root_heading: true
+            heading_level: 3
+            members_order: source
+            docstring_style: null
+            filters: ["!^_"]
+
 exclude_docs: |
   plan_ising.md
   hooks.py
@@ -79,6 +93,7 @@ nav:
       - Checking an AI code review: ai-review.md
   - Reference:
       - API overview: api.md
+      - API reference: reference/index.md
       - Patch test theory: patch.md
       - Ising checks: ising.md
       - Technical details: technical.md
