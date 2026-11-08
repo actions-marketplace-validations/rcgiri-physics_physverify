@@ -12,6 +12,8 @@ from __future__ import annotations
 from fractions import Fraction
 from math import factorial
 
+import numpy as np
+
 from .checks import FAIL, PASS, Result
 
 
@@ -67,3 +69,66 @@ def check_stencil(offsets, weights, deriv: int, *, claimed: int | None = None, d
         return Result(FAIL, f"the {name}-derivative stencil has order {order}, below the claimed {claimed}")
     more = f" (claimed {claimed})" if claimed is not None else ""
     return Result(PASS, f"consistent {name}-derivative stencil of order {order}{more}")
+
+
+def jacobi_moment(k: int, alpha: float = 0.0, beta: float = 0.0) -> float:
+    """Exact integral of x^k (1-x)^alpha (1+x)^beta over [-1, 1], alpha, beta > -1.
+
+    m_0 = 2^(alpha+beta+1) B(alpha+1, beta+1); integrating d/dx [x^k (1-x)^(alpha+1) (1+x)^(beta+1)] = 0
+    gives (k + alpha + beta + 2) m_(k+1) = k m_(k-1) + (beta - alpha) m_k, free of the cancellation of
+    the binomial expansion.
+    """
+    from math import exp, lgamma
+
+    prev, m = 0.0, 2.0 ** (alpha + beta + 1) * exp(lgamma(alpha + 1) + lgamma(beta + 1) - lgamma(alpha + beta + 2))
+    for n in range(k):
+        prev, m = m, (n * prev + (beta - alpha) * m) / (n + alpha + beta + 2)
+    return m
+
+
+def check_quadrature(nodes, weights, *, claimed: int, interval=(-1.0, 1.0), alpha: float = 0.0, beta: float = 0.0,
+                     moments=None, rtol: float = 1e-10) -> Result:
+    """A quadrature rule integrates every polynomial up to degree `claimed` exactly.
+
+    An n-point Gauss rule is exact to degree 2n-1, Gauss-Radau to 2n-2, Gauss-Lobatto to 2n-3
+    (Abramowitz and Stegun 25.4; Hildebrand, Introduction to Numerical Analysis, ch. 8). The weight
+    function is the Jacobi weight (1-x)^alpha (1+x)^beta on [-1, 1]; nodes on another `interval` are
+    mapped there (alpha = beta = 0 only). For another weight pass `moments(k)`, the exact integral
+    of x^k on `interval`. Monomials are taken about the centre of the interval to keep the sums well
+    conditioned. In the 2026-11 corpus session this found Radau weights that were wrong for alpha != beta.
+    """
+    x = np.asarray(nodes, dtype=float)
+    w = np.asarray(weights, dtype=float)
+    if x.shape != w.shape or x.ndim != 1:
+        raise ValueError(f"nodes and weights must be 1-D of the same length, got {x.shape} and {w.shape}")
+    a, b = map(float, interval)
+    if moments is None:
+        if (alpha or beta) and (a, b) != (-1.0, 1.0):
+            raise ValueError("a Jacobi weight needs interval=(-1, 1); pass moments= for another weight")
+        c, half = (a + b) / 2, (b - a) / 2
+        t = (x - c) / half
+
+        def exact(k):
+            return jacobi_moment(k, alpha, beta) * half
+    else:
+        t = x
+
+        def exact(k):
+            return float(moments(k))
+    if not np.all(np.isfinite(w)) or not np.all(np.isfinite(x)):
+        return Result(FAIL, "the quadrature nodes or weights are not finite")
+    scale = abs(exact(0)) or 1.0
+    reached = -1
+    first_bad = None
+    for k in range(max(claimed, 2 * len(x)) + 1):
+        e, g = exact(k), float(np.sum(w * t ** k))
+        if abs(g - e) > rtol * max(abs(e), scale):
+            first_bad = (k, g, e)
+            break
+        reached = k
+    wt = "" if not (alpha or beta) else f" with weight (1-x)^{alpha:g} (1+x)^{beta:g}"
+    if reached < claimed:
+        k, g, e = first_bad
+        return Result(FAIL, f"the {len(x)}-point rule{wt} is exact only to degree {reached} (claimed {claimed}):"
+                            f" the integral of x^{k} is {g:.12g}, exact {e:.12g}")
+    return Result(PASS, f"the {len(x)}-point rule{wt} integrates polynomials exactly to degree {reached} (claimed {claimed})")
