@@ -52,7 +52,7 @@ Each check reports **PASS**, **FAIL**, **EXACT** (reproduced to round-off), **IN
 ## Does it work?
 
 - On 37 bugs added one at a time to five small solvers, it caught 35, with no false alarms on the bug-free versions. The bugs and the checks were written by the same person, so this shows the tool works as designed; it is not a promise about other code.
-- It was tried on 250 public physics repositories in a locked-down container and found confirmed bugs in some of them. The counts describe that sample only; see [Results on real code](results.md).
+- It was tried on more than 500 public physics repositories in a locked-down container and found confirmed bugs in some of them. The counts describe that sample only; see [Results on real code](results.md).
 - In a pilot on 20 of those repositories, an AI reviewer found more of the known defects than `physverify scan`, but also raised alarms on most of the repositories that had been tested clean. Running checks against references from the physics is what told the real claims from the false ones; see [Checking an AI code review](ai-review.md).
 
 ## Where to go next

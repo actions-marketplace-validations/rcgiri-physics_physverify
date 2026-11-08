@@ -12,7 +12,7 @@ The bugs and the checks were written by the same person, so these numbers show t
 
 ## Public repositories
 
-Public Python physics repositories from GitHub were run in a locked-down container in October 2026: no network, the repository read-only, nothing from it run on the author's computer. Every FAIL was checked by hand before it was called a bug.
+Public Python physics repositories from GitHub were run in a locked-down container from October 2026: no network, the repository read-only, nothing from it run on the author's computer. Every FAIL was checked by hand before it was called a bug.
 
 | Sample | How it was chosen | Tested | Confirmed bugs |
 |---|---|---|---|
@@ -20,8 +20,10 @@ Public Python physics repositories from GitHub were run in a locked-down contain
 | Batch 5 | the 60 newest small repositories whose README says the work is complete | 32 of 60 | 6 bugs in 5 repositories |
 | Batch 6 | 20 picked because they are quick to test | 16 of 20 | 1 bug |
 | Batch 7 | 450 recently active small repositories from 61 topic searches, by stars | 182 of 450 | at least one confirmed defect in 41 |
+| Batch 8 | 60 popular, maintained computational-physics libraries (by stars and use), October 2026 | 60 of 60 | a report posted to 15 (17 reports) |
+| Batch 9 (daily sessions, from 2026-10-26) | repositories of people who replied to earlier reports, their other projects and listed physics projects; a few earlier repositories tested again in depth | 266 of 396 | a report posted to 104 (121 reports) |
 
-Only batches 1-4 are random. Most untested repositories were not numerical solvers (neural networks, apps and games, analysis tools, finance).
+Only batches 1-4 are random; batches 8 and 9 were chosen on purpose and say nothing about physics code in general. Most untested repositories were not numerical solvers (neural networks, apps and games, analysis tools, finance) or could not be installed in the sandbox. For batches 8 and 9 the last column counts reports posted to the authors by 2026-11-08 (most are defects; a few are questions or documentation points), not every finding.
 
 Examples of what was found:
 
