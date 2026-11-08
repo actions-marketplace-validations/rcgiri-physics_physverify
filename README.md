@@ -24,6 +24,7 @@ New to this? [Start here](https://rcgiri-physics.github.io/physverify/start-here
 - **Any project, no set-up:** `physverify scan PATH` reads the code (it runs nothing) and flags Runge-Kutta methods that do not have their stated order (written as tables, as class attributes or as stages in code), grid spacings that do not match their grid, near-miss physical constants, and inverse function pairs worth a round-trip test.
 - **An ODE solver:** `physverify init verify_solver.py --solver mysolver --order 4` writes a spec; fill in the equations (from the physics, not from your code) and run `physverify run verify_solver.py`.
 - **A Runge-Kutta table:** `check_tableau(A, b, c, claimed=3)` from `physverify.butcher` checks its order, stage order and stability from the coefficients alone.
+- **Suspected bugs from a review (yours or an AI's):** turn each claim into a run against an independent reference and get a verdict; see [Checking an AI code review](https://rcgiri-physics.github.io/physverify/ai-review/).
 - **Errors you already have:** `check_order(hs, errors, expected=2)` gives PASS, FAIL or INCONCLUSIVE with a reason.
 
 ## Run it in CI
