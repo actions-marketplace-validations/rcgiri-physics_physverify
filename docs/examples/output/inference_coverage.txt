@@ -1,0 +1,2 @@
+cov=True:       PASS - 265 of 400 intervals contain the truth (0.662, stated 0.68); binomial p = 4.5e-01, false-alarm rate 0.001
+cov='unscaled': FAIL - 400 of 400 intervals contain the truth (1.000, stated 0.68); binomial p = 1.7e-67, false-alarm rate 0.001
