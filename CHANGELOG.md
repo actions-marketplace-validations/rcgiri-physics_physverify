@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **New: `stencils.check_quadrature`** (issue #44; tests in `tests/test_quadrature.py`): the degree to which a quadrature rule integrates polynomials exactly, from its nodes and weights alone, for the Jacobi weight (1-x)^alpha (1+x)^beta or a user moment function, with `stencils.jacobi_moment` for the exact moments. In the 2026-11-07 corpus session such a comparison found Radau weights that were wrong when alpha != beta.
 - **CI:** a Ruff job (rules F, B, UP, I) runs on every push and pull request; unused imports and a dead variable removed.
 - **`scan` summary:** counts the files scanned (also `files_scanned` in the JSON), counts files with a syntax error as not parsed, and says so when a folder has no Python files instead of looking like a clean result.
 - **Fixed `check_order` and `check_exact`:** negative errors were taken as below the noise floor, so signed errors that grew gave EXACT, which counts as a pass. The size of each error is now used.
