@@ -12,7 +12,7 @@ The bugs and the checks were written by the same person, so these numbers show t
 
 ## Public repositories
 
-Public Python physics repositories from GitHub were run in a locked-down container in October 2026: no network, the repository read-only, nothing from it run on the author's computer. Every FAIL was checked by hand before it was called a bug.
+Public Python physics repositories from GitHub were run in a locked-down container from October 2026: no network, the repository read-only, nothing from it run on the author's computer. Every FAIL was checked by hand before it was called a bug.
 
 | Sample | How it was chosen | Tested | Confirmed bugs |
 |---|---|---|---|
@@ -20,8 +20,10 @@ Public Python physics repositories from GitHub were run in a locked-down contain
 | Batch 5 | the 60 newest small repositories whose README says the work is complete | 32 of 60 | 6 bugs in 5 repositories |
 | Batch 6 | 20 picked because they are quick to test | 16 of 20 | 1 bug |
 | Batch 7 | 450 recently active small repositories from 61 topic searches, by stars | 182 of 450 | at least one confirmed defect in 41 |
+| Batch 8 | 60 popular, maintained computational-physics libraries (by stars and use), October 2026 | 60 of 60 | a report posted to 15 (17 reports) |
+| Batch 9 (daily sessions, from 2026-10-26) | repositories of people who replied to earlier reports, their other projects and listed physics projects; a few earlier repositories tested again in depth | 266 of 396 | a report posted to 104 (121 reports) |
 
-Only batches 1-4 are random. Most untested repositories were not numerical solvers (neural networks, apps and games, analysis tools, finance).
+Only batches 1-4 are random; batches 8 and 9 were chosen on purpose and say nothing about physics code in general. Most untested repositories were not numerical solvers (neural networks, apps and games, analysis tools, finance) or could not be installed in the sandbox. For batches 8 and 9 the last column counts reports posted to the authors by 2026-11-08 (most are defects; a few are questions or documentation points), not every finding.
 
 Examples of what was found:
 
@@ -45,6 +47,20 @@ Of the 74 defects reported to authors, 14 were found by a physverify check as su
 | Runge-Kutta stages written as code | 6 | 7 |
 | Tables in constructors and classes | 9 | 7 |
 | Phase 1 static checks (names, removed APIs, literals, exact constants, units) | 18 | 7 (and static marks in about 80 repositories, not yet confirmed by runs) | How often each check applies and what it finds there: [per-feature results](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FEATURES.md). Details: [which found what](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/FINDINGS_BY_METHOD.md) and [the rescan](https://github.com/rcgiri-physics/physverify/blob/main/results/corpus/RESCAN_2026-10.md).
+
+### AI review compared with `scan` (pilot, 2026-11-08)
+
+Twenty of the tested repositories were drawn with a fixed seed: 10 with a defect already reported to the authors and 10 that had been tested and found clean. Each was reviewed from an exported copy (no history, so later fixes could not leak in) by an AI reviewer given one short fixed prompt, and scanned with `physverify scan` and `scan --run`.
+
+| | AI reviewer (Claude Opus, 2 runs) | `scan` | `scan --run` |
+|---|---|---|---|
+| known defects found (of 10) | 8 in each run | 1 | 0 |
+| clean repositories with a high or medium claim (of 10) | 6 to 7 | 0 | 0 |
+| physics defects among those claims | 0 (some true minor points: a fragile test, a missing input check) | – | – |
+
+On the repositories with defects, the reviewer's further claims were checked one by one: 13 were real physics or numerics problems that no other method had found (5 confirmed by a run in the sandbox so far), and some were wrong, including two that looked convincing on reading. Partial runs with two other models through a second tool showed the same pattern for the stronger model (all 3 known defects it saw, alarms on all 8 clean repositories it saw); the weaker model missed the one known defect it saw and wrote that the faulty line was correct.
+
+So reading finds more candidates than static rules, and running against a reference decides which are real. This is why the [roadmap](roadmap.md) now puts confirming suspected defects first. By 2026-11-08, 194 reports had been posted to authors in 174 repositories; the breakdown by method above covers the first 74.
 
 !!! note "Not a bug rate"
     These counts describe the repositories that were drawn. They are not a bug rate for physics code in general.

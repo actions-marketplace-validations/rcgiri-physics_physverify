@@ -1,0 +1,2 @@
+correct: PASS - all 1 comparisons agree; largest: mean of x = 2.9925 +- 0.0078, exact 3 (Bonferroni over 1, false-alarm rate 0.001)
+buggy:   FAIL - mean of x = 1.9942 +- 0.0074, exact 3: off by 135.4 standard errors (Bonferroni over 1, false-alarm rate 0.001)

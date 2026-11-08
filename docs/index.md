@@ -33,6 +33,7 @@ physverify demo
 | [Runge-Kutta tables](checks/runge-kutta.md) | Do the coefficients have the order and stability their name says? | A table labelled order 3 that is order 2 |
 | [Exact references](checks/exact-references.md) | Does it match a known closed-form result? | Morse oscillator energy levels |
 | [Statistics](checks/statistics.md) | Do the error bars mean what they say? Is a Monte Carlo sampler correct? | 68% intervals that cover 30% |
+| [A suspected bug](ai-review.md) | Is this claim from a review (yours or an AI's) true? | A power spectrum deconvolved by W instead of W² |
 
 Every example on this site is a small script in [`docs/examples/`](https://github.com/rcgiri-physics/physverify/tree/main/docs/examples), and the output shown is what it printed.
 
@@ -51,12 +52,14 @@ Each check reports **PASS**, **FAIL**, **EXACT** (reproduced to round-off), **IN
 ## Does it work?
 
 - On 37 bugs added one at a time to five small solvers, it caught 35, with no false alarms on the bug-free versions. The bugs and the checks were written by the same person, so this shows the tool works as designed; it is not a promise about other code.
-- It was tried on 250 public physics repositories in a locked-down container and found confirmed bugs in some of them. The counts describe that sample only; see [Results on real code](results.md).
+- It was tried on more than 500 public physics repositories in a locked-down container and found confirmed bugs in some of them. The counts describe that sample only; see [Results on real code](results.md).
+- In a pilot on 20 of those repositories, an AI reviewer found more of the known defects than `physverify scan`, but also raised alarms on most of the repositories that had been tested clean. Running checks against references from the physics is what told the real claims from the false ones; see [Checking an AI code review](ai-review.md).
 
 ## Where to go next
 
 - New here: [Getting started](getting-started.md), then [How it works](how-it-works.md).
 - Have a solver to check: [Recipes](recipes.md).
+- Have a list of suspected bugs: [Checking an AI code review](ai-review.md).
 - Want it on every push: [Continuous integration](ci.md).
 
 ## Citing

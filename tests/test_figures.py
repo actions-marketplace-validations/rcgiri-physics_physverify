@@ -6,9 +6,18 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 
 
-def test_convergence_figure_is_up_to_date():
+def _module():
     spec = importlib.util.spec_from_file_location("make_figures", ROOT / "scripts" / "make_figures.py")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
+    return module
+
+
+def test_convergence_figure_is_up_to_date():
     committed = (ROOT / "docs" / "images" / "convergence.svg").read_text(encoding="utf-8")
-    assert module.svg() == committed, "run python scripts/make_figures.py and commit the figure"
+    assert _module().svg() == committed, "run python scripts/make_figures.py and commit the figure"
+
+
+def test_heat_order_figure_is_up_to_date():
+    committed = (ROOT / "docs" / "images" / "heat_order.svg").read_text(encoding="utf-8")
+    assert _module().heat_svg() == committed, "run python scripts/make_figures.py and commit the figure"

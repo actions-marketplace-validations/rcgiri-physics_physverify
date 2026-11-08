@@ -1,6 +1,6 @@
 # Plan: verifying 2D Ising (stochastic) codes
 
-Status: plan only, nothing built. Another session is building the deterministic phases (benchmark, `patch` write-up, CLI, pytest plugin, agent hook), so this plan should be started only after those land, to avoid editing the same files. Suggested home for the code: a new `src/physverify/stochastic/` package, so the existing modules are not touched.
+Status: done. This was the design for `physverify.stochastic`, which implements it apart from the optional scaling check; it is kept as the design record that the code's docstrings refer to. For how to use the checks, see [Ising checks](ising.md).
 
 ## 1. Why Ising needs its own plan
 
