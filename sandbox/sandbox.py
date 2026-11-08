@@ -140,7 +140,8 @@ def build(stack=None):
         args, tag = [], DEFAULT_IMAGE
     else:
         sys.exit(f"unknown stack {stack!r}; use --stack latest")
-    rc = docker(["build", "-t", tag, *args, "-f", str(ROOT / "sandbox" / "Dockerfile"), str(ROOT)])
+    # --load: with a docker-container buildx builder the image otherwise stays in the build cache only
+    rc = docker(["build", "--load", "-t", tag, *args, "-f", str(ROOT / "sandbox" / "Dockerfile"), str(ROOT)])
     if rc == 0 and stack:
         subprocess.run(["docker", "run", "--rm", tag, "pip", "freeze", "--exclude", "physverify"])
         print(f"built {tag}; select it with PHYSVERIFY_IMAGE={tag}")
