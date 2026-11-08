@@ -74,6 +74,7 @@ Checks that need no exact solution. See [Operator invariants](checks/operator-in
 | Name | What it does |
 |---|---|
 | `check_nullspace(operator, shape, field=None, interior=None)` | A matrix or function maps a constant (or another null-space field) to zero at interior points. |
+| `stretched_grid(n, a=0, b=1, ratio=1.1)` | Nodes with growing spacing, to run the invariants on a non-uniform grid. |
 | `check_uniform_state(step, state, n_steps=10)` | A uniform state with no flow or source is unchanged by time stepping. |
 | `check_advection_direction(evolve, x, u, t)` | A feature carried by velocity u moves by u t, in the direction of u (periodic 1-D grid). |
 | `check_force_gradient(potential, force, r)` | A conservative force equals -dU/dr (central difference). |

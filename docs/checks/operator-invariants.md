@@ -29,3 +29,7 @@ Notes:
 ## Where these came from
 
 In the corpus sessions of 2026-11-01 these four found four bugs: a scrambled polar-grid diffusion matrix (interior row sums 22 and 44 instead of 0), a Lax-Wendroff option that heated still water by 0.909 K in 5 s, an Euler solver that moved fluid at -u while its shock-tube magnitudes were right, and a screened-Coulomb force at 36-59 % of -dU/dr. They passed on the correct codes they were tried on (pylj, magnelio, Glimy, tdyno and five other pair potentials). These are counts within that sample only.
+
+## Stretched grids
+
+`operators.stretched_grid(n, a, b, ratio=1.1)` gives nodes whose spacings grow from cell to cell. Run the invariants on it as well as on a uniform grid: a west-face coefficient built from the east spacing is exact whenever the spacings are equal. For a second-derivative operator, also pass a linear field (`field=x`): it is in the null space on any grid, and a wrong spacing shows there even when a constant still maps to zero.
