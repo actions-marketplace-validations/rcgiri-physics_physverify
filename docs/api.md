@@ -63,6 +63,8 @@ See [Identities and round trips](checks/identities.md) and [Hidden defaults, sca
 |---|---|
 | `check_stencil(offsets, weights, deriv, claimed=None, divisor=1)` | Consistency, scale and order of a finite-difference stencil from its Taylor moments. |
 | `stencil_moments`, `stencil_order` | The moments and the order on their own. |
+| `check_quadrature(nodes, weights, claimed, interval=(-1, 1), alpha=0, beta=0, moments=None)` | A quadrature rule integrates polynomials exactly to the claimed degree (Gauss 2n-1, Radau 2n-2, Lobatto 2n-3), for the Jacobi weight or a user moment function. |
+| `jacobi_moment(k, alpha, beta)` | Exact moments of the Jacobi weight on [-1, 1]. |
 | `check_flux(flux, physical, states, upwind_pairs=(), downwind_pairs=(), mirror=None)` | Consistency, upwinding and mirror symmetry of a numerical flux. |
 
 ## Operator invariants (`physverify.operators`)
