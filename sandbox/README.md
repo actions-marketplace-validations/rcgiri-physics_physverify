@@ -7,7 +7,7 @@ Every external repository is treated as untrusted. `sandbox.py` runs it in a fre
 | Network | none (`--network=none`) during `run` |
 | File system | root file system read-only; clone mounted read-only at `/repo-src` and copied to `/tmp/repo` for each run (`$PHYSVERIFY_REPO`; files the code writes there are reported as a portability note; `--read-only-repo` runs from a read-only `/repo` instead); only `/out` and a 512 MB `/tmp` are writable. `--py314-shim` adds `from __future__ import annotations` to each file of the copy, for code written for Python 3.14 |
 | User | uid 10001, all capabilities dropped, `no-new-privileges`, no sudo |
-| Resources | 2 CPUs, 2 GB memory (no swap), 256 processes, 1024 open files, 1 GB max file size |
+| Resources | 2 CPUs, 2 GB memory (no swap; `PHYSVERIFY_MEMORY=4g` raises it), 256 processes, 1024 open files, 1 GB max file size |
 | Time | 900 s per run (`PHYSVERIFY_TIME_LIMIT`), then the container is killed |
 | Image | Python 3.12 slim pinned by digest, NumPy, SciPy, SymPy, Matplotlib (Agg), pytest, physverify; libX11 and libGL for wheels that link them |
 
@@ -49,6 +49,9 @@ Mistakes made while writing the first adapters, worth avoiding in the next ones:
 - A source checkout is not installed, so `importlib.metadata.version("pkg")` in `pkg/__init__.py` raises `PackageNotFoundError`. The runner puts a `sitecustomize` on the path that answers `0+source` for the repository's own distribution names (from `pyproject.toml`, `setup.cfg`, `setup.py`), only when the package is not installed, and says so; `PHYSVERIFY_NO_METADATA_SHIM=1` turns it off.
 - A run killed with exit code 137 and no time-out was almost always stopped by the 2 GB memory limit; `sandbox.py` now says so. Store fewer frames or use a smaller grid.
 - `sandbox.py deps --clean <id> ...` empties `deps/<id>` before installing: `pip --target` leaves files of an earlier version in place, so a downgrade does not take.
+- `sandbox.py deps --source <id> ...` also allows source distributions and `git+https://` requirements (the image has git). Their build scripts run inside the locked-down install container, never on the host; a C extension still fails, since the image has no compiler.
+- `sandbox.py deps --prefix <id> ...` installs with `pip --prefix` instead of `--target`. Use it for wheels that put files outside site-packages (netgen/NGSolve put shared libraries under `../`), which `--target` drops; `run` adds the prefix's site-packages to `PYTHONPATH` and its `lib` to `LD_LIBRARY_PATH`.
+- A large install that is killed for memory (exit 137) can be retried with `PHYSVERIFY_MEMORY=4g`.
 - PyTorch installs from the CPU wheel index: `sandbox.py deps <id> --index-url https://download.pytorch.org/whl/cpu --extra-index-url https://pypi.org/simple torch` (the default CUDA wheel is too large for the install step).
 - `/tmp` in the container is `noexec`, so a compiled extension copied into the repository copy fails to load ("failed to map segment"); load it from `/deps` instead.
 - Installs: `PHYSVERIFY_DEPS_TIME_LIMIT` (default 2400 s). A half-finished install folder can import partly and fail later; delete `deps/<id>` and reinstall rather than patching it.
