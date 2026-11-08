@@ -15,6 +15,33 @@ What may come after 0.7.0. Release 0.5.0 (2026-10-24) added `physverify scan` wi
 
 The benchmark and the single-repository adapters moved to `benchmark/pvbench/` (not installed). The AI-assistant parts (`physverify hook`, `physverify mcp`) stay in the package: they use only the standard library, so an extra would not make the install any smaller.
 
+## Direction from November 2026: confirm suspected defects, do not hunt for them
+
+A pilot on 20 corpus repositories (10 with a reported defect, 10 tested clean; 2026-11-08) compared three ways of looking at the same code: an AI reviewer with a short fixed prompt (two runs), the test script written for each repository, and `physverify scan` (static and `--run`). Within that sample only:
+
+| | AI reviewer | `scan` | `scan --run` |
+|---|---|---|---|
+| reported defects found (of 10) | 8 in each run | 1 | 0 |
+| clean repositories with an alarm (of 10) | 6 to 7 | 0 | 0 |
+| physics defects among those alarms | 0 | – | – |
+
+On the 10 repositories with defects, the reviewer also raised further claims; after a check, 13 were real physics or numerics problems that no other method had found (5 of them confirmed by a sandbox run so far), and several others were wrong. Two strong suspicions from reading were wrong when run.
+
+So static rules will not catch up with a reader: most physics defects are a wrong sign or factor in ordinary-looking code. What a reader cannot do is settle whether a suspicion is true. That is what physverify does well: run the code against a reference written from the physics and give a verdict with its reason. From here the plan is:
+
+1. **Confirmation first.** `physverify confirm`: turn one suspected defect (from a person or an AI reviewer) into a check against an independent reference, run it in the sandbox, and record the verdict (confirmed, rejected, or not decidable). Cheaper references (a declarative spec, more exact pairs) serve the same goal.
+2. **Deeper runtime checks** for ODE/PDE time integration, convergence and conservation, as before.
+3. **`scan` stays a fast, safe first pass.** It gains rules for patterns that were confirmed on real code, in batches, and is not tuned towards a detection target.
+4. **Evidence:** measure whether physverify helps reviewers and coding agents, with false alarms reported next to detections.
+
+Open issues in this order (nothing is scheduled):
+
+- **First:** `physverify confirm` (new); #32 declarative spec; #31 does physverify help coding agents; #28 `physverify mutate`; #30 held-out and outside-written bugs; #8, #9, #25 trust in the order checks and the seeded-bug misses; #24 2D/3D heat; #26 IMEX; #27 units; #36 agent skill.
+- **Next:** #19 Phase 3 steppers without a spec; #20 dependencies before `scan --run`; #29 findings ledger; #33 related work (add the AI-review comparison); #38 C/C++/Fortran bridge.
+- **When convenient:** scan rules from the pilot (new); #14, #15, #16 scan in CI; #17 notebooks; #18 stencil literals; #11, #12, #13 CI and typing; #21, #22, #23 refactors; #34, #35, #37 docs and packaging.
+
+The sections below are the October plan; the targets there are kept as a record, not as goals.
+
 ## Now: improve the tool, not the number of repositories tested
 
 From 2026-10-23 no new corpus batches are planned. Of the 74 defects reported to authors, 14 were found by a physverify check as such and most of the rest by the test script written for each repository ([FINDINGS_BY_METHOD.md](results/corpus/FINDINGS_BY_METHOD.md)). Writing those scripts is the bottleneck, so the work now goes into checks that need no script, then into rescanning the repositories already tested: what is recovered, and what is a false alarm, within that sample only.

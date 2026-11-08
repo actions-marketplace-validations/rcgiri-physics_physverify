@@ -76,6 +76,7 @@ nav:
       - Command line: running/cli.md
       - Continuous integration: ci.md
       - AI coding assistants: agent.md
+      - Checking an AI code review: ai-review.md
   - Reference:
       - API overview: api.md
       - Patch test theory: patch.md
