@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- **New `scan` stage `flow`** (issue #46; `physverify.flow`, tests in `tests/test_scan_flow.py`): six rules from the corpus study, each from one bug (west coefficient from east spacings, eager numba signature over SciPy, possibly-unbound local, array alias changed in place, `factorial2(2*n - 1)`, `int(tmax / dt)`). On 150 corpus repositories the two rules that cannot follow branches gave 63 and 2 hits, so they are NOTEs; counts in the module docstring.
 - **New: `stencils.check_quadrature`** (issue #44; tests in `tests/test_quadrature.py`): the degree to which a quadrature rule integrates polynomials exactly, from its nodes and weights alone, for the Jacobi weight (1-x)^alpha (1+x)^beta or a user moment function, with `stencils.jacobi_moment` for the exact moments. In the 2026-11-07 corpus session such a comparison found Radau weights that were wrong when alpha != beta.
 - **CI:** a Ruff job (rules F, B, UP, I) runs on every push and pull request; unused imports and a dead variable removed.
 - **`scan` summary:** counts the files scanned (also `files_scanned` in the JSON), counts files with a syntax error as not parsed, and says so when a folder has no Python files instead of looking like a clean result.

@@ -14,7 +14,11 @@ Each rule comes from one bug found in the corpus study (issue #46):
              normalisation with n = 0 divides by zero
 - steps      `int(tmax / dt)` truncates: int(1.0 / 0.1) == 9, so the run can end one step short
 
-Like the rest of the scan these only read the source.
+Like the rest of the scan these only read the source. On 150 corpus repositories (5007 files) on 2026-11-08,
+before release: unbound 63 hits in 17 repositories, alias 2 in 2 (both harmless on inspection), steps 8 in 4,
+spacing, numba and factorial2 none. unbound and alias cannot follow branches (a name read under the same
+condition that bound it, an alias whose source is read only on the other branch), so they are NOTEs and do not
+change the exit code; spacing and numba are WARNs.
 """
 
 from __future__ import annotations
@@ -35,7 +39,9 @@ def _own_nodes(fn):
         n = stack.pop()
         out.append(n)
         for c in ast.iter_child_nodes(n):
-            if not isinstance(c, (*_FUNCS, ast.Lambda, ast.ClassDef)):
+            # comprehensions have their own scope, so their loop variables are not locals of the function
+            if not isinstance(c, (*_FUNCS, ast.Lambda, ast.ClassDef, ast.ListComp, ast.SetComp, ast.DictComp,
+                                  ast.GeneratorExp)):
                 stack.append(c)
     return out
 
@@ -92,6 +98,14 @@ def _sure_chain(if_node):
     return body & rest
 
 
+def _staying(if_node) -> set[str]:
+    """Names bound in the branches of an if/elif chain that do not leave the function or loop."""
+    out = set() if _ends(if_node.body) else _stored(_walk_own(if_node.body))
+    if len(if_node.orelse) == 1 and isinstance(if_node.orelse[0], ast.If):
+        return out | _staying(if_node.orelse[0])
+    return out | (set() if _ends(if_node.orelse) else _stored(_walk_own(if_node.orelse)))
+
+
 def _surely_bound(if_node) -> set[str]:
     """Names bound on every path through an if/elif/else chain that continues after it."""
     return _sure_chain(if_node) or set()
@@ -101,26 +115,30 @@ def _unbound(fn, rel) -> list[Finding]:
     args = fn.args
     bound = {a.arg for a in args.posonlyargs + args.args + args.kwonlyargs}
     bound |= {a.arg for a in (args.vararg, args.kwarg) if a}
+    own = [[s] + _own_nodes_stmt(s) for s in fn.body]  # computed once: this is most of the cost
+    loads = [[n for n in o if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load)] for o in own]
     out, reported = [], set()
     for i, stmt in enumerate(fn.body):
         if isinstance(stmt, ast.If):
-            maybe = _stored(_walk_own([stmt])) - _surely_bound(stmt) - bound
-            if maybe:
-                for later in fn.body[i + 1:]:
-                    for n in [later] + _own_nodes_stmt(later):
-                        if isinstance(n, ast.Name) and isinstance(n.ctx, ast.Load) and n.id in maybe \
-                                and n.id not in reported:
-                            reported.add(n.id)
-                            out.append(Finding("flow", WARN, rel, n.lineno,
-                                               f"'{n.id}' is assigned only inside the if at line {stmt.lineno}, so"
-                                               f" {fn.name}() raises UnboundLocalError when that branch is not taken"))
-                    # a later statement that binds the name on every path ends the risk
-                    if not isinstance(later, (ast.If, ast.For, ast.While, ast.Try, ast.With)):
-                        maybe -= _stored([later] + _own_nodes_stmt(later))
-        if isinstance(stmt, ast.If):
+            maybe = _staying(stmt) - _surely_bound(stmt) - bound
+            for k in range(i + 1, len(fn.body)):
+                if not maybe:
+                    break
+                # a read inside a later block is often under the same condition again (`if debug:` twice),
+                # so only reads in plain statements are reported
+                compound = isinstance(fn.body[k], (ast.If, ast.For, ast.While, ast.Try, ast.With))
+                for n in ([] if compound else loads[k]):
+                    if n.id in maybe and n.id not in reported:
+                        reported.add(n.id)
+                        out.append(Finding("flow", NOTE, rel, n.lineno,
+                                           f"'{n.id}' is assigned only inside the if at line {stmt.lineno}, so"
+                                           f" {fn.name}() raises UnboundLocalError when that branch is not taken"))
+                # a later statement that binds the name on every path ends the risk
+                if not isinstance(fn.body[k], (ast.If, ast.For, ast.While, ast.Try, ast.With)):
+                    maybe -= _stored(own[k])
             bound |= _surely_bound(stmt)
         else:
-            bound |= _stored([stmt] + _own_nodes_stmt(stmt))
+            bound |= _stored(own[i])
     return out
 
 
@@ -161,7 +179,7 @@ def _alias(fn, rel) -> list[Finding]:
                     mutated_at = m.lineno
             elif mutated_at is not None and m.lineno > mutated_at and isinstance(m, ast.Name) \
                     and isinstance(m.ctx, ast.Load) and m.id == b:
-                out.append(Finding("flow", WARN, rel, line,
+                out.append(Finding("flow", NOTE, rel, line,
                                    f"'{a} = {b}' makes {a} the same array as {b}; {a} is changed in place at line"
                                    f" {mutated_at} and {b} is read at line {m.lineno}, so {b} has changed too."
                                    f" If a copy was meant, write {a} = {b}.copy()"))

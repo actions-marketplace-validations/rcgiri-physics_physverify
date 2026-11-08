@@ -18,7 +18,7 @@ def test_unbound_after_if():
                 dens = q * 2
             return dens
     """)
-    assert len(hits) == 1 and "'dens'" in hits[0].message and hits[0].level == "WARN"
+    assert len(hits) == 1 and "'dens'" in hits[0].message and hits[0].level == "NOTE"
 
 
 def test_unbound_quiet_cases():
