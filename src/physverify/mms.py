@@ -42,7 +42,15 @@ def complex_step_derivative(u: Callable, t: float, h: float = 1e-30) -> np.ndarr
     u must accept a complex t and avoid abs(), max() and similar non-analytic
     operations.
     """
-    return np.imag(np.asarray(u(t + 1j * h), dtype=complex)) / h
+    cs = np.imag(np.asarray(u(t + 1j * h), dtype=complex)) / h
+    # u that drops the imaginary part (abs(), a float array, max()) silently gives 0; compare with a central difference
+    d = 1e-6 * max(1.0, abs(t))
+    fd = (np.asarray(u(t + d), dtype=float) - np.asarray(u(t - d), dtype=float)) / (2 * d)
+    if not np.allclose(cs, fd, rtol=1e-4, atol=1e-6 * max(1.0, float(np.max(np.abs(fd), initial=0.0)))):
+        raise ValueError("the complex-step derivative of the manufactured solution disagrees with a finite difference"
+                         f" at t={t:g}: u probably uses abs(), max() or a float array, which drop the complex part."
+                         " Rewrite u with NumPy functions of t, or pass du explicitly")
+    return cs
 
 
 class ManufacturedODE:

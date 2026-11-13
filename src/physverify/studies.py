@@ -42,7 +42,7 @@ def invariant_study(integrate, quantity, y0, t_end, ns, expected_order, **kw) ->
     """
     kw.setdefault("tol_high", float("inf"))
     q0 = float(quantity(np.asarray(y0, dtype=float)))
-    scale = max(abs(q0), 1.0)
+    scale = abs(q0) if q0 != 0 else 1.0  # relative drift; max(|q0|, 1) hid any drift of a tiny invariant
     hs, errs = [], []
     for n in within_budget(ns):
         with np.errstate(all="ignore"):

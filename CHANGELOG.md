@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+- **Fixed false verdicts found in a review** (tests in `tests/test_correctness_fixes.py`; each reproduced before the fix):
+  - `load_spec` re-imports solver modules from the spec's folder, so the MCP server no longer returns a stale PASS after the solver is edited.
+  - The noise floor shrinks for solutions smaller than 1, and `invariant_study` measures drift relative to the invariant itself, so an Euler stepper on an energy of 1e-21 is no longer EXACT.
+  - `check_order` leaves errors within a factor 100 of the floor out of the fit and says so, so a correct series ending near round-off is no longer a FAIL at a lower order.
+  - `check_step_independence` fails a value that goes to zero as dt shrinks (an extra factor of dt).
+  - `t_critical` no longer stops at 50, which was wrong for two chains at small alpha.
+  - `check_uniform_state` allows round-off on a zero component.
+  - `complex_step_derivative` raises when u drops the complex part (abs(), max()) instead of returning 0.
+- `pyproject.toml` no longer describes a seeded-bug benchmark in the installed package.
 - **Docs** (issue #35): an API reference generated from the docstrings (mkdocstrings, added to the `docs` extra); recipes for a 1D heat code, an inference code and a Monte Carlo sampler, each with a runnable example in `docs/examples/` whose output the tests compare; a convergence plot of the heat example drawn by `scripts/make_figures.py` and checked by `tests/test_figures.py`.
 - **Docs** (issues #33, #34): new page "Checking an AI code review" and roadmap direction (confirm suspected defects first); the AI-review pilot on the results page, home page and README; the README's `scan` summary lists all the static stages; related work adds physics-lint, noether-guard, `convergence` and studies of AI review (fineness, foam-verify and NuclearMC-Verifier added with #35); CONTRIBUTING asks for AI review runs with any model; the Ising plan page is marked done and kept as the design record.
 - **New `scan` stage `flow`** (issue #46; `physverify.flow`, tests in `tests/test_scan_flow.py`): six rules from the corpus study, each from one bug (west coefficient from east spacings, eager numba signature over SciPy, possibly-unbound local, array alias changed in place, `factorial2(2*n - 1)`, `int(tmax / dt)`). On 150 corpus repositories the two rules that cannot follow branches gave 63 and 2 hits, so they are NOTEs; counts in the module docstring.

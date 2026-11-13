@@ -57,15 +57,19 @@ def gci(f_fine: float, f_medium: float, f_coarse: float, r: float, *, safety: fl
 def effective_floor(floor: float, scale: float, rel: float = 1e-13) -> float:
     """Round-off grows with the size of the solution, so the noise floor does too.
 
-    The floor is the larger of the absolute `floor` (right for solutions of size
-    up to about 10) and `rel` times the solution's size (about 500 machine
+    For a solution smaller than 1 the floor shrinks in proportion. Otherwise it
+    is the larger of the absolute `floor` (right for solutions of size up to about 10) and `rel` times the solution's size (about 500 machine
     epsilons, room for round-off accumulated over a few hundred steps). A
     non-finite scale (a diverged run) leaves the floor unchanged so that the
     non-finite error is still reported.
     """
     scale = abs(float(scale))
-    if not np.isfinite(scale):
+    if not np.isfinite(scale) or scale == 0:
         return floor
+    if scale < 1:
+        # round-off is relative: a solution of size 1e-21 has round-off near 1e-37, not 1e-12, so an absolute
+        # floor would call any error on it EXACT (seen with an energy in SI units)
+        return floor * scale
     return max(floor, rel * scale)
 
 
@@ -185,6 +189,14 @@ def check_order(
                     " different problem) rather than to the integrator")
         return OrderResult(FAIL, msg, fitted=0.0, **base)
 
+    # errors within a factor 100 of the floor are partly round-off and pull the fitted order down; leave them out
+    # of the fit when at least two cleaner points remain
+    clean = e_m > 100 * floor
+    near_floor = int(np.count_nonzero(~clean))
+    if near_floor and np.count_nonzero(clean) >= 2:
+        h_m, e_m = h_m[clean], e_m[clean]
+    else:
+        near_floor = 0
     h_f, e_f = h_m[-fit_points:], e_m[-fit_points:]
     p = fit_order(h_f, e_f)
     if p < expected - tol_low:
@@ -204,6 +216,9 @@ def check_order(
     else:
         msg = f"observed order {p:.2f} (expected {expected:g})"
         status = PASS
+    if near_floor:
+        msg += (f"; {near_floor} finest resolution(s) within a factor 100 of the noise floor ({floor:.2g}) were left"
+                " out of the fit as round-off")
     if atol is not None:
         base["acceptance"] += f", and finest error at most {atol:g}"
         finest = float(errs[-1])

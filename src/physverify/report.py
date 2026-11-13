@@ -43,6 +43,13 @@ def load_spec(path):
     folder = str(path.parent)
     if folder not in sys.path:
         sys.path.insert(0, folder)
+    # forget solver modules imported from the spec's folder by an earlier load, so a long-running process (the MCP
+    # server) checks the solver as it is now rather than as it was at the first call
+    for mod_name, mod in list(sys.modules.items()):
+        f = getattr(mod, "__file__", None)
+        if (f and not mod_name.startswith("physverify") and "site-packages" not in f
+                and Path(f).resolve().is_relative_to(path.parent)):
+            del sys.modules[mod_name]
     name = "physverify_spec_" + "".join(c if c.isalnum() else "_" for c in str(path))
     module = load_module_from_path(name, path)
     if not callable(getattr(module, "checks", None)):

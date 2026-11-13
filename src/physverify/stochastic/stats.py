@@ -50,6 +50,8 @@ def t_sf(x: float, nu: float) -> float:
 def t_critical(alpha_two_sided: float, nu: float) -> float:
     """x with P(|T| > x) = alpha, by bisection (cached: checks ask for the same few values)."""
     lo, hi = 0.0, 50.0
+    while 2 * t_sf(hi, nu) > alpha_two_sided and hi < 1e7:  # few degrees of freedom: 636.6 for nu=1, alpha=1e-3
+        lo, hi = hi, 2 * hi
     for _ in range(80):
         mid = 0.5 * (lo + hi)
         if 2 * t_sf(mid, nu) > alpha_two_sided:
