@@ -77,6 +77,26 @@ def test_tiny_invariant_is_not_exact():
     assert not r.ok
 
 
+def test_invariant_zero_up_to_round_off():
+    """A total momentum of 5.6e-17 drifting only by round-off: FAIL with a hint by default, EXACT with qscale."""
+    y0 = [0.0, 0.0, 0.1 + 0.2, -0.3]
+
+    def integrate(source, y0, t_end, n):
+        y = np.array(y0, dtype=float)
+        h = t_end / n
+        for _ in range(n):
+            y[2] += h * 0.7
+            y[3] -= h * 0.7
+        return y
+
+    def momentum(y):
+        return y[2] + y[3]
+
+    default = invariant_study(integrate, momentum, y0, 1.0, [50, 100, 200, 400], 2)
+    assert not default.ok and "qscale" in default.message
+    assert invariant_study(integrate, momentum, y0, 1.0, [50, 100, 200, 400], 2, qscale=0.3).ok
+
+
 def test_small_solution_floor_scales():
     hs = [0.1, 0.05, 0.025, 0.0125]
     errs = [1e-20 * h for h in hs]  # first order, solution of size 1e-18
@@ -103,6 +123,8 @@ def test_value_proportional_to_dt_fails():
 
 def test_t_critical_few_degrees_of_freedom():
     assert t_critical(1e-3, 1.0) == pytest.approx(636.62, rel=1e-3)
+    assert t_critical(1e-4, 1.0) == pytest.approx(6366.2, rel=1e-3)  # Simpson in t gave 11437
+    assert t_critical(1e-4, 30.0) == pytest.approx(4.482, rel=1e-3)
     assert t_critical(0.05, 10.0) == pytest.approx(2.228, rel=1e-3)
 
 

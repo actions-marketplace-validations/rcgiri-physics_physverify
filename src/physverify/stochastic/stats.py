@@ -38,11 +38,14 @@ def t_sf(x: float, nu: float) -> float:
     x = abs(float(x))
     if nu > 1e6:
         return 0.5 * math.erfc(x / math.sqrt(2))
+    # integrate in u = atan(t), dt = du / cos(u)^2: smooth even for the long tails of few degrees of freedom, where
+    # Simpson's rule in t on [0, x] with x in the thousands misses the peak (nu = 1, alpha 1e-4 gave 11437, not 6366)
     n = 4000
-    grid = np.linspace(0.0, x, n + 1)
+    a = math.atan(x)
+    u = np.linspace(0.0, a, n + 1)
     w = np.ones(n + 1)
     w[1:-1:2], w[2:-1:2] = 4, 2
-    integral = float((w * _t_pdf(grid, nu)).sum() * x / (3 * n))
+    integral = float((w * _t_pdf(np.tan(u), nu) / np.cos(u) ** 2).sum() * a / (3 * n))
     return max(0.0, 0.5 - integral)
 
 

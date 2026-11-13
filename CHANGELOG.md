@@ -4,10 +4,10 @@
 
 - **Fixed false verdicts found in a review** (tests in `tests/test_correctness_fixes.py`; each reproduced before the fix):
   - `load_spec` re-imports solver modules from the spec's folder, so the MCP server no longer returns a stale PASS after the solver is edited.
-  - The noise floor shrinks for solutions smaller than 1, and `invariant_study` measures drift relative to the invariant itself, so an Euler stepper on an energy of 1e-21 is no longer EXACT.
+  - The noise floor shrinks for solutions smaller than 1, and `invariant_study` measures drift relative to the invariant itself, so an Euler stepper on an energy of 1e-21 is no longer EXACT. **Behaviour change:** an invariant that is zero only up to round-off (a total momentum of 1e-17) now FAILs with a hint; pass the new `qscale` argument with the size of its terms.
   - `check_order` leaves errors within a factor 100 of the floor out of the fit and says so, so a correct series ending near round-off is no longer a FAIL at a lower order.
   - `check_step_independence` fails a value that goes to zero as dt shrinks (an extra factor of dt).
-  - `t_critical` no longer stops at 50, which was wrong for two chains at small alpha.
+  - `t_critical` no longer stops at 50, which was wrong for two chains at small alpha, and `t_sf` integrates in atan(t), so the long tails of few degrees of freedom are right (nu = 1, alpha = 1e-4: 6366, was 11437).
   - `check_uniform_state` allows round-off on a zero component.
   - `complex_step_derivative` raises when u drops the complex part (abs(), max()) instead of returning 0.
 - `pyproject.toml` no longer describes a seeded-bug benchmark in the installed package.
