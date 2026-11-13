@@ -38,11 +38,14 @@ def t_sf(x: float, nu: float) -> float:
     x = abs(float(x))
     if nu > 1e6:
         return 0.5 * math.erfc(x / math.sqrt(2))
+    # integrate in u = atan(t), dt = du / cos(u)^2: smooth even for the long tails of few degrees of freedom, where
+    # Simpson's rule in t on [0, x] with x in the thousands misses the peak (nu = 1, alpha 1e-4 gave 11437, not 6366)
     n = 4000
-    grid = np.linspace(0.0, x, n + 1)
+    a = math.atan(x)
+    u = np.linspace(0.0, a, n + 1)
     w = np.ones(n + 1)
     w[1:-1:2], w[2:-1:2] = 4, 2
-    integral = float((w * _t_pdf(grid, nu)).sum() * x / (3 * n))
+    integral = float((w * _t_pdf(np.tan(u), nu) / np.cos(u) ** 2).sum() * a / (3 * n))
     return max(0.0, 0.5 - integral)
 
 
@@ -50,6 +53,8 @@ def t_sf(x: float, nu: float) -> float:
 def t_critical(alpha_two_sided: float, nu: float) -> float:
     """x with P(|T| > x) = alpha, by bisection (cached: checks ask for the same few values)."""
     lo, hi = 0.0, 50.0
+    while 2 * t_sf(hi, nu) > alpha_two_sided and hi < 1e7:  # few degrees of freedom: 636.6 for nu=1, alpha=1e-3
+        lo, hi = hi, 2 * hi
     for _ in range(80):
         mid = 0.5 * (lo + hi)
         if 2 * t_sf(mid, nu) > alpha_two_sided:
