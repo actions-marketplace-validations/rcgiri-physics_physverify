@@ -37,6 +37,8 @@ def load_spec(path):
     `physverify.Check`. Its folder is put on sys.path first, so it can import
     the solver next to it.
     """
+    import importlib
+    import importlib.util
     import sys
 
     path = Path(path).resolve()
@@ -50,6 +52,12 @@ def load_spec(path):
         if (f and not mod_name.startswith("physverify") and "site-packages" not in f
                 and Path(f).resolve().is_relative_to(path.parent)):
             del sys.modules[mod_name]
+            # a .pyc validated by mtime and size can survive a same-size edit within the same second; drop it
+            try:
+                Path(importlib.util.cache_from_source(f)).unlink(missing_ok=True)
+            except (NotImplementedError, ValueError, OSError):
+                pass
+    importlib.invalidate_caches()
     name = "physverify_spec_" + "".join(c if c.isalnum() else "_" for c in str(path))
     module = load_module_from_path(name, path)
     if not callable(getattr(module, "checks", None)):

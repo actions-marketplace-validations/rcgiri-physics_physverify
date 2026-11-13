@@ -24,6 +24,37 @@ def test_stale_solver_is_reloaded(tmp_path):
     assert (first, second) == ("1", "2")
 
 
+def test_same_size_edit_with_bytecode_cache(tmp_path):
+    """A same-size edit in the same second must not be hidden by a timestamp-validated .pyc."""
+    import os
+    import sys
+
+    solver = tmp_path / "pv_tmp_solver2.py"
+    solver.write_text("VALUE = 1\n")
+    st = os.stat(solver)
+    (tmp_path / "verify_tmp2.py").write_text(
+        # imported inside the check, after the loader has turned bytecode writing back on, so a .pyc is written
+        "from physverify import Check, Result\n"
+        "def f():\n    import pv_tmp_solver2\n    return Result('PASS', str(pv_tmp_solver2.VALUE))\n"
+        "def checks():\n    return [Check('limit', 'value', f)]\n")
+    old = sys.dont_write_bytecode
+    sys.dont_write_bytecode = False
+    try:
+        assert load_spec(tmp_path / "verify_tmp2.py")[0].run().message == "1"
+        solver.write_text("VALUE = 2\n")
+        os.utime(solver, ns=(st.st_atime_ns, st.st_mtime_ns))  # same size, same mtime
+        assert load_spec(tmp_path / "verify_tmp2.py")[0].run().message == "2"
+    finally:
+        sys.dont_write_bytecode = old
+
+
+def test_monte_carlo_value_going_to_zero():
+    dts = [0.1, 0.05, 0.025, 0.0125]
+    assert not check_step_independence(lambda dt: (3.0 * dt, 1e-4), dts).ok
+    r = check_step_independence(lambda dt: (3.0 * dt, 0.03), dts)
+    assert r.status == "INCONCLUSIVE"
+
+
 def _euler(y0, omega, t_end, n):
     y = np.array(y0, dtype=float)
     h = t_end / n
