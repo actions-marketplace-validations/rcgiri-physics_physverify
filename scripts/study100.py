@@ -123,28 +123,17 @@ def main(argv=None):
     if unid:
         S.append(f'{unid} confirmed claims have no defect ID and are left out of the overlap.')
 
-    # 5. Model agreement, Claude vs Qwen.
-    claude = [m for m in methods if m.startswith('claude-')]
-    qwen = [m for m in methods if m.lower().startswith('qwen')]
-    if claude and qwen:
-        def repos_conf(ms):
-            return {r['repo_id'] for m in ms for r in by[m] if r['label'] == 'confirmed'}
-        def defs_conf(ms):
-            return {r['defect_id'] for m in ms for r in by[m] if r['label'] == 'confirmed' and r['defect_id']}
-        out = ['## 5. Agreement between models (per repository: >=1 confirmed defect)\n']
-        pairs = [('Claude (any of ' + ', '.join(claude) + ')', claude)] + [(m, [m]) for m in claude]
-        t = []
-        for name, ms in pairs:
-            A, B = repos_conf(ms), repos_conf(qwen); N = len(repos)
-            both, oa, ob = len(A & B), len(A - B), len(B - A); nei = N - both - oa - ob
-            po = (both + nei) / N
-            pe = (len(A) / N) * (len(B) / N) + (1 - len(A) / N) * (1 - len(B) / N)
-            kappa = (po - pe) / (1 - pe) if pe < 1 else float('nan')
-            dA, dB = defs_conf(ms), defs_conf(qwen)
-            t.append([name + ' vs ' + qwen[0], both, oa, ob, nei, f'{kappa:.2f}', len(dA & dB), len(dA - dB), len(dB - dA)])
-        out.append(table(['pair', 'repos: both', 'first only', 'Qwen only', 'neither', "Cohen's kappa",
-                          'defects: both', 'first only', 'Qwen only'], t))
-        S.append('\n'.join(out))
+    # 5. Paired comparison on the same posted defects: every method against every other one. Each method
+    #    is scored on the same defects, so the pairs show which defects one finds and the other misses.
+    others = [m for m in methods if m != 'B_script']
+    got = {m: {r['defect_id'] for r in by[m] if r['defect_id'] in posted} for m in others}
+    t = []
+    for i, m1 in enumerate(others):
+        for m2 in others[i + 1:]:
+            A, B = got[m1], got[m2]
+            t.append([m1, m2, len(A & B), len(A - B), len(B - A), len(posted) - len(A | B)])
+    S.append(f'## 5. Paired comparison on the same {len(posted)} posted defects\n\n'
+             + table(['first', 'second', 'both found', 'first only', 'second only', 'neither'], t))
 
     # 6. Repeated runs.
     runs = collections.defaultdict(set)
