@@ -9,7 +9,11 @@ the study's analysis plan: a claim is 'confirmed' only by a run against a refere
 physics; a repository has a false alarm for a method when that method raised at least one 'rejected'
 claim on it. Counts hold within the sample only. Uses only the standard library.
 """
-import argparse, csv, collections, math, sys
+import argparse
+import collections
+import csv
+import math
+import sys
 
 LABELS = ['confirmed', 'rejected', 'not_decidable', 'not_physics', 'unadjudicated', 'not_a_claim']
 Z = 1.959963984540054  # 95 % two-sided
