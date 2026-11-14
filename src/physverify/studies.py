@@ -33,16 +33,22 @@ def reference_study(integrate, rhs_ref, y0, t_end, ns, expected_order, ref_facto
     return check_order(hs, errs, expected_order, **kw)
 
 
-def invariant_study(integrate, quantity, y0, t_end, ns, expected_order, **kw) -> OrderResult:
+def invariant_study(integrate, quantity, y0, t_end, ns, expected_order, *, qscale=None, **kw) -> OrderResult:
     """Relative drift of a conserved quantity at t_end as the step shrinks.
 
     Drift is only required to shrink at least as fast as the scheme's order.
     RK4 on a pendulum, for example, drifts in energy at about order 5, so a
     drift that converges faster than expected is not a failure here.
+
+    The drift is divided by `qscale`, by default |q0| (1 if q0 is exactly 0), so an
+    invariant in SI units (an energy of 1e-21 J) is judged on its own size. For a
+    quantity that is zero up to round-off, such as a total momentum of 1e-17,
+    pass the size of its terms, for example qscale=max(abs(p_i)).
     """
     kw.setdefault("tol_high", float("inf"))
     q0 = float(quantity(np.asarray(y0, dtype=float)))
-    scale = max(abs(q0), 1.0)
+    # relative drift; the earlier max(|q0|, 1) hid any drift of a small invariant (an energy of 1e-21 J was EXACT)
+    scale = float(qscale) if qscale is not None else (abs(q0) if q0 != 0 else 1.0)
     hs, errs = [], []
     for n in within_budget(ns):
         with np.errstate(all="ignore"):
@@ -50,7 +56,11 @@ def invariant_study(integrate, quantity, y0, t_end, ns, expected_order, **kw) ->
             drift = abs(float(quantity(y_end)) - q0) / scale
         hs.append(t_end / n)
         errs.append(drift)
-    return check_order(hs, errs, expected_order, **kw)
+    result = check_order(hs, errs, expected_order, **kw)
+    if qscale is None and q0 != 0 and not result.ok and max(errs, default=0) * abs(q0) < 1e-12:
+        result.message += (f"; the invariant is small (q0 = {q0:.3g}) and the drift is relative to it: if it is zero up"
+                           " to round-off (a total momentum, say), pass qscale with the size of its terms")
+    return result
 
 
 def linear_manufactured(rhs_ref: Callable, y0, slope) -> ManufacturedODE:

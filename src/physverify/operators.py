@@ -91,7 +91,8 @@ def check_uniform_state(step, state, *, n_steps: int = 10, rtol: float = 1e-10, 
         if cur.shape != s0.shape:
             return Result(FAIL, f"step {k} changed the state's size from {s0.size} to {cur.size}")
         dev = np.abs(cur - s0)
-        tol = atol + rtol * np.maximum(np.abs(s0), 1e-300)
+        # a zero component (a still velocity) has no relative scale, so allow round-off on the state's size too
+        tol = atol + rtol * np.abs(s0) + 64 * np.finfo(float).eps * float(np.max(np.abs(s0), initial=0.0))
         if not np.all(np.isfinite(cur)) or np.any(dev > tol):
             i = int(np.nanargmax(np.where(np.isfinite(dev), dev, np.inf)))
             return Result(FAIL, f"a uniform state changed after {k} step(s): component {i} went from {s0[i]:.6g}"

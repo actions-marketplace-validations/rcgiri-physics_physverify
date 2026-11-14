@@ -47,6 +47,22 @@ def check_step_independence(run, dts, *, rtol: float = 0.05, z: float = 4.0) -> 
     changes = np.abs(np.diff(vals))
     noise = z * np.hypot(errs[:-1], errs[1:])
     if changes[-1] <= changes[0] + noise[0] + noise[-1] and changes[-1] < changes[0]:
+        # settling towards zero is not settling: a value proportional to dt or sqrt(dt) (an extra factor of the
+        # step) shrinks too. Estimate the limit from the last three values (Aitken) and require it to stay away from 0.
+        d1, d2 = vals[-2] - vals[-3], vals[-1] - vals[-2]
+        if d1 != 0 and 0 < d2 / d1 < 1:
+            r = d2 / d1
+            limit = vals[-1] + d2 * r / (1 - r)
+            if abs(limit) < 0.05 * np.max(np.abs(vals)):
+                if np.any(errs) and changes[0] <= noise[0]:
+                    return Result(INCONCLUSIVE, f"the extrapolated limit ({limit:.3g}) is near zero, but the changes"
+                                                f" are within the statistical noise: {shown}. Use more samples or a"
+                                                " wider range of steps")
+                k = _power(dts, np.abs(vals)) if np.all(vals != 0) else float("nan")
+                return Result(FAIL, f"the quantity goes to zero as dt shrinks (extrapolated limit {limit:.3g},"
+                                    f" behaves like dt^{k:.2f}): {shown}. A quantity at a fixed physical time should"
+                                    " settle at a nonzero value; an extra factor of dt gives this. If its true value"
+                                    " is zero, this check does not apply")
         return Result(PASS, f"the quantity settles as the time step shrinks (change {changes[0]:.3g} -> {changes[-1]:.3g}): {shown}")
     if np.all(vals != 0):
         k = _power(dts, np.abs(vals))
