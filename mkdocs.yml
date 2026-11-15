@@ -45,6 +45,7 @@ plugins:
 
 exclude_docs: |
   plan_ising.md
+  plan_agent_eval.md
   hooks.py
   examples/
 
