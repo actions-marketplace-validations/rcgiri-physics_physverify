@@ -4,7 +4,7 @@
 
 **A suspected bug in simulation code is a claim. physverify turns it into a run against a reference written from the physics, and gives a verdict with the numbers.**
 
-The claim can come from an AI code review, a colleague, a static check or your own doubt. Reading the code again rarely settles it; a run against an exact solution, a conservation law or a convergence order does. physverify supplies those checks for numerical ODE and PDE code (order of convergence, manufactured solutions, conservation, Runge-Kutta tables, exact references, a few Monte Carlo statistics), a sandbox for running code you do not trust, and plain-language verdicts. It needs only NumPy. Current release: 0.7.0 (v0.7.0); actively developed, contributions welcome.
+The claim can come from an AI code review, a colleague, a static check or your own doubt. Reading the code again rarely settles it; a run against an exact solution, a conservation law or a convergence order does. physverify supplies those checks for numerical ODE and PDE code (order of convergence, manufactured solutions, conservation, Runge-Kutta tables, exact references, a few Monte Carlo statistics), a sandbox for running code you do not trust, and plain-language verdicts. It needs only NumPy. Current release: 0.8.0 (v0.8.0); actively developed, contributions welcome.
 
 ![A claim from a review becomes a run against a reference from the physics, and the run gives a verdict: confirmed, minor, rejected or open](https://raw.githubusercontent.com/rcgiri-physics/physverify/main/docs/images/claim-to-verdict.svg)
 
@@ -32,6 +32,7 @@ Some defects confirmed or fixed by the projects' own maintainers after a report:
 | [PyGMT](https://github.com/GenericMappingTools/pygmt/issues/4960) | strings with a space treated as datetimes | fixed |
 | [EinsteinPy](https://github.com/einsteinpy/einsteinpy/issues/705) | de Sitter scale factor on a spatial coordinate | fixed |
 | [TESPy](https://github.com/oemof/tespy/issues/1127) | entropy pressure term with the wrong units | fixed |
+| [PyAstronomy](https://github.com/sczesla/PyAstronomy/issues/71) | two constants modules defaulted to different unit systems (CGS and SI), so `planck` and other functions were wrong | fixed |
 | [qmat](https://github.com/Parallel-in-Time/qmat/issues/23) | Runge-Kutta schemes labelled one order too high | fixed; now uses `physverify.butcher` in CI |
 
 [The full list](https://rcgiri-physics.github.io/physverify/confirmed/) has more projects and the details.
@@ -64,7 +65,7 @@ Code from other people runs only in the [sandbox](https://github.com/rcgiri-phys
 A failed check fails the job, like a broken unit test ([CI guide](https://rcgiri-physics.github.io/physverify/ci/)):
 
 ```yaml
-      - uses: rcgiri-physics/physverify@v0.7.0
+      - uses: rcgiri-physics/physverify@v0.8.0
         with:
           specs: tests/verify_*.py
 ```

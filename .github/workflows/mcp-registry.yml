@@ -1,0 +1,62 @@
+name: mcp registry
+
+# Publishes packaging/mcp-registry/server.json to the official MCP registry after the
+# publish workflow has put the release on PyPI. The registry checks that the PyPI
+# README contains `mcp-name: io.github.rcgiri-physics/physverify`, so this must run
+# after the upload. Login is GitHub OIDC: no token is stored in the repository.
+# Guide: github.com/modelcontextprotocol/registry, docs/modelcontextprotocol-io/github-actions.mdx
+on:
+  workflow_run:
+    workflows: [publish]
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  MCP_PUBLISHER_VERSION: v1.8.7  # bump on purpose; never the mutable "latest"
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: server.json must name the package version
+        run: |
+          version=$(grep -m1 '^version = ' pyproject.toml | cut -d'"' -f2)
+          test "$(jq -r .version packaging/mcp-registry/server.json)" = "$version"
+          test "$(jq -r '.packages[0].version' packaging/mcp-registry/server.json)" = "$version"
+          echo "VERSION=$version" >> "$GITHUB_ENV"
+
+      - name: The version must be on PyPI
+        run: |
+          for i in 1 2 3 4 5 6; do
+            curl --fail --silent "https://pypi.org/pypi/physverify/$VERSION/json" > /dev/null && exit 0
+            sleep 30
+          done
+          echo "physverify $VERSION is not on PyPI"; exit 1
+
+      - uses: sigstore/cosign-installer@v4.1.2
+
+      - name: Download and verify mcp-publisher
+        run: |
+          set -euo pipefail
+          archive="mcp-publisher_linux_amd64.tar.gz"
+          base="https://github.com/modelcontextprotocol/registry/releases/download/${MCP_PUBLISHER_VERSION}"
+          curl --fail --location -o "$archive" "$base/$archive"
+          curl --fail --location -o "$archive.sigstore.json" "$base/$archive.sigstore.json"
+          cosign verify-blob "$archive" --bundle "$archive.sigstore.json" \
+            --certificate-identity "https://github.com/modelcontextprotocol/registry/.github/workflows/release.yml@refs/tags/${MCP_PUBLISHER_VERSION}" \
+            --certificate-oidc-issuer "https://token.actions.githubusercontent.com"
+          tar xzf "$archive" mcp-publisher
+
+      - name: Log in with GitHub OIDC
+        run: ./mcp-publisher login github-oidc
+
+      - name: Publish
+        working-directory: packaging/mcp-registry
+        run: ../../mcp-publisher publish
