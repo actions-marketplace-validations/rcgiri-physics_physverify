@@ -72,6 +72,20 @@ A failed check fails the job, like a broken unit test ([CI guide](https://rcgiri
 
 [Getting started](https://rcgiri-physics.github.io/physverify/getting-started/) · [Recipes](https://rcgiri-physics.github.io/physverify/recipes/) · [What a PASS means](https://rcgiri-physics.github.io/physverify/assumptions/) · [Troubleshooting](https://rcgiri-physics.github.io/physverify/troubleshooting/) · [API](https://rcgiri-physics.github.io/physverify/api/)
 
+## Use it from an AI assistant (MCP)
+
+`physverify mcp` is a local MCP server with two tools: `run_checks` runs a project's `verify_*.py` specs, and `confirm_claim` judges one suspected defect ([confirm](https://rcgiri-physics.github.io/physverify/confirm/)). Install physverify, then add this to your client's MCP settings (Claude Desktop, Cursor, Windsurf, Cline, Qoder and others; VS Code, Codex CLI and Claude Code are in [the guide](https://rcgiri-physics.github.io/physverify/agent/)):
+
+```json
+{
+  "mcpServers": {
+    "physverify": { "command": "physverify", "args": ["mcp"] }
+  }
+}
+```
+
+The tools run your project's Python code on your computer, so use them on projects you trust. The server is in the [official MCP registry](https://registry.modelcontextprotocol.io) as `io.github.rcgiri-physics/physverify`.
+
 ## Other evidence
 
 - **Seeded bugs:** of 37 bugs added one at a time to five small solvers, the checks flagged 35 (plain "compare with one answer" tests: 27), with no false alarms. The same person wrote the bugs and the checks, so this shows the tool works as designed, not how it does on other code. `python scripts/reproduce_all.py` regenerates the tables.
