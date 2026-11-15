@@ -276,3 +276,44 @@ def test_init_refuses_a_line_below_one(tmp_path):
     path = tmp_path / "claim_x.py"
     assert cli.main(["confirm", "init", str(path), "--text", "t", "--file", "f.py", "--line", "0"]) == 2
     assert not path.exists()
+
+
+def test_an_interrupt_while_waiting_stops_the_child_and_its_processes(tmp_path, monkeypatch):
+    import subprocess
+    import time
+
+    from physverify.isolate import run_isolated
+
+    beat = tmp_path / "grandchild_heartbeat"
+    code = (f"import time, pathlib\nfor i in range(150):\n    pathlib.Path({str(beat)!r}).write_text(str(i))\n"
+            "    time.sleep(0.2)\n")
+    extra = f"import subprocess, sys\nGRAND = subprocess.Popen([sys.executable, '-c', {code!r}])\n"
+    path = write_claim(tmp_path, checks=("HANG",), extra=extra)
+    started = []
+    real = subprocess.Popen.communicate
+
+    def interrupted(self, *args, **kwargs):  # Ctrl-C arriving while the parent waits
+        if started:
+            return real(self, *args, **kwargs)
+        started.append(self)
+        deadline = time.monotonic() + 30
+        while not beat.exists() and time.monotonic() < deadline:
+            time.sleep(0.1)
+        raise KeyboardInterrupt
+
+    monkeypatch.setattr(subprocess.Popen, "communicate", interrupted)
+    with pytest.raises(KeyboardInterrupt):
+        run_isolated("claim", [path.resolve()], 60, cwd=tmp_path)
+    assert beat.exists()
+    started[0].wait(timeout=10)  # the child is gone
+    first = beat.read_text()
+    time.sleep(1.5)
+    assert beat.read_text() == first  # and so is the process it started
+
+
+@pytest.mark.parametrize("value", [0, True, False])
+def test_zero_and_booleans_are_not_timeouts(value):
+    from physverify.confirm import parse_timeout
+
+    with pytest.raises(ValueError, match="timeout"):
+        parse_timeout(value)

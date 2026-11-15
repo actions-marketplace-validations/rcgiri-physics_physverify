@@ -55,6 +55,9 @@ def run_isolated(mode: str, args, timeout: float | None, cwd=None) -> dict:
         except subprocess.TimeoutExpired:  # a process outside the tree still holds the pipes
             stderr = b""
         return {"status": "timeout", "stderr_tail": _tail(stderr)}
+    except BaseException:  # Ctrl-C no longer reaches a child in its own session, so stop the tree here
+        _kill_tree(proc)
+        raise
     out = _text(stdout)
     i = out.rfind(MARKER)
     if i < 0:

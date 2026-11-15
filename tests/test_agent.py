@@ -252,3 +252,12 @@ def test_mcp_a_non_numeric_timeout_is_a_tool_error(tool, tmp_path):
     result = handle({"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": tool, "arguments": arguments}})
     assert "error" not in result
     assert result["result"]["isError"] is True and "timeout" in result["result"]["content"][0]["text"]
+
+
+@pytest.mark.parametrize("tool", ["run_checks", "confirm_claim"])
+@pytest.mark.parametrize("timeout", [0, True, -3])
+def test_mcp_a_zero_or_boolean_timeout_is_refused_not_replaced(tool, timeout, tmp_path):
+    arguments = {"timeout": timeout, "project": str(tmp_path), "claim": str(tmp_path / "claim.py"), "trusted": True}
+    (tmp_path / "verify_x.py").write_text("def checks():\n    return []\n")
+    result = handle({"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": tool, "arguments": arguments}})
+    assert result["result"]["isError"] is True and "timeout" in result["result"]["content"][0]["text"]

@@ -194,6 +194,8 @@ def _provenance(claim_path: Path, claim: dict) -> dict:
 
 def parse_timeout(value) -> float:
     """A time limit in seconds: a finite number above zero, else ValueError saying so."""
+    if isinstance(value, bool):  # float(True) is 1.0, which no one means as a time limit
+        raise ValueError(f"the timeout must be a number of seconds, not {value!r}")
     try:
         t = float(value)
     except (TypeError, ValueError):

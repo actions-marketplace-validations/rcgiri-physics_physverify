@@ -222,7 +222,7 @@ def _run_checks_tool(arguments: dict) -> dict:
     from .confirm import parse_timeout
 
     try:
-        timeout = parse_timeout(arguments.get("timeout") or RUN_TIMEOUT)
+        timeout = parse_timeout(RUN_TIMEOUT if arguments.get("timeout") is None else arguments["timeout"])
     except ValueError as exc:
         return {"content": [{"type": "text", "text": f"run_checks: {exc}"}], "isError": True}
     report = run_specs_isolated(specs, timeout)
@@ -257,7 +257,7 @@ def _confirm_claim_tool(arguments: dict) -> dict:
     if not isinstance(claim, str) or not claim:
         return {"content": [{"type": "text", "text": "confirm_claim needs `claim`, the path of a claim file."}], "isError": True}
     try:
-        timeout = parse_timeout(arguments.get("timeout") or DEFAULT_TIMEOUT)
+        timeout = parse_timeout(DEFAULT_TIMEOUT if arguments.get("timeout") is None else arguments["timeout"])
     except ValueError as exc:
         return {"content": [{"type": "text", "text": f"confirm_claim: {exc}"}], "isError": True}
     try:
