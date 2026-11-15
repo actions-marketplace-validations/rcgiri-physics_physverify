@@ -1,0 +1,2 @@
+claim_id,repo_key,old_hand_verdict,new_hand_verdict,date,reason
+c2fda0a914d,R015,not decidable,confirmed,2026-11-15,"Read by hand after scoring: both arms independently computed the packet-averaged transmission (textbook rectangular barrier averaged over the packet's |phi(k)|^2) and found it 1.5x the code's plane-wave value at width 3 and 2.2x at width 4, with agreement at width 1. The claimed comparison error is shown by a run; the earlier hand check had not computed the average."

@@ -1,10 +1,10 @@
-# Agent evaluation of `confirm`: scored results (before hand reading)
+# Agent evaluation of `confirm`: scored results
 
 Design: [docs/plan_agent_eval.md](../../docs/plan_agent_eval.md). Run on 2026-11-15 with Claude Sonnet 5.5, one fresh agent per claim and arm, physverify frozen at `5f314dc`. One row per session in `rows.csv` (claim ID, release repository key, arm, verdict, hand verdict, seconds, sandbox runs). Tables from `score.py`; no model and no person judged a run.
 
-**Status:** these are the tables before the disagreements are read by a person (section 4 of the design). Any hand verdict changed after that reading will be listed here with its date and reason, and the tables given both ways.
+**Status:** the 9 disagreements were read by a person on 2026-11-15. One hand verdict changed (`hand_changes.csv`): claim `c2fda0a914d` from not decidable to confirmed, because both arms computed the same packet-averaged reference and found the claimed gap. The tables are given before and after that change; the other eight hand verdicts stand.
 
-## Tables (22 claims; counts within this sample only)
+## Before the reading by hand (22 claims; counts within this sample only)
 
 | Measure | Arm S (scripts only) | Arm C (`confirm`) |
 |---|---|---|
@@ -22,6 +22,18 @@ Paired, claim by claim: arm C right and arm S wrong on 1 claim; arm S right and 
 - **Arm C's one miss:** the claim file declared a convention the repository does not state, so the verdict rule gave not decidable where the hand verdict is confirmed.
 - **The 7 claims with a hand verdict of not decidable:** both arms settled all 7, so neither scores on them in the agreement row. The two arms gave the same verdict on 4 of them and different verdicts on 3 (`c4acc207e93`, `c8f61364c54`, `cabae897751`). Whether either is right needs the reading by hand.
 - No timeouts. The audit of all 44 transcripts found no repository code run outside the sandbox (minor deviations listed in the private run log).
+
+## After the reading by hand (one hand verdict changed)
+
+| Measure | Arm S | Arm C |
+|---|---|---|
+| Agreement with the hand verdict | 15 of 22 | 15 of 22 |
+| False confirmation | 0 of 5 | 0 of 5 |
+| False rejection | 1 of 11 | 0 of 11 |
+| Left open | 0 of 16 | 1 of 16 |
+| Right on the 16 claims with a settled hand verdict | 15 | 15 |
+
+The paired result is unchanged: 1 claim each way.
 
 ## What this does and does not show
 
