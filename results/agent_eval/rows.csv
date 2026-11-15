@@ -1,0 +1,45 @@
+claim_id,repo_key,arm,verdict,note,hand,seconds,runs
+c0697a62b35,R056,C,rejected,last ledger line,not decidable,116.1,2
+c095897df2b,R088,C,confirmed,last ledger line,confirmed,51.7,1
+c1fee5034d4,R053,C,confirmed,last ledger line,confirmed,183.3,3
+c2fda0a914d,R015,C,confirmed,last ledger line,not decidable,86.8,2
+c30b6cacc14,R047,C,rejected,last ledger line,rejected,77.4,1
+c3307a8aea1,R053,C,confirmed,last ledger line,confirmed,73.3,2
+c4acc207e93,R006,C,rejected,last ledger line,not decidable,735.4,3
+c6149c224ab,R066,C,not decidable,last ledger line,confirmed,77.1,1
+c64882b6eeb,R057,C,confirmed,last ledger line,confirmed,75.7,1
+c6b2832994e,R052,C,rejected,last ledger line,rejected,145.8,2
+c7f32972bf7,R072,C,rejected,last ledger line,not decidable,91.1,2
+c853e577a5a,R052,C,rejected,last ledger line,rejected,128.1,2
+c8f61364c54,R072,C,confirmed,last ledger line,not decidable,304.8,2
+ca61f1b2bc0,R092,C,confirmed,last ledger line,confirmed,103.9,4
+cabae897751,R065,C,rejected,last ledger line,not decidable,66.5,1
+cb2f9199ba8,R027,C,rejected,last ledger line,not decidable,58.9,1
+cbc1bf55954,R015,C,confirmed,last ledger line,confirmed,102.4,2
+cc70f22e3cf,R075,C,rejected,last ledger line,rejected,340.7,2
+cca8515756d,R007,C,rejected,last ledger line,rejected,53.4,1
+cd99627005a,R092,C,confirmed,last ledger line,confirmed,90.2,2
+cf90f19b202,R088,C,confirmed,last ledger line,confirmed,102.7,1
+cfd9352874f,R056,C,confirmed,last ledger line,confirmed,62.8,1
+c0697a62b35,R056,S,rejected,VERDICT line,not decidable,111.1,3
+c095897df2b,R088,S,confirmed,VERDICT line,confirmed,31.2,1
+c1fee5034d4,R053,S,confirmed,VERDICT line,confirmed,56.1,1
+c2fda0a914d,R015,S,confirmed,VERDICT line,not decidable,52.0,1
+c30b6cacc14,R047,S,rejected,VERDICT line,rejected,66.5,1
+c3307a8aea1,R053,S,confirmed,VERDICT line,confirmed,39.3,1
+c4acc207e93,R006,S,confirmed,VERDICT line,not decidable,412.4,1
+c6149c224ab,R066,S,confirmed,VERDICT line,confirmed,38.6,1
+c64882b6eeb,R057,S,confirmed,VERDICT line,confirmed,51.3,1
+c6b2832994e,R052,S,rejected,VERDICT line,rejected,49.1,1
+c7f32972bf7,R072,S,rejected,VERDICT line,not decidable,112.8,1
+c853e577a5a,R052,S,rejected,VERDICT line,rejected,39.4,1
+c8f61364c54,R072,S,rejected,VERDICT line,not decidable,190.8,1
+ca61f1b2bc0,R092,S,confirmed,VERDICT line,confirmed,37.6,1
+cabae897751,R065,S,confirmed,VERDICT line,not decidable,35.1,1
+cb2f9199ba8,R027,S,rejected,VERDICT line,not decidable,35.1,1
+cbc1bf55954,R015,S,rejected,VERDICT line,confirmed,62.1,1
+cc70f22e3cf,R075,S,rejected,VERDICT line,rejected,104.4,1
+cca8515756d,R007,S,rejected,VERDICT line,rejected,28.0,1
+cd99627005a,R092,S,confirmed,VERDICT line,confirmed,36.5,1
+cf90f19b202,R088,S,confirmed,VERDICT line,confirmed,54.5,1
+cfd9352874f,R056,S,confirmed,VERDICT line,confirmed,30.1,1
