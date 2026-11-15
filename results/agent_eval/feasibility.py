@@ -12,11 +12,11 @@ may execute the imported modules' top-level code), not the file itself. Writes f
 POOL_CSV.
 """
 import ast
-import os
-import tempfile
 import csv
+import os
 import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 SANDBOX = Path(__file__).resolve().parents[2] / "sandbox" / "sandbox.py"
