@@ -196,7 +196,13 @@ def _seconds(text) -> float:
 def _cmd_confirm(args) -> int:
     import json
 
-    from .confirm import EXIT_CODES, Refused, confirm_claim, format_verdict, write_template
+    from .confirm import (
+        EXIT_CODES,
+        Refused,
+        confirm_claim,
+        format_verdict,
+        write_template,
+    )
 
     if args.claim == "init":
         if not args.init_path or args.text is None or args.file is None or args.line is None:

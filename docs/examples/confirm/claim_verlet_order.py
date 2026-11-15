@@ -1,7 +1,7 @@
 """Claim: velocity Verlet in verlet.py is only first order. Expected verdict: rejected."""
 import numpy as np
-
 import verlet  # the code under test
+
 from physverify import Check, reference_study
 
 CLAIM = {

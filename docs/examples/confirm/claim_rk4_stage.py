@@ -4,9 +4,9 @@ The claim file reads `half_life` as the decay rate. decay.py documents that its 
 half-life (rate = ln 2 / half_life), so the reference below solves a different equation and the control
 fails: the test itself is wrong, and nothing can be said about the claim until the reference is fixed.
 """
+import decay  # the code under test
 import numpy as np
 
-import decay  # the code under test
 from physverify import Check, ManufacturedODE, mms_order_study
 
 CLAIM = {

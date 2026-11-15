@@ -1,7 +1,7 @@
 """Claim: the damping term in oscillator.py has the wrong sign. Expected verdict: confirmed."""
 import numpy as np
-
 import oscillator  # the code under test
+
 from physverify import Check, ManufacturedODE, mms_order_study
 
 CLAIM = {

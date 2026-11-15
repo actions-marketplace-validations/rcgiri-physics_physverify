@@ -251,7 +251,14 @@ def run_specs_isolated(specs, timeout: float | None = RUN_TIMEOUT) -> dict:
 
 def _confirm_claim_tool(arguments: dict) -> dict:
     """confirm_claim: the same runner and verdict rules as `physverify confirm`."""
-    from .confirm import DEFAULT_LEDGER, DEFAULT_TIMEOUT, Refused, confirm_claim, format_verdict, parse_timeout
+    from .confirm import (
+        DEFAULT_LEDGER,
+        DEFAULT_TIMEOUT,
+        Refused,
+        confirm_claim,
+        format_verdict,
+        parse_timeout,
+    )
 
     claim = arguments.get("claim")
     if not isinstance(claim, str) or not claim:
