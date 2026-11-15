@@ -220,3 +220,59 @@ def test_init_writes_a_template_that_will_not_run_until_filled_in(tmp_path, caps
     assert cli.main(["confirm", "init", str(path), "--text", "t", "--file", "f", "--line", "1"]) == 2  # no overwrite
     with pytest.raises(ValueError):
         write_template(tmp_path / "claim.txt", "t", "f", 1)
+
+
+# --- review fixes ---
+
+def test_output_after_the_result_at_exit_does_not_change_the_verdict(tmp_path):
+    extra = "import atexit, os\natexit.register(lambda: os.write(1, b'{\"late\": 1} printed at exit\\n'))\n"
+    r = judge(write_claim(tmp_path, checks=("FAIL",), extra=extra), tmp_path)
+    assert r["verdict"] == CONFIRMED
+
+
+def test_a_timeout_also_stops_the_processes_the_code_started(tmp_path):
+    import time
+
+    beat = tmp_path / "grandchild_heartbeat"  # rewritten every 0.2 s while the grandchild lives (30 s at most)
+    code = (f"import time, pathlib\nfor i in range(150):\n    pathlib.Path({str(beat)!r}).write_text(str(i))\n"
+            "    time.sleep(0.2)\n")
+    extra = f"import subprocess, sys\nGRAND = subprocess.Popen([sys.executable, '-c', {code!r}])\n"
+    start = time.monotonic()
+    r = judge(write_claim(tmp_path, checks=("HANG",), extra=extra), tmp_path, timeout=8)
+    assert time.monotonic() - start < 20  # not held up by a grandchild that keeps the output pipes open
+    assert r["verdict"] == UNDECIDED and r["reason"].startswith("timed out")
+    assert beat.exists()  # the grandchild did start before the time limit
+    first = beat.read_text()
+    time.sleep(1.5)
+    assert beat.read_text() == first  # and it is no longer running
+
+
+def test_an_annotated_claim_and_imported_functions_are_accepted(tmp_path):
+    (tmp_path / "solver.py").write_text("def value():\n    return 1\n")
+    (tmp_path / "helpers.py").write_text(
+        "from physverify import Check, Result\n"
+        "def control():\n    return Check('limit', 'control case', lambda: Result('PASS'))\n"
+        "def checks():\n    return [Check('limit', 'check 0', lambda: Result('FAIL', 'wrong'))]\n")
+    path = tmp_path / "claim.py"
+    path.write_text(f"CLAIM: dict = {BASE_CLAIM!r}\nfrom helpers import control, checks\n")
+    assert judge(path, tmp_path)["verdict"] == CONFIRMED
+
+
+@pytest.mark.parametrize("timeout", [0, -1, "abc", float("inf")])
+def test_a_bad_timeout_is_refused(tmp_path, timeout):
+    with pytest.raises(ValueError, match="timeout"):
+        judge(write_claim(tmp_path), tmp_path, timeout=timeout)
+    assert not (tmp_path / "ledger.jsonl").exists()
+
+
+@pytest.mark.parametrize("value", ["0", "-5", "abc"])
+def test_the_command_refuses_a_bad_timeout(tmp_path, value):
+    with pytest.raises(SystemExit) as exc:
+        cli.main(["confirm", str(write_claim(tmp_path)), "--trusted", "--timeout", value])
+    assert exc.value.code == 2
+
+
+def test_init_refuses_a_line_below_one(tmp_path):
+    path = tmp_path / "claim_x.py"
+    assert cli.main(["confirm", "init", str(path), "--text", "t", "--file", "f.py", "--line", "0"]) == 2
+    assert not path.exists()

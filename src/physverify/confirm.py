@@ -50,15 +50,21 @@ def read_claim(path) -> dict:
         raise ClaimError(f"cannot read {path}: {exc}") from None
     except SyntaxError as exc:
         raise ClaimError(f"{path} is not valid Python: line {exc.lineno}: {exc.msg}") from None
-    claim, functions = None, set()
+    claim, functions = None, set()  # `functions`: every top-level name, so control/checks may be imported
     for node in tree.body:
-        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "CLAIM" for t in node.targets):
+        targets = (node.targets if isinstance(node, ast.Assign)
+                   else [node.target] if isinstance(node, ast.AnnAssign) and node.value is not None else [])
+        names = {t.id for t in targets if isinstance(t, ast.Name)}
+        if "CLAIM" in names:  # CLAIM = {...} or CLAIM: dict = {...}
             try:
                 claim = ast.literal_eval(node.value)
             except (ValueError, TypeError, SyntaxError, RecursionError):
                 raise ClaimError(f"{path.name}: CLAIM must be a literal dict (strings and numbers only)") from None
-        elif isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        functions |= names
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             functions.add(node.name)
+        elif isinstance(node, (ast.Import, ast.ImportFrom)):
+            functions |= {(a.asname or a.name).split(".")[0] for a in node.names}
     if claim is None:
         raise ClaimError(f"{path.name} does not define CLAIM")
     if not isinstance(claim, dict):
@@ -79,7 +85,7 @@ def read_claim(path) -> dict:
         raise ClaimError(f"{path.name}: CLAIM['repo'] must be a path (a string)")
     for name in ("control", "checks"):
         if name not in functions:
-            raise ClaimError(f"{path.name} does not define {name}()")
+            raise ClaimError(f"{path.name} does not define {name}() (define it, or import it, at the top level)")
     return claim
 
 
@@ -186,6 +192,17 @@ def _provenance(claim_path: Path, claim: dict) -> dict:
 
 # --- the command ---
 
+def parse_timeout(value) -> float:
+    """A time limit in seconds: a finite number above zero, else ValueError saying so."""
+    try:
+        t = float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"the timeout must be a number of seconds, not {value!r}") from None
+    if not (t > 0 and t != float("inf")):
+        raise ValueError(f"the timeout must be a finite number of seconds above 0, not {value!r}")
+    return t
+
+
 def is_trusted(trusted: bool, environ=None) -> bool:
     """confirm runs code only when the user says it is trusted or it runs inside the sandbox."""
     environ = os.environ if environ is None else environ
@@ -212,6 +229,7 @@ def confirm_claim(path, *, trusted: bool = False, ledger=DEFAULT_LEDGER, timeout
 
     if not is_trusted(trusted):
         raise Refused(REFUSAL)
+    timeout = parse_timeout(timeout)
     path = Path(path)
     record = {"ledger_version": LEDGER_VERSION,
               "date": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds"),
@@ -309,6 +327,8 @@ def write_template(path, text: str, file: str, line: int) -> Path:
     path = Path(path)
     if path.suffix != ".py":
         raise ValueError(f"{path}: a claim file must end in .py")
+    if isinstance(line, bool) or not isinstance(line, int) or line < 1:
+        raise ValueError(f"--line must be a line number (a positive integer), not {line!r}")
     if path.exists():
         raise FileExistsError(f"{path} exists; not overwritten")
     path.parent.mkdir(parents=True, exist_ok=True)

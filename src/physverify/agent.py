@@ -219,7 +219,13 @@ def _run_checks_tool(arguments: dict) -> dict:
         specs = find_specs(Path(arguments.get("project") or "."))
     if not specs:
         return {"content": [{"type": "text", "text": "No spec files found (verify_*.py defining checks())."}], "isError": True}
-    report = run_specs_isolated(specs, float(arguments.get("timeout") or RUN_TIMEOUT))
+    from .confirm import parse_timeout
+
+    try:
+        timeout = parse_timeout(arguments.get("timeout") or RUN_TIMEOUT)
+    except ValueError as exc:
+        return {"content": [{"type": "text", "text": f"run_checks: {exc}"}], "isError": True}
+    report = run_specs_isolated(specs, timeout)
     failed = bool(report["summary"]["not_ok"] or report["load_errors"])
     text = (failure_summary(report) + "\n\n" if failed else "") + json.dumps(report, indent=2)
     return {"content": [{"type": "text", "text": text}], "isError": False}
@@ -245,15 +251,19 @@ def run_specs_isolated(specs, timeout: float | None = RUN_TIMEOUT) -> dict:
 
 def _confirm_claim_tool(arguments: dict) -> dict:
     """confirm_claim: the same runner and verdict rules as `physverify confirm`."""
-    from .confirm import DEFAULT_LEDGER, DEFAULT_TIMEOUT, Refused, confirm_claim, format_verdict
+    from .confirm import DEFAULT_LEDGER, DEFAULT_TIMEOUT, Refused, confirm_claim, format_verdict, parse_timeout
 
     claim = arguments.get("claim")
     if not isinstance(claim, str) or not claim:
         return {"content": [{"type": "text", "text": "confirm_claim needs `claim`, the path of a claim file."}], "isError": True}
     try:
+        timeout = parse_timeout(arguments.get("timeout") or DEFAULT_TIMEOUT)
+    except ValueError as exc:
+        return {"content": [{"type": "text", "text": f"confirm_claim: {exc}"}], "isError": True}
+    try:
         record = confirm_claim(claim, trusted=arguments.get("trusted") is True,
                                ledger=arguments.get("ledger") or DEFAULT_LEDGER,
-                               timeout=float(arguments.get("timeout") or DEFAULT_TIMEOUT),
+                               timeout=timeout,
                                allow_dependent_reference=arguments.get("allow_dependent_reference") or None)
     except Refused as exc:
         return {"content": [{"type": "text", "text": str(exc)}], "isError": True}

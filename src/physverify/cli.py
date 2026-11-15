@@ -183,6 +183,16 @@ def _cmd_scan(args) -> int:
     return 1 if any(f.level == WARN for f in findings) else 0
 
 
+def _seconds(text) -> float:
+    """argparse type for a time limit: a finite number of seconds above 0."""
+    from .confirm import parse_timeout
+
+    try:
+        return parse_timeout(text)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError(str(exc)) from None
+
+
 def _cmd_confirm(args) -> int:
     import json
 
@@ -279,7 +289,7 @@ def build_parser() -> argparse.ArgumentParser:
     cf.add_argument("claim", help="the claim file (a .py file defining CLAIM, control() and checks()), or 'init'")
     cf.add_argument("init_path", nargs="?", metavar="CLAIM.py", help="with init: the claim file to write")
     cf.add_argument("--ledger", default="confirm_ledger.jsonl", help="JSON-lines file each run is appended to (default confirm_ledger.jsonl)")
-    cf.add_argument("--timeout", type=float, default=300.0, help="seconds for the whole run before it is stopped (default 300)")
+    cf.add_argument("--timeout", type=_seconds, default=300.0, help="seconds for the whole run before it is stopped (default 300)")
     cf.add_argument("--json", metavar="FILE", help="write the ledger line as JSON to FILE, or to stdout with - (instead of the text verdict)")
     cf.add_argument("--trusted", action="store_true", help="the code under test is trusted, so it may run outside the sandbox")
     cf.add_argument("--allow-dependent-reference", metavar="REASON",

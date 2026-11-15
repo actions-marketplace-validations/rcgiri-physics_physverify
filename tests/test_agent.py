@@ -243,3 +243,12 @@ def test_mcp_confirm_claim_needs_trust_and_gives_the_verdict(tmp_path, monkeypat
     done = call(claim=str(claims / "claim_damping_sign.py"), ledger=str(ledger), trusted=True)
     assert done["isError"] is False and done["content"][0]["text"].startswith("confirmed (impact: used)")
     assert json.loads(ledger.read_text())["verdict"] == "confirmed"
+
+
+@pytest.mark.parametrize("tool", ["run_checks", "confirm_claim"])
+def test_mcp_a_non_numeric_timeout_is_a_tool_error(tool, tmp_path):
+    arguments = {"timeout": "abc", "project": str(tmp_path), "claim": str(tmp_path / "claim.py"), "trusted": True}
+    (tmp_path / "verify_x.py").write_text("def checks():\n    return []\n")
+    result = handle({"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": tool, "arguments": arguments}})
+    assert "error" not in result
+    assert result["result"]["isError"] is True and "timeout" in result["result"]["content"][0]["text"]

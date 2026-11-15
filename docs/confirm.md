@@ -10,7 +10,7 @@ It does **not** find defects, and it does **not** write the reference. A person 
 
 ## 1. The claim file
 
-A claim file is a Python file, like a spec. Its folder is put on `sys.path`, so it can import the solver next to it. It defines three things.
+A claim file is a Python file, like a spec. Its folder is put on `sys.path`, so it can import the solver next to it. It defines three things at its top level. `CLAIM` may carry a type annotation (`CLAIM: dict = {...}`); `control` and `checks` may be defined there or imported (`from helpers import control, checks`). A name bound only inside an `if` block or a function is not seen, because the file is read before it runs.
 
 ### `CLAIM`
 
@@ -96,14 +96,10 @@ Notes on the rules:
 - An ERROR in a check (the code under test raised an exception) is not counted as confirmation, because the exception may come from the adapter rather than from the claimed defect. The message says so, and the person can turn the crash into a check if the crash is the defect.
 - `impact` is printed next to the verdict and **never changes it**. "Confirmed, latent" is how the study's "real but minor" is expressed: the defect is real, and the repository's own runs do not reach it.
 
-The printed verdict is one line, then one line per check, each saying in plain words what was tested:
+The printed verdict is one line, then one line for the control and one per check, each saying in plain words what was tested, then the claim and its reference. This is the output of the first worked example (section 8):
 
 ```
-confirmed (impact: used): the control passed and 1 of 1 checks failed
-  control  PASS  zero right-hand side, where the half step does not matter: error 0 at every step count
-  check    FAIL  midpoint rule is second order: observed order 1.00 against the expected 2 (h = 1/16 ... 1/256)
-claim: integrate() advances the half step by h instead of h/2, so the method is first order
-reference: Hairer, Norsett and Wanner, Solving ODEs I, sec. II.1
+--8<-- "docs/examples/output/confirm_claim_damping_sign.txt"
 ```
 
 ## 3. The ledger
@@ -136,9 +132,9 @@ The repository root for `file` is found from the claim file's folder (or from `$
 
 ## 4. Isolation and time limit
 
-Each claim runs in a fresh Python subprocess (`physverify.isolate`), started in the claim's folder with that folder first on `sys.path`. The child writes no `.pyc` files, so a same-size edit made within one second is still seen, and nothing is added to the repository. The parent waits at most `--timeout` seconds (default 300) for the whole run, control and checks together, then kills the child. A timeout gives "not decidable: timed out after S s" and the checks that had finished are not reported, because the child is killed before it reports.
+Each claim runs in a fresh Python subprocess (`physverify.isolate`), started in the claim's folder with that folder first on `sys.path`. The child writes no `.pyc` files, so a same-size edit made within one second is still seen, and nothing is added to the repository. The parent waits at most `--timeout` seconds (default 300) for the whole run, control and checks together, then kills the child and every process it started (`taskkill /T` on Windows, the child's own process group elsewhere; a process that detaches itself on purpose can escape). A non-numeric, zero or negative `--timeout` is refused. A timeout gives "not decidable: timed out after S s" and the checks that had finished are not reported, because the child is killed before it reports.
 
-The child writes its results as one JSON object on stdout after a marker line, and sends everything the code under test prints to stderr, so solver output cannot corrupt the result. stderr is kept (the last 2000 characters) in the ledger line as `stderr_tail` when the run ends in an error or a timeout.
+The child writes its results as one JSON object on stdout after a marker line, and sends everything the code under test prints to stderr, so solver output cannot corrupt the result. Only the first JSON value after the marker is read, so text the code writes to the real stdout at exit (an `atexit` handler, a C or Fortran library flushing its buffer) is ignored. stderr is kept (the last 2000 characters) in the ledger line as `stderr_tail` when the run ends in an error or a timeout.
 
 Because each run starts a new interpreter, an edit to the solver between two runs is always seen. This also removes the stale-module problem of the long-running MCP server (`agent.py`), where `load_spec` has to clear `sys.modules` and `.pyc` files by hand. The MCP tool `run_checks` uses the same runner, with its own time limit (`timeout` argument, default 600 s); a run that is stopped is reported as a load error of each spec.
 

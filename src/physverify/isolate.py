@@ -36,25 +36,53 @@ def run_isolated(mode: str, args, timeout: float | None, cwd=None) -> dict:
     Returns {"status": "done", "result": ..., "stderr_tail": ...}, {"status": "timeout", "stderr_tail": ...}
     or {"status": "error", "error": ..., "stderr_tail": ...} when the child ended without a result.
     """
-    src = str(Path(__file__).resolve().parents[1])  # the physverify the parent uses, also for the child
     # no .pyc written: a same-size edit within a second could otherwise load stale bytecode in the next run
     env = {**os.environ, "PYTHONIOENCODING": "utf-8", "PYTHONDONTWRITEBYTECODE": "1"}
-    env["PYTHONPATH"] = src + os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else src
+    src = Path(__file__).resolve().parents[1]  # the physverify the parent uses, also for the child
+    if src.name not in ("site-packages", "dist-packages"):  # an installed copy is found anyway; never put
+        # site-packages ahead of the standard library
+        env["PYTHONPATH"] = str(src) + os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else str(src)
     cmd = [sys.executable, "-c", _CHILD, mode, *[str(a) for a in args]]
+    # its own process group (POSIX) so that a timeout can stop the processes the code under test started too
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=subprocess.DEVNULL, env=env,
+                            cwd=cwd, start_new_session=(os.name != "nt"))
     try:
-        proc = subprocess.run(cmd, capture_output=True, env=env, cwd=cwd, timeout=timeout, stdin=subprocess.DEVNULL)
-    except subprocess.TimeoutExpired as exc:
-        return {"status": "timeout", "stderr_tail": _tail(exc.stderr)}
-    out = _text(proc.stdout)
+        stdout, stderr = proc.communicate(timeout=timeout)
+    except subprocess.TimeoutExpired:
+        _kill_tree(proc)
+        try:
+            _, stderr = proc.communicate(timeout=10)
+        except subprocess.TimeoutExpired:  # a process outside the tree still holds the pipes
+            stderr = b""
+        return {"status": "timeout", "stderr_tail": _tail(stderr)}
+    out = _text(stdout)
     i = out.rfind(MARKER)
     if i < 0:
         return {"status": "error", "error": f"the child process exited with code {proc.returncode} without a result",
-                "stderr_tail": _tail(proc.stderr)}
-    try:
-        result = json.loads(out[i + len(MARKER):])
+                "stderr_tail": _tail(stderr)}
+    try:  # read the first JSON value only: the code under test may print more at exit (atexit, a C library)
+        result, _ = json.JSONDecoder().raw_decode(out[i + len(MARKER):])
     except json.JSONDecodeError as exc:
-        return {"status": "error", "error": f"the child's result is not valid JSON ({exc})", "stderr_tail": _tail(proc.stderr)}
-    return {"status": "done", "result": result, "stderr_tail": _tail(proc.stderr)}
+        return {"status": "error", "error": f"the child's result is not valid JSON ({exc})", "stderr_tail": _tail(stderr)}
+    return {"status": "done", "result": result, "stderr_tail": _tail(stderr)}
+
+
+def _kill_tree(proc) -> None:
+    """Stop the child and every process it started (a process that detached itself on purpose can escape)."""
+    try:
+        if os.name == "nt":
+            subprocess.run(["taskkill", "/F", "/T", "/PID", str(proc.pid)], capture_output=True, timeout=30,
+                           stdin=subprocess.DEVNULL)
+        else:
+            import signal
+
+            os.killpg(proc.pid, signal.SIGKILL)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    try:
+        proc.kill()
+    except OSError:
+        pass
 
 
 def child_main(argv) -> int:
