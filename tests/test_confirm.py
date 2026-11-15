@@ -255,11 +255,35 @@ def claim_with(**keys):
 
 def test_an_unstated_convention_turns_a_fail_into_not_decidable(tmp_path):
     # issue #71; study re-test L154: the repository's own test asserts the sign the claim calls wrong
-    conv = {"assumes": "positive switch-on sign", "repository": "unstated"}
+    conv = {"assumes": "positive switch-on sign", "repository": "unstated",
+            "alternative": "negative switch-on sign: the repository's test asserts it"}
     r = judge(write_claim(tmp_path, checks=("FAIL",), claim=claim_with(convention=conv)), tmp_path)
     assert r["verdict"] == UNDECIDED and "convention the repository does not state" in r["reason"]
     assert "positive switch-on sign" in r["reason"] and "1 of 1 check failed" in r["reason"]
+    assert "the other valid choice: negative switch-on sign" in r["reason"]
     assert r["convention"] == conv and "convention: the reference assumes" in format_verdict(r)
+    assert "the other valid choice" in format_verdict(r)
+
+
+@pytest.mark.parametrize("alt", [None, "", "  ", "FILL IN"])
+def test_an_unstated_convention_without_an_alternative_is_a_load_error(tmp_path, alt):
+    # agent evaluation, issue #31: "unstated" set for a flow tool that never drives flow turned a real FAIL into
+    # not decidable; naming the other valid choice is now required, so such a misuse has to be written down
+    conv = {"assumes": "driven flow past the cylinder", "repository": "unstated"}
+    if alt is not None:
+        conv["alternative"] = alt
+    with pytest.raises(ValueError, match="needs 'alternative'.*not a convention"):
+        read_claim(write_claim(tmp_path, claim=claim_with(convention=conv)))
+    r = judge(write_claim(tmp_path, checks=("FAIL",), claim=claim_with(convention=conv)), tmp_path)
+    assert r["verdict"] == UNDECIDED and "could not be loaded" in r["reason"]
+
+
+def test_a_control_that_raised_says_so():
+    ok = {"label": "k", "status": "PASS", "message": ""}
+    raised = {"label": "c", "status": "ERROR", "message": "ModuleNotFoundError: No module named 'pool'"}
+    wrong = {"label": "c", "status": "FAIL", "message": "got 3, expected 2"}
+    assert "it raised an exception (ModuleNotFoundError" in decide(raised, [ok])[1]
+    assert "exception" not in decide(wrong, [ok])[1]
 
 
 def test_a_stated_convention_or_none_keeps_confirmed(tmp_path):
@@ -269,7 +293,7 @@ def test_a_stated_convention_or_none_keeps_confirmed(tmp_path):
 
 
 def test_an_unstated_convention_does_not_change_a_rejection(tmp_path):
-    conv = {"assumes": "y-up gravity", "repository": "unstated"}
+    conv = {"assumes": "y-up gravity", "repository": "unstated", "alternative": "y-down gravity"}
     assert judge(write_claim(tmp_path, checks=("PASS",), claim=claim_with(convention=conv)), tmp_path)["verdict"] == REJECTED
 
 
@@ -285,7 +309,7 @@ def test_scope_is_recorded_and_printed_and_never_changes_the_verdict(tmp_path, s
     ({"scope": "partly"}, "CLAIM['scope']"),
     ({"convention": "y-up"}, "CLAIM['convention']"),
     ({"convention": {"assumes": "y-up", "repository": "maybe"}}, "CLAIM['convention']"),
-    ({"convention": {"assumes": "", "repository": "unstated"}}, "CLAIM['convention']"),
+    ({"convention": {"assumes": "", "repository": "unstated", "alternative": "y-down"}}, "CLAIM['convention']"),
 ])
 def test_a_bad_scope_or_convention_is_a_load_error(tmp_path, keys, words):
     with pytest.raises(ValueError, match=words.replace("[", r"\[").replace("]", r"\]")):
