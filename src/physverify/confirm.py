@@ -104,6 +104,15 @@ def read_claim(path) -> dict:
                 or not (conv["repository"] == "unstated" or conv["repository"].startswith("stated"))):
             raise ClaimError(f"{path.name}: CLAIM['convention'] must be {{'assumes': 'the convention the reference"
                              " assumes', 'repository': 'unstated' or 'stated: where the repository states it'}")
+        alt = conv.get("alternative")
+        if conv["repository"] == "unstated" and (not isinstance(alt, str) or not alt.strip()
+                                                 or alt.strip() == FILL_IN):
+            # an agent set "unstated" for a tool that never drives the flow it is meant to show, and a real FAIL
+            # became not decidable (agent evaluation, issue #31): make the writer name the other valid choice
+            raise ClaimError(f"{path.name}: CLAIM['convention'] with 'repository': 'unstated' needs 'alternative':"
+                             " the other choice the code could validly make, and why that would also be correct"
+                             " code (e.g. 'y-down gravity: the README never fixes the axis'). If no such choice"
+                             " exists, this is not a convention: leave the key out")
     if "scope" in claim and claim["scope"] not in SCOPES:
         raise ClaimError(f"{path.name}: CLAIM['scope'] is {claim['scope']!r}; it must be one of {', '.join(SCOPES)}")
     if "repo" in claim and not isinstance(claim["repo"], str):
@@ -167,8 +176,13 @@ def _of(k: int, n: int) -> str:
 def decide(control: dict, checks: list) -> tuple[str, str]:
     """Verdict and reason from the control and the checks (rules 3 to 6 of docs/confirm.md)."""
     if control["status"] not in _OK:
-        return UNDECIDED, (f"the control '{control['label']}' is {control['status']}, not PASS, so the test itself"
-                           " is not trusted")
+        reason = (f"the control '{control['label']}' is {control['status']}, not PASS, so the test itself"
+                  " is not trusted")
+        if control["status"] == "ERROR" or _RAISED.search(control.get("message") or ""):
+            # in the agent evaluation (issue #31) most first runs that went wrong were an import or a call
+            # mistake in the claim file, not a wrong reference: say which, so the fix is the right one
+            reason += f"; it raised an exception ({(control.get('message') or '').strip()[:200]})"
+        return UNDECIDED, reason
     failed = [c for c in checks if c["status"] == "FAIL"]
     if failed:
         return CONFIRMED, f"the control passed and {_of(len(failed), len(checks))} failed: {_names(failed)}"
@@ -323,7 +337,7 @@ def confirm_claim(path, *, trusted: bool = False, ledger=DEFAULT_LEDGER, timeout
         # a FAIL against one convention, when the repository never says which it intends, is a question for the
         # maintainers, not a confirmed defect (issue #71; study re-test, L154)
         verdict, reason = UNDECIDED, (f"the reference assumes a convention the repository does not state"
-                                      f" ({conv['assumes']}); {reason}")
+                                      f" ({conv['assumes']}; the other valid choice: {conv['alternative']}); {reason}")
     return finish(verdict, reason)
 
 
@@ -337,8 +351,9 @@ def format_verdict(record: dict) -> str:
         if c:
             lines.append(f"  {kind:8s} {c['status']:12s} {c['label']}: {c['message']}")
     if record.get("convention"):
-        lines.append(f"convention: the reference assumes {record['convention']['assumes']};"
-                     f" repository: {record['convention']['repository']}")
+        conv = record["convention"]
+        lines.append(f"convention: the reference assumes {conv['assumes']}; repository: {conv['repository']}"
+                     + (f"; the other valid choice: {conv['alternative']}" if conv.get("alternative") else ""))
     if record.get("reference_libraries"):
         lines.append("installed libraries, not found in the repository, so not counted as code under test: "
                      + ", ".join(record["reference_libraries"]))
@@ -369,8 +384,11 @@ CLAIM = {
     "impact": "FILL IN",  # used, latent or unknown: do the repository's own scripts or defaults reach this code?
     # optional: "scope": "real",  # real (own code path and inputs), extracted (own function, our inputs) or
     #     synthetic (recorded numbers, a stub, a few lines re-implemented); printed, never changes the verdict
-    # optional: "convention": {"assumes": "y-up gravity", "repository": "unstated"},  # or "stated: README sec. 2";
-    #     with "unstated", a failing check gives "not decidable" instead of "confirmed"
+    # optional: "convention": {"assumes": "y-up gravity", "repository": "unstated",
+    #                           "alternative": "y-down gravity: the README never fixes the axis"},
+    #     or "repository": "stated: README sec. 2". With "unstated", a failing check gives "not decidable" instead
+    #     of "confirmed", so "alternative" must name the other choice that would also be correct code; if there
+    #     is none (a tool that never does what it is for), it is not a convention: leave the key out
 }
 
 

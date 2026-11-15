@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+From the agent evaluation of `confirm` (issue #31, `results/agent_eval/`):
+- **`confirm` convention key:** `"repository": "unstated"` now needs `"alternative"`, the other choice the code could validly make and why it would also be correct code; without it the claim file is a load error. In the evaluation an agent set `"unstated"` for a tool that never drives the flow it is meant to show, and a real defect became *not decidable*. The alternative is printed with the verdict and recorded in the ledger. **Claim files that set `"unstated"` without it must add the key.**
+- **`confirm` control:** a control that is not PASS because it raised an exception now says so, with the message, since in the evaluation most failed first runs were an import or call mistake in the claim file rather than a wrong reference.
+
 From running ten claims of the 100-repository study through `physverify confirm`:
 - **`confirm` rule 1:** a module counts as code under test only when it is found in the repository or next to the claim file. An installed library the repository uses (healpy, for a sky-map package) may be the reference for a claim that the repository calls it wrongly; such libraries are listed in the ledger (`reference_libraries`) and printed with the verdict. Before, the claim could only be decided with `--allow-dependent-reference`.
 - **`confirm` load errors:** a claim file that fails to load because a backslash in a string starts an escape (a Windows path in `CLAIM["text"]`) now says so in words and points to `confirm init --text`.
