@@ -60,14 +60,17 @@ The checks run on every Python edit. For a slow suite, list only the fast specs 
 claude mcp add physverify -- physverify mcp
 ```
 
-The server speaks MCP over stdio and offers one tool, `run_checks`:
+The server speaks MCP over stdio and offers two tools. The first is `run_checks`:
 
 | Argument | Meaning |
 |---|---|
 | `specs` | List of spec paths |
 | `project` | Folder to search for `verify_*.py` when `specs` is not given |
+| `timeout` | Seconds for the whole run (default 600) |
 
-It returns the JSON report: status, message, observed and expected order, step sizes and errors for each check. Failures are summarised at the top.
+It returns the JSON report: status, message, observed and expected order, step sizes and errors for each check. Failures are summarised at the top. The checks run in a fresh Python process, so an edit to the solver between two calls is always seen; a run longer than `timeout` is stopped and reported as a load error.
+
+The second is `confirm_claim`, which judges one claim file exactly like `physverify confirm` (see [Confirming one suspected defect](confirm.md)). It needs `trusted: true`, or the sandbox.
 
 The server is written with the standard library only. It serves both protocol eras on the same process:
 - the older handshake (`initialize`, protocol versions 2025-11-25 and earlier);

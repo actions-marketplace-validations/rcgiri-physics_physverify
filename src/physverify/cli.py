@@ -5,6 +5,10 @@
     physverify init [SPEC.py] [--solver MODULE] [--function NAME] [--dim N] [--order P]
     physverify scan PATH   (reads the source, runs nothing: constants, RK tables, grid spacing, inverse pairs,
                            undefined names, removed APIs, typo-like literals, unit tables)
+    physverify confirm CLAIM.py [--ledger FILE] [--timeout S] [--json FILE|-] [--trusted]
+                           (judge one suspected defect; runs the code; exit 0 rejected, 1 confirmed,
+                           2 not decidable; see docs/confirm.md)
+    physverify confirm init CLAIM.py --text "..." --file F --line N
     physverify hook        (Claude Code PostToolUse hook; see docs/agent.md)
     physverify mcp         (MCP server on stdio; see docs/agent.md)
 
@@ -179,6 +183,40 @@ def _cmd_scan(args) -> int:
     return 1 if any(f.level == WARN for f in findings) else 0
 
 
+def _cmd_confirm(args) -> int:
+    import json
+
+    from .confirm import EXIT_CODES, Refused, confirm_claim, format_verdict, write_template
+
+    if args.claim == "init":
+        if not args.init_path or args.text is None or args.file is None or args.line is None:
+            print("physverify: usage: physverify confirm init CLAIM.py --text \"...\" --file F --line N", file=sys.stderr)
+            return 2
+        try:
+            path = write_template(args.init_path, args.text, args.file, args.line)
+        except (ValueError, OSError) as exc:
+            print(f"physverify: {exc}", file=sys.stderr)
+            return 2
+        print(f"wrote {path}; fill in source, reference and impact, and write control() and checks() from the physics")
+        return 0
+    if args.init_path:
+        print(f"physverify: unexpected argument {args.init_path!r} (one claim file per run)", file=sys.stderr)
+        return 2
+    try:
+        record = confirm_claim(args.claim, trusted=args.trusted, ledger=args.ledger, timeout=args.timeout,
+                               allow_dependent_reference=args.allow_dependent_reference)
+    except Refused as exc:
+        print(f"physverify: {exc}", file=sys.stderr)
+        return 2
+    if args.json == "-":
+        print(json.dumps(record, indent=2, ensure_ascii=False))
+    else:
+        if args.json:
+            Path(args.json).write_text(json.dumps(record, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+        print(format_verdict(record))
+    return EXIT_CODES[record["verdict"]]
+
+
 def _cmd_references(args) -> int:
     from . import references
 
@@ -236,10 +274,25 @@ def build_parser() -> argparse.ArgumentParser:
     sc.add_argument("--timeout", type=float, default=60.0, help="with --run: seconds per script or file of functions (default 60)")
     sc.set_defaults(func=_cmd_scan)
 
+    cf = sub.add_parser("confirm", help="judge one suspected defect against a reference from the physics and record the verdict"
+                                        " (runs the code: --trusted or the sandbox only); see docs/confirm.md")
+    cf.add_argument("claim", help="the claim file (a .py file defining CLAIM, control() and checks()), or 'init'")
+    cf.add_argument("init_path", nargs="?", metavar="CLAIM.py", help="with init: the claim file to write")
+    cf.add_argument("--ledger", default="confirm_ledger.jsonl", help="JSON-lines file each run is appended to (default confirm_ledger.jsonl)")
+    cf.add_argument("--timeout", type=float, default=300.0, help="seconds for the whole run before it is stopped (default 300)")
+    cf.add_argument("--json", metavar="FILE", help="write the ledger line as JSON to FILE, or to stdout with - (instead of the text verdict)")
+    cf.add_argument("--trusted", action="store_true", help="the code under test is trusted, so it may run outside the sandbox")
+    cf.add_argument("--allow-dependent-reference", metavar="REASON",
+                    help="run even though the reference seems to use the code under test; REASON is recorded")
+    cf.add_argument("--text", help="with init: the claim as stated")
+    cf.add_argument("--file", help="with init: the file the claim is about, relative to the repository root")
+    cf.add_argument("--line", type=int, help="with init: the line in that file")
+    cf.set_defaults(func=_cmd_confirm)
+
     r = sub.add_parser("references", help="list the exact reference solutions in physverify.references")
     r.set_defaults(func=_cmd_references)
 
-    s = sub.add_parser("mcp", help="run a minimal MCP server on stdio with a run_checks tool")
+    s = sub.add_parser("mcp", help="run a minimal MCP server on stdio with the tools run_checks and confirm_claim")
     s.set_defaults(func=_cmd_mcp)
     return parser
 

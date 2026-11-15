@@ -89,7 +89,7 @@ def test_mcp_lists_and_runs_the_tool(project):
     assert init["result"]["serverInfo"]["name"] == "physverify"
     assert handle({"jsonrpc": "2.0", "method": "notifications/initialized"}) is None
     tools = handle({"jsonrpc": "2.0", "id": 2, "method": "tools/list"})["result"]["tools"]
-    assert [t["name"] for t in tools] == ["run_checks"]
+    assert [t["name"] for t in tools] == ["run_checks", "confirm_claim"]
 
     seed_bug(project)
     call = handle({"jsonrpc": "2.0", "id": 3, "method": "tools/call",
@@ -151,7 +151,7 @@ def test_mcp_discover_reports_the_modern_version_with_cache_hints():
 
 def test_mcp_modern_list_and_call_work_without_a_handshake(project):
     listed = handle(modern("tools/list"))["result"]
-    assert listed["resultType"] == "complete" and [t["name"] for t in listed["tools"]] == ["run_checks"]
+    assert listed["resultType"] == "complete" and [t["name"] for t in listed["tools"]] == ["run_checks", "confirm_claim"]
     assert listed["ttlMs"] >= 0 and listed["cacheScope"] == "public"
 
     seed_bug(project)
@@ -210,3 +210,36 @@ def test_mcp_server_over_stdio_in_modern_mode_with_no_initialize(project):
     assert responses[0]["result"]["supportedVersions"] == ["2026-07-28"]
     assert responses[1]["result"]["resultType"] == "complete"
     assert "did not pass" in responses[1]["result"]["content"][0]["text"]
+
+
+def test_mcp_run_checks_sees_a_solver_edit_between_two_calls(project):
+    def call():
+        return handle({"jsonrpc": "2.0", "id": 9, "method": "tools/call",
+                       "params": {"name": "run_checks", "arguments": {"project": str(project)}}})["result"]["content"][0]["text"]
+
+    assert not call().startswith("physverify:")  # correct solver: no failure summary
+    seed_bug(project)
+    assert call().startswith("physverify: 4 of 4 checks did not pass")
+    assert "damped_oscillator" not in sys.modules  # the checks ran in a child process, not in the server
+
+
+def test_mcp_run_checks_times_out_as_a_load_error(tmp_path):
+    (tmp_path / "verify_hang.py").write_text("import time\ntime.sleep(60)\ndef checks():\n    return []\n")
+    text = handle({"jsonrpc": "2.0", "id": 9, "method": "tools/call",
+                   "params": {"name": "run_checks", "arguments": {"project": str(tmp_path), "timeout": 3}}})["result"]["content"][0]["text"]
+    assert "timed out after 3 s" in text
+
+
+def test_mcp_confirm_claim_needs_trust_and_gives_the_verdict(tmp_path, monkeypatch):
+    monkeypatch.delenv("PHYSVERIFY_REPO", raising=False)
+    claims = ROOT / "docs" / "examples" / "confirm"
+    ledger = tmp_path / "ledger.jsonl"
+
+    def call(**arguments):
+        return handle(modern("tools/call", {"name": "confirm_claim", "arguments": arguments}, msg_id=4))["result"]
+
+    refused = call(claim=str(claims / "claim_damping_sign.py"), ledger=str(ledger))
+    assert refused["isError"] is True and "sandbox/README.md" in refused["content"][0]["text"] and not ledger.exists()
+    done = call(claim=str(claims / "claim_damping_sign.py"), ledger=str(ledger), trusted=True)
+    assert done["isError"] is False and done["content"][0]["text"].startswith("confirmed (impact: used)")
+    assert json.loads(ledger.read_text())["verdict"] == "confirmed"
