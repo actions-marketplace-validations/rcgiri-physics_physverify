@@ -13,6 +13,7 @@ import datetime
 import hashlib
 import json
 import os
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -49,7 +50,11 @@ def read_claim(path) -> dict:
     except (OSError, ValueError) as exc:
         raise ClaimError(f"cannot read {path}: {exc}") from None
     except SyntaxError as exc:
-        raise ClaimError(f"{path} is not valid Python: line {exc.lineno}: {exc.msg}") from None
+        hint = ""
+        if "escape" in str(exc.msg):  # "C:\Users" in a normal string: \U starts a unicode escape
+            hint = (" (a backslash in a string starts an escape: a Windows path in CLAIM['text'] needs doubled"
+                    " backslashes or a raw string r'...'; `physverify confirm init --text` writes it safely)")
+        raise ClaimError(f"{path} is not valid Python: line {exc.lineno}: {exc.msg}{hint}") from None
     claim, functions = None, set()  # `functions`: every top-level name, so control/checks may be imported
     for node in tree.body:
         targets = (node.targets if isinstance(node, ast.Assign)
@@ -123,8 +128,16 @@ def evaluate_claim(path) -> dict:
 
 # --- the verdict ---
 
+_RAISED = re.compile(r"\b[A-Z]\w*(?:Error|Exception)\b|\braised\b|Traceback")
+
+
 def _names(items) -> str:
-    return "; ".join(f"'{c['label']}' ({c['status']})" for c in items)
+    """Labels and statuses; a FAIL whose message reports an exception says so, since a crash and a wrong value
+    are different defects (study re-test, L093)."""
+    def one(c):
+        crash = c["status"] == "FAIL" and _RAISED.search(c.get("message") or "")
+        return f"'{c['label']}' ({c['status']}{', the code raised an exception' if crash else ''})"
+    return "; ".join(one(c) for c in items)
 
 
 def _of(k: int, n: int) -> str:
@@ -170,15 +183,20 @@ def _git(folder, *args) -> str | None:
     return out.stdout.strip() if out.returncode == 0 else None
 
 
-def _provenance(claim_path: Path, claim: dict) -> dict:
-    """Hash of the file the claim is about, and the commit of the checkout that holds it."""
+def _repo(claim_path: Path, claim: dict) -> tuple[Path, Path, str | None]:
+    """(base, root, git top): where the repository the claim is about lives (docs/confirm.md, section 3)."""
     base = claim_path.resolve().parent
     if claim.get("repo"):
         base = (base / claim["repo"]).resolve()
     elif os.environ.get("PHYSVERIFY_REPO"):
         base = Path(os.environ["PHYSVERIFY_REPO"])
     top = _git(base, "rev-parse", "--show-toplevel")
-    root = Path(top) if top else base
+    return base, (Path(top) if top else base), top
+
+
+def _provenance(claim_path: Path, claim: dict) -> dict:
+    """Hash of the file the claim is about, and the commit of the checkout that holds it."""
+    base, root, top = _repo(claim_path, claim)
     commit = os.environ.get("PHYSVERIFY_REPO_COMMIT") or None
     if commit is None and top:
         head = _git(root, "rev-parse", "HEAD")
@@ -227,7 +245,7 @@ def confirm_claim(path, *, trusted: bool = False, ledger=DEFAULT_LEDGER, timeout
     """
     from . import __version__
     from .isolate import run_isolated
-    from .specscan import reference_notes
+    from .specscan import library_names, reference_notes
 
     if not is_trusted(trusted):
         raise Refused(REFUSAL)
@@ -255,7 +273,12 @@ def confirm_claim(path, *, trusted: bool = False, ledger=DEFAULT_LEDGER, timeout
         record["repo"] = claim["repo"]
     record.update(_provenance(path, claim))
 
-    notes = reference_notes(path)
+    base, root, _ = _repo(path, claim)
+    roots = [path.resolve().parent, base, root]  # a module found nowhere here is an installed library
+    notes = reference_notes(path, roots)
+    libraries = library_names(path, roots)
+    if libraries:
+        record["reference_libraries"] = libraries
     if notes and not allow_dependent_reference:
         return finish(UNDECIDED, "the reference is not independent of the code under test: " + " | ".join(notes)
                       + " (give --allow-dependent-reference with a reason if this use is safe)")
@@ -285,6 +308,9 @@ def format_verdict(record: dict) -> str:
     for kind, c in [("control", record.get("control"))] + [("check", c) for c in record.get("checks") or []]:
         if c:
             lines.append(f"  {kind:8s} {c['status']:12s} {c['label']}: {c['message']}")
+    if record.get("reference_libraries"):
+        lines.append("installed libraries, not found in the repository, so not counted as code under test: "
+                     + ", ".join(record["reference_libraries"]))
     if record.get("allow_dependent_reference"):
         lines.append(f"dependent reference allowed: {record['allow_dependent_reference']['reason']}")
     if record.get("text"):

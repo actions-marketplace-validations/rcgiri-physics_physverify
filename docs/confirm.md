@@ -37,6 +37,14 @@ Returns one `physverify.Check` that must PASS. It shows two things: that the ref
 
 A control that fails means the test itself is not trusted, so the claim cannot be judged by it.
 
+Some defects have no case where the effect is absent and the faulty code still runs. In a re-test of ten claims from the study, choosing the control was the step the drafters found hardest in five of them. Controls that worked for such defects:
+- **A wrong branch** (a `lambda < 1` branch that double counts): run the same branch at the edge where its correction is zero (`lambda = 1`, no shortfall). This shows the reference and the bookkeeping are right, but it runs the same code, so say so in a comment.
+- **A wrong sign or a wrong convention** (a waveform whose sign is flipped): check the reference itself with an identity that does not use the code (switch-on plus switch-off responses add up to a constant). If the repository's own tests assert the sign, write that in the docstring: the run cannot tell a bug from a deliberate convention, and the verdict will still say confirmed.
+- **Rounding or precision** (a float32 counter that loses integers above 2**24): use an input below the threshold, where the number format is exact (index 1000), so the result is fixed by the format, not by the code.
+- **A geometric rule** (a pocket capture zone): use the simplest path where the geometry is unambiguous (a straight shot at the pocket centre).
+
+A control that runs the code under test on such a case is weaker than one on an independent solver; mark it `# REVIEW:` with the reason, so a reader knows.
+
 ### `checks()`
 
 Returns a non-empty list of `physverify.Check` that state the correct behaviour on a case where the claimed effect is present. If the claim is right, at least one of them FAILs.
@@ -90,10 +98,10 @@ The rules are applied in this order (the refusal in section 5 comes before all o
 | 6 | the control passed and every check is PASS or EXACT | rejected | 0 |
 
 Notes on the rules:
-- Rule 1 is static (it reads the claim file and runs nothing), so it is applied before any code runs. `--allow-dependent-reference "REASON"` takes a reason in words; the reason and the notes it overrides are recorded in the ledger. `reference_notes` is a heuristic: it looks at functions whose names say they are references. No note does not prove the reference independent.
+- Rule 1 is static (it reads the claim file and runs nothing), so it is applied before any code runs. `--allow-dependent-reference "REASON"` takes a reason in words; the reason and the notes it overrides are recorded in the ledger. `reference_notes` is a heuristic: it looks at functions whose names say they are references. No note does not prove the reference independent. A module counts as code under test only when it is found in the repository or next to the claim file (a `.py` file or a package folder up to four levels down); an installed library the repository uses, such as healpy for a sky-map package, may serve as the reference for a claim that the repository calls it wrongly. Such libraries are listed in the ledger (`reference_libraries`) and printed with the verdict.
 - Rule 3 counts EXACT as a pass for the control: EXACT means the error is at round-off at every resolution, which is a stronger pass.
 - Rule 4 puts a FAIL ahead of an INCONCLUSIVE or ERROR in another check: one failing check of the correct behaviour, with a passing control, is enough.
-- An ERROR in a check (the code under test raised an exception) is not counted as confirmation, because the exception may come from the adapter rather than from the claimed defect. The message says so, and the person can turn the crash into a check if the crash is the defect.
+- An ERROR in a check (the code under test raised an exception) is not counted as confirmation, because the exception may come from the adapter rather than from the claimed defect. The message says so, and the person can turn the crash into a check if the crash is the defect. A FAIL whose message reports an exception (an `...Error`, "raised", a traceback) is named in the reason as "the code raised an exception", since a crash and a wrong value are different defects.
 - `impact` is printed next to the verdict and **never changes it**. "Confirmed, latent" is how the study's "real but minor" is expressed: the defect is real, and the repository's own runs do not reach it.
 
 The printed verdict is one line, then one line for the control and one per check, each saying in plain words what was tested, then the claim and its reference. This is the output of the first worked example (section 8):
@@ -123,6 +131,7 @@ Fields of one line:
 | `control` | `{label, family, status, message, seconds}` or null when it did not run |
 | `checks` | a list of `{label, family, status, message, seconds}` |
 | `allow_dependent_reference` | null, or `{reason, notes}` when the flag was given |
+| `reference_libraries` | present when the claim file imports installed libraries that are not in the repository, which rule 1 does not count as code under test |
 | `timeout_s` | the time limit used |
 | `stderr_tail` | the last 2000 characters of the child's stderr, only after an error or a timeout |
 
@@ -157,7 +166,7 @@ physverify confirm init CLAIM.py --text "..." --file F --line N
 ```
 
 - `--json -` prints the ledger line (the same JSON object) to stdout instead of the text verdict; `--json FILE` writes it to a file. The ledger is written either way.
-- `confirm init` writes a template with `CLAIM` (the given `text`, `file` and `line`; `source`, `reference` and `impact` left as `"FILL IN"`, which fails the load check until filled in), and stubs of `control()` and `checks()`. A comment at the top says that the reference must come from the physics (book, paper, README), never from the code under test. It refuses to overwrite an existing file.
+- `confirm init` writes a template with `CLAIM` (the given `text`, `file` and `line`; `source`, `reference` and `impact` left as `"FILL IN"`, which fails the load check until filled in), and stubs of `control()` and `checks()`. A comment at the top says that the reference must come from the physics (book, paper, README), never from the code under test. It refuses to overwrite an existing file. Start a claim file with `init` rather than typing `CLAIM` by hand: claim texts often hold Windows paths (`C:\Users\...`), and in a plain Python string `\U` starts an escape, so the file does not load. `init` writes the text escaped; a file that fails this way gets a load error that says so.
 - Exit codes: 0 rejected, 1 confirmed, 2 not decidable, a load error or a refusal.
 
 `confirm init` is a subcommand name, so a claim file cannot be called `init`; a claim file must end in `.py`.
