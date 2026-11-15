@@ -1,7 +1,9 @@
 # Changelog
 
-## Unreleased
+## 0.8.0 (2026-11-15)
 
+- **Docs:** PyAstronomy added to the README's table of maintainer-confirmed defects, and its row in `docs/confirmed.md` now gives the wider effect the maintainer found.
+- **MCP registry:** a new workflow, `.github/workflows/mcp-registry.yml`, publishes `packaging/mcp-registry/server.json` after each PyPI release (GitHub OIDC login, `mcp-publisher` pinned and its signature checked).
 - **New command `physverify confirm`** (issue #54; `physverify.confirm`, tests in `tests/test_confirm.py`, design in `docs/confirm.md`): a claim file with `CLAIM`, `control()` and `checks()` gets a verdict (confirmed, rejected or not decidable) by fixed rules, appended to a JSON-lines ledger with file hashes, the commit and the physverify version. It runs the code in a fresh process with a time limit and refuses without `--trusted` outside the sandbox. `physverify confirm init` writes a template. Three worked examples in `docs/examples/confirm/`. The MCP server gets a `confirm_claim` tool, and its `run_checks` tool now runs in a fresh process too (`physverify.isolate`), with a `timeout` argument.
 - **Docs rewrite around confirming claims:** README and home page lead with turning a suspected defect into a run and a verdict, and with the 100-repository study of AI review claims (counts within that sample); new figures `docs/images/claim-to-verdict.svg` and `claim-outcomes.svg`; the AI-review and results pages replace the 20-repository pilot with the study; ROADMAP records that `scan` keeps working but gets no new rules.
 - **Corpus ledger** (issue #29): `results/corpus/ledger.csv` has one row per reported defect of batches 1-8 (IDs only) and `funnel.csv` one row per batch; `scripts/corpus_ledger.py` (run by `reproduce_all.py`, checked by `tests/test_corpus_ledger.py`) generates `results/corpus/LEDGER.md`, so its totals cannot go stale.
