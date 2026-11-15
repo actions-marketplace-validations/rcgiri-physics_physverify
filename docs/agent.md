@@ -60,6 +60,49 @@ The checks run on every Python edit. For a slow suite, list only the fast specs 
 claude mcp add physverify -- physverify mcp
 ```
 
+### Other MCP clients
+
+The server is a local program that the client starts; it runs on your computer, in the folder the client starts it in. Install physverify first (`pip install physverify`, best in a virtual environment), then give the client the command `physverify` with the argument `mcp`. If the client cannot find `physverify`, give the full path, for example `C:\Users\you\.venv\Scripts\physverify.exe` or `/home/you/.venv/bin/physverify`. With [uv](https://docs.astral.sh/uv/) installed you can skip the install and use the command `uvx` with the arguments `physverify`, `mcp`.
+
+Most clients take the same `mcpServers` entry: Claude Desktop (`claude_desktop_config.json`), Cursor (`.cursor/mcp.json` or `~/.cursor/mcp.json`), Windsurf (`~/.codeium/windsurf/mcp_config.json`), Cline (MCP Servers, Configure, `cline_mcp_settings.json`) and Qoder (Qoder IDE Settings, MCP, My Servers, + Add):
+
+```json
+{
+  "mcpServers": {
+    "physverify": {
+      "command": "physverify",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+VS Code (`.vscode/mcp.json`) uses `servers`:
+
+```json
+{
+  "servers": {
+    "physverify": {
+      "type": "stdio",
+      "command": "physverify",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Codex CLI (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.physverify]
+command = "physverify"
+args = ["mcp"]
+```
+
+Give the tools full paths, or `project` as a full path: relative paths are taken from the folder the client started the server in. The server is also listed in the [official MCP registry](https://registry.modelcontextprotocol.io) as `io.github.rcgiri-physics/physverify`, for clients that install from it.
+
+### Tools
+
 The server speaks MCP over stdio and offers two tools. The first is `run_checks`:
 
 | Argument | Meaning |
