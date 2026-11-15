@@ -12,6 +12,7 @@ from physverify.confirm import (
     Refused,
     confirm_claim,
     decide,
+    format_verdict,
     read_claim,
     write_template,
 )
@@ -208,6 +209,44 @@ def test_json_to_stdout_is_the_ledger_line(tmp_path, capsys):
     ledger = tmp_path / "l.jsonl"
     assert cli.main(["confirm", str(path), "--trusted", "--ledger", str(ledger), "--json", "-"]) == 1
     assert json.loads(capsys.readouterr().out) == json.loads(ledger.read_text())
+
+
+def test_an_installed_library_in_the_reference_is_not_code_under_test(tmp_path):
+    # study re-test J163: the repository wraps healpy and the reference is healpy's own routine
+    lib = tmp_path.parent / f"{tmp_path.name}_site"
+    lib.mkdir()
+    (lib / "skylib.py").write_text("def corners():\n    return 4\n")
+    extra = (f"import sys\nsys.path.insert(0, {str(lib)!r})\nimport skylib\n"
+             "def exact():\n    return skylib.corners()\n")
+    r = judge(write_claim(tmp_path, checks=("FAIL",), extra=extra), tmp_path)
+    assert r["verdict"] == CONFIRMED and r["allow_dependent_reference"] is None
+    assert r["reference_libraries"] == ["skylib"]
+    assert "installed libraries" in format_verdict(r)
+
+
+def test_a_module_of_the_repository_in_the_reference_is_still_noted(tmp_path):
+    (tmp_path / "pkg").mkdir()
+    (tmp_path / "pkg" / "__init__.py").write_text("def value():\n    return 1\n")
+    extra = "import pkg\ndef reference():\n    return pkg.value()\n"
+    r = judge(write_claim(tmp_path, checks=("HANG",), extra=extra), tmp_path, timeout=3)
+    assert r["verdict"] == UNDECIDED and "not independent" in r["reason"] and "pkg" in r["reason"]
+
+
+def test_a_windows_path_in_the_claim_text_gives_a_load_error_in_words(tmp_path):
+    path = write_claim(tmp_path)
+    # the claim file then holds 'see C:\Users\me\solver.py' with single backslashes: \U starts an escape
+    path.write_text(path.read_text(encoding="utf-8").replace(
+        "value() returns the wrong number", r"see C:\Users\me\solver.py"), encoding="utf-8")
+    r = judge(path, tmp_path)
+    assert r["verdict"] == UNDECIDED and "Windows path" in r["reason"] and "confirm init --text" in r["reason"]
+
+
+def test_a_failing_check_that_reports_an_exception_says_so():
+    ok = {"label": "c", "status": "PASS", "message": ""}
+    crash = {"label": "k", "status": "FAIL", "message": "the call raised TypeError: shape 6x6"}
+    wrong = {"label": "w", "status": "FAIL", "message": "got 3, expected 2"}
+    assert "the code raised an exception" in decide(ok, [crash])[1]
+    assert "exception" not in decide(ok, [wrong])[1]
 
 
 def test_init_writes_a_template_that_will_not_run_until_filled_in(tmp_path, capsys):

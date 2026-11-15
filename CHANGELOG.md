@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+From running ten claims of the 100-repository study through `physverify confirm`:
+- **`confirm` rule 1:** a module counts as code under test only when it is found in the repository or next to the claim file. An installed library the repository uses (healpy, for a sky-map package) may be the reference for a claim that the repository calls it wrongly; such libraries are listed in the ledger (`reference_libraries`) and printed with the verdict. Before, the claim could only be decided with `--allow-dependent-reference`.
+- **`confirm` load errors:** a claim file that fails to load because a backslash in a string starts an escape (a Windows path in `CLAIM["text"]`) now says so in words and points to `confirm init --text`.
+- **`confirm` verdict:** a failing check whose message reports an exception is named as "the code raised an exception", so a crash is not read as a wrong value.
+- **Docs:** `docs/confirm.md` gives controls for defects with no effect-absent case (a wrong branch, a sign or convention, rounding, geometry).
+
 ## 0.8.0 (2026-11-15)
 
 - **Docs:** PyAstronomy added to the README's table of maintainer-confirmed defects, and its row in `docs/confirmed.md` now gives the wider effect the maintainer found.
