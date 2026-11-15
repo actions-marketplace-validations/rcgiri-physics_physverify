@@ -29,6 +29,19 @@ A literal dict (strings and numbers only, so it can be read without running the 
 
 `impact` is about reach, not size. `used`: a script or default setting in the repository runs the faulty path. `latent`: the path is reachable only by an option, argument or input that the repository itself never uses. `unknown`: not looked at. The person writing the claim decides it; `confirm` does not check it.
 
+Two optional keys say how far a verdict reaches (issue #71). In a reading of the study's unsettled claims, each problem below was the reason in 6 of 58 rows.
+
+| Key | Meaning |
+|---|---|
+| `scope` | `real` (the repository's own code path with its own inputs or defaults), `extracted` (the repository's function on inputs the claim file chooses) or `synthetic` (recorded numbers, a stub, or a few lines re-implemented). Printed next to the verdict like `impact`, and never changes it. A convergence-loop claim checked on recorded sweep energies, with the solver never run, is `synthetic`. |
+| `convention` | `{"assumes": "...", "repository": "unstated"}` or `"repository": "stated: <where>"`: the convention the reference assumes (a sign, y-up gravity, periodic walls), and whether the repository states the one it intends. With `"unstated"`, a failing check gives *not decidable* instead of *confirmed* (rule 4a). |
+
+A convention is a choice the code could validly make either way: a sign, an axis direction, a boundary rule, which preset is meant. A law of physics is not one (an additive constant in a potential does not change the dynamics), nor is the documented order of a library's return values, nor a tolerance you are unsure about. Setting `"unstated"` for those turns a real failure into *not decidable*, so give the key only when the opposite choice would also be correct code. In a second run of ten study claims, three convention cases were settled as intended, and two drafters set the key where it did not belong.
+
+A tolerance decides the verdict when an error sits near it, so say where it comes from: the error the method is known to leave (a linearised fit, a discretisation order), a stated requirement, or a margin over a measured noise floor. In the same run, one verdict changed from rejected to confirmed on an error of 0.058 against a tolerance of 0.05 that had no stated source.
+
+A `scope` outside the three values, or a `convention` without both keys (`repository` must be `unstated` or begin with `stated`), is a load error.
+
 ### `control()`
 
 Returns one `physverify.Check` that must PASS. It shows two things: that the reference is right, and that the test can pass at all. Typical controls:
@@ -93,6 +106,7 @@ The rules are applied in this order (the refusal in section 5 comes before all o
 | 1 | `specscan.reference_notes` reports that a reference uses the code under test, and `--allow-dependent-reference` was not given | not decidable: the reference is not independent | 2 |
 | 2 | the run did not finish within `--timeout` | not decidable: timed out | 2 |
 | 3 | the control is not PASS or EXACT | not decidable: the control did not pass, so the test is not trusted | 2 |
+| 4a | the control passed, at least one check is FAIL, and `CLAIM["convention"]` says the repository does not state its convention | not decidable: the reference assumes a convention the repository does not state | 2 |
 | 4 | the control passed and at least one check is FAIL | confirmed | 1 |
 | 5 | the control passed, no check failed, and some check is INCONCLUSIVE, ERROR or SKIP | not decidable, naming each such check and its status | 2 |
 | 6 | the control passed and every check is PASS or EXACT | rejected | 0 |
@@ -102,7 +116,8 @@ Notes on the rules:
 - Rule 3 counts EXACT as a pass for the control: EXACT means the error is at round-off at every resolution, which is a stronger pass.
 - Rule 4 puts a FAIL ahead of an INCONCLUSIVE or ERROR in another check: one failing check of the correct behaviour, with a passing control, is enough.
 - An ERROR in a check (the code under test raised an exception) is not counted as confirmation, because the exception may come from the adapter rather than from the claimed defect. The message says so, and the person can turn the crash into a check if the crash is the defect. A FAIL whose message reports an exception (an `...Error`, "raised", a traceback) is named in the reason as "the code raised an exception", since a crash and a wrong value are different defects.
-- `impact` is printed next to the verdict and **never changes it**. "Confirmed, latent" is how the study's "real but minor" is expressed: the defect is real, and the repository's own runs do not reach it.
+- `impact` is printed next to the verdict and **never changes it**. "Confirmed, latent" is how the study's "real but minor" is expressed: the defect is real, and the repository's own runs do not reach it. `scope` is printed the same way and never changes the verdict either: "confirmed (impact: used; scope: synthetic)" says the defect shows on recorded numbers or a stub, not yet in a run of the repository's own code.
+- Rule 4a is the one place a key of `CLAIM` changes the verdict. A check that fails against one convention, when the repository never says which it intends (its own test may even assert the other), is a question for the maintainers, not a confirmed defect. The reason names the convention and the checks that failed, so the evidence is kept.
 
 The printed verdict is one line, then one line for the control and one per check, each saying in plain words what was tested, then the claim and its reference. This is the output of the first worked example (section 8):
 
@@ -131,13 +146,14 @@ Fields of one line:
 | `control` | `{label, family, status, message, seconds}` or null when it did not run |
 | `checks` | a list of `{label, family, status, message, seconds}` |
 | `allow_dependent_reference` | null, or `{reason, notes}` when the flag was given |
+| `scope`, `convention`, `repo` | copied from `CLAIM` when given |
 | `reference_libraries` | present when the claim file imports installed libraries that are not in the repository, which rule 1 does not count as code under test |
 | `timeout_s` | the time limit used |
 | `stderr_tail` | the last 2000 characters of the child's stderr, only after an error or a timeout |
 
 A load error is also written to the ledger, with `verdict` set to `not decidable` and the error as the reason, so every attempt is recorded. If the claim file cannot be read at all, the line has no `CLAIM` fields.
 
-The repository root for `file` is found from the claim file's folder (or from `$PHYSVERIFY_REPO` inside the sandbox): the git checkout that contains it, else that folder itself; if `file` is not found from the root, it is looked up next to the claim file. A claim file kept outside the repository (an adapter folder) may give `CLAIM["repo"]`, a path relative to the claim file. This is the one optional key.
+The repository root for `file` is found from the claim file's folder (or from `$PHYSVERIFY_REPO` inside the sandbox): the git checkout that contains it, else that folder itself; if `file` is not found from the root, it is looked up next to the claim file. A claim file kept outside the repository (an adapter folder) may give `CLAIM["repo"]`, a path relative to the claim file. `repo`, `scope` and `convention` are the optional keys; each is copied to the ledger line when given.
 
 ## 4. Isolation and time limit
 
