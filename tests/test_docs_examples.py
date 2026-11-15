@@ -26,3 +26,19 @@ def test_example_output_matches_the_docs(script):
     assert out.returncode == 0, out.stderr
     expected = (EXAMPLES / "output" / script.replace(".py", ".txt")).read_text(encoding="utf-8")
     assert normalise(out.stdout) == normalise(expected)
+
+
+CONFIRM = EXAMPLES / "confirm"
+CONFIRM_EXIT = {"claim_damping_sign.py": 1, "claim_verlet_order.py": 0, "claim_rk4_stage.py": 2}  # confirmed, rejected, not decidable
+
+
+@pytest.mark.parametrize("claim", sorted(CONFIRM_EXIT))
+def test_confirm_example_matches_the_docs(claim, tmp_path):
+    env = {**os.environ, "PYTHONPATH": str(ROOT / "src"), "PYTHONIOENCODING": "utf-8"}
+    env.pop("PHYSVERIFY_REPO", None)
+    out = subprocess.run([sys.executable, "-m", "physverify", "confirm", str(CONFIRM / claim), "--trusted",
+                          "--ledger", str(tmp_path / "ledger.jsonl")],
+                         capture_output=True, text=True, encoding="utf-8", env=env, timeout=300)
+    assert out.returncode == CONFIRM_EXIT[claim], out.stderr
+    expected = (EXAMPLES / "output" / f"confirm_{claim.replace('.py', '.txt')}").read_text(encoding="utf-8")
+    assert normalise(out.stdout) == normalise(expected)
