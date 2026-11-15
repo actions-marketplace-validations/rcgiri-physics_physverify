@@ -7,6 +7,7 @@ From running ten claims of the 100-repository study through `physverify confirm`
 - **`confirm` load errors:** a claim file that fails to load because a backslash in a string starts an escape (a Windows path in `CLAIM["text"]`) now says so in words and points to `confirm init --text`.
 - **`confirm` verdict:** a failing check whose message reports an exception is named as "the code raised an exception", so a crash is not read as a wrong value.
 - **Docs:** `docs/confirm.md` gives controls for defects with no effect-absent case (a wrong branch, a sign or convention, rounding, geometry).
+- **`confirm` keys `scope` and `convention`** (issue #71): `CLAIM["scope"]` (`real`, `extracted` or `synthetic`) says what part of the claim the run reaches; it is printed next to the verdict and never changes it. `CLAIM["convention"]` names the convention the reference assumes and whether the repository states it; when it does not, a failing check gives *not decidable* instead of *confirmed* (new rule 4a). Both go in the ledger, and `confirm init` lists them as comments. In the study's unsettled claims each problem was the reason in 6 of 58 rows.
 
 ## 0.8.0 (2026-11-15)
 

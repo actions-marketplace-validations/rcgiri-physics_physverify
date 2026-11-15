@@ -249,6 +249,58 @@ def test_a_failing_check_that_reports_an_exception_says_so():
     assert "exception" not in decide(ok, [wrong])[1]
 
 
+def claim_with(**keys):
+    return {**BASE_CLAIM, **keys}
+
+
+def test_an_unstated_convention_turns_a_fail_into_not_decidable(tmp_path):
+    # issue #71; study re-test L154: the repository's own test asserts the sign the claim calls wrong
+    conv = {"assumes": "positive switch-on sign", "repository": "unstated"}
+    r = judge(write_claim(tmp_path, checks=("FAIL",), claim=claim_with(convention=conv)), tmp_path)
+    assert r["verdict"] == UNDECIDED and "convention the repository does not state" in r["reason"]
+    assert "positive switch-on sign" in r["reason"] and "1 of 1 check failed" in r["reason"]
+    assert r["convention"] == conv and "convention: the reference assumes" in format_verdict(r)
+
+
+def test_a_stated_convention_or_none_keeps_confirmed(tmp_path):
+    conv = {"assumes": "y-up gravity", "repository": "stated: README, section Units"}
+    assert judge(write_claim(tmp_path, checks=("FAIL",), claim=claim_with(convention=conv)), tmp_path)["verdict"] == CONFIRMED
+    assert judge(write_claim(tmp_path, checks=("FAIL",)), tmp_path)["verdict"] == CONFIRMED
+
+
+def test_an_unstated_convention_does_not_change_a_rejection(tmp_path):
+    conv = {"assumes": "y-up gravity", "repository": "unstated"}
+    assert judge(write_claim(tmp_path, checks=("PASS",), claim=claim_with(convention=conv)), tmp_path)["verdict"] == REJECTED
+
+
+@pytest.mark.parametrize("scope", ["real", "extracted", "synthetic"])
+def test_scope_is_recorded_and_printed_and_never_changes_the_verdict(tmp_path, scope):
+    for checks, verdict in ((("FAIL",), CONFIRMED), (("PASS",), REJECTED)):
+        r = judge(write_claim(tmp_path, checks=checks, claim=claim_with(scope=scope)), tmp_path)
+        assert r["verdict"] == verdict and r["scope"] == scope
+        assert format_verdict(r).startswith(f"{verdict} (impact: used; scope: {scope})")
+
+
+@pytest.mark.parametrize("keys, words", [
+    ({"scope": "partly"}, "CLAIM['scope']"),
+    ({"convention": "y-up"}, "CLAIM['convention']"),
+    ({"convention": {"assumes": "y-up", "repository": "maybe"}}, "CLAIM['convention']"),
+    ({"convention": {"assumes": "", "repository": "unstated"}}, "CLAIM['convention']"),
+])
+def test_a_bad_scope_or_convention_is_a_load_error(tmp_path, keys, words):
+    with pytest.raises(ValueError, match=words.replace("[", r"\[").replace("]", r"\]")):
+        read_claim(write_claim(tmp_path, claim=claim_with(**keys)))
+
+
+@pytest.mark.parametrize("line", ['CLAIM["scope"] = "synthetic"', 'CLAIM.update(scope="synthetic")',
+                                  'CLAIM |= {"scope": "synthetic"}'])
+def test_changing_claim_after_the_literal_is_a_load_error(tmp_path, line):
+    # study re-test J208: keys added this way were silently ignored, and the verdict lost its scope and convention
+    path = write_claim(tmp_path, extra=line)
+    with pytest.raises(ValueError, match="changes CLAIM after it is written"):
+        read_claim(path)
+
+
 def test_init_writes_a_template_that_will_not_run_until_filled_in(tmp_path, capsys):
     path = tmp_path / "claim_x.py"
     assert cli.main(["confirm", "init", str(path), "--text", "k3 uses k1", "--file", "rk.py", "--line", "7"]) == 0

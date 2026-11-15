@@ -23,6 +23,7 @@ EXIT_CODES = {REJECTED: 0, CONFIRMED: 1, UNDECIDED: 2}
 IMPACTS = ("used", "latent", "unknown")
 REQUIRED = ("text", "source", "file", "line", "reference", "impact")
 FILL_IN = "FILL IN"
+SCOPES = ("real", "extracted", "synthetic")  # what the run reaches (issue #71); printed, never changes the verdict
 DEFAULT_LEDGER = "confirm_ledger.jsonl"
 DEFAULT_TIMEOUT = 300.0
 LEDGER_VERSION = 1
@@ -60,6 +61,16 @@ def read_claim(path) -> dict:
         targets = (node.targets if isinstance(node, ast.Assign)
                    else [node.target] if isinstance(node, ast.AnnAssign) and node.value is not None else [])
         names = {t.id for t in targets if isinstance(t, ast.Name)}
+        # CLAIM["scope"] = ... or CLAIM.update(...) after the literal would be silently ignored, since only the
+        # literal is read (study re-test, J208): refuse it instead
+        changed = ([t for t in targets if isinstance(t, ast.Subscript) and getattr(t.value, "id", None) == "CLAIM"]
+                   or (isinstance(node, ast.AugAssign) and getattr(node.target, "id", None) == "CLAIM")
+                   or (isinstance(node, ast.Expr) and isinstance(node.value, ast.Call)
+                       and isinstance(node.value.func, ast.Attribute)
+                       and getattr(node.value.func.value, "id", None) == "CLAIM"))
+        if changed:
+            raise ClaimError(f"{path.name}: line {node.lineno} changes CLAIM after it is written; only the literal"
+                             " CLAIM = {...} is read, so put every key inside it")
         if "CLAIM" in names:  # CLAIM = {...} or CLAIM: dict = {...}
             try:
                 claim = ast.literal_eval(node.value)
@@ -86,6 +97,15 @@ def read_claim(path) -> dict:
         raise ClaimError(f"{path.name}: CLAIM['line'] must be a line number (a positive integer)")
     if claim["impact"] not in IMPACTS:
         raise ClaimError(f"{path.name}: CLAIM['impact'] is {claim['impact']!r}; it must be one of {', '.join(IMPACTS)}")
+    if "convention" in claim:
+        conv = claim["convention"]
+        if (not isinstance(conv, dict) or not isinstance(conv.get("assumes"), str) or not conv["assumes"].strip()
+                or not isinstance(conv.get("repository"), str)
+                or not (conv["repository"] == "unstated" or conv["repository"].startswith("stated"))):
+            raise ClaimError(f"{path.name}: CLAIM['convention'] must be {{'assumes': 'the convention the reference"
+                             " assumes', 'repository': 'unstated' or 'stated: where the repository states it'}")
+    if "scope" in claim and claim["scope"] not in SCOPES:
+        raise ClaimError(f"{path.name}: CLAIM['scope'] is {claim['scope']!r}; it must be one of {', '.join(SCOPES)}")
     if "repo" in claim and not isinstance(claim["repo"], str):
         raise ClaimError(f"{path.name}: CLAIM['repo'] must be a path (a string)")
     for name in ("control", "checks"):
@@ -269,8 +289,9 @@ def confirm_claim(path, *, trusted: bool = False, ledger=DEFAULT_LEDGER, timeout
     except ClaimError as exc:
         return finish(UNDECIDED, f"the claim file could not be loaded: {exc}")
     record.update({k: claim[k] for k in REQUIRED})
-    if "repo" in claim:
-        record["repo"] = claim["repo"]
+    for key in ("repo", "convention", "scope"):
+        if key in claim:
+            record[key] = claim[key]
     record.update(_provenance(path, claim))
 
     base, root, _ = _repo(path, claim)
@@ -296,18 +317,28 @@ def confirm_claim(path, *, trusted: bool = False, ledger=DEFAULT_LEDGER, timeout
         return finish(UNDECIDED, f"the claim file could not be loaded: {result['load_error']}",
                       stderr_tail=run["stderr_tail"])
     record["control"], record["checks"] = result["control"], result["checks"]
-    return finish(*decide(result["control"], result["checks"]))
+    verdict, reason = decide(result["control"], result["checks"])
+    conv = claim.get("convention")
+    if verdict == CONFIRMED and conv and conv["repository"] == "unstated":
+        # a FAIL against one convention, when the repository never says which it intends, is a question for the
+        # maintainers, not a confirmed defect (issue #71; study re-test, L154)
+        verdict, reason = UNDECIDED, (f"the reference assumes a convention the repository does not state"
+                                      f" ({conv['assumes']}); {reason}")
+    return finish(verdict, reason)
 
 
 def format_verdict(record: dict) -> str:
     """The verdict in words: one line, one line per check, then the claim and its reference."""
     head = record["verdict"]
     if record.get("impact"):
-        head += f" (impact: {record['impact']})"
+        head += f" (impact: {record['impact']}" + (f"; scope: {record['scope']}" if record.get("scope") else "") + ")"
     lines = [f"{head}: {record['reason']}"]
     for kind, c in [("control", record.get("control"))] + [("check", c) for c in record.get("checks") or []]:
         if c:
             lines.append(f"  {kind:8s} {c['status']:12s} {c['label']}: {c['message']}")
+    if record.get("convention"):
+        lines.append(f"convention: the reference assumes {record['convention']['assumes']};"
+                     f" repository: {record['convention']['repository']}")
     if record.get("reference_libraries"):
         lines.append("installed libraries, not found in the repository, so not counted as code under test: "
                      + ", ".join(record["reference_libraries"]))
@@ -336,6 +367,10 @@ CLAIM = {
     "line": %(line)d,
     "reference": "FILL IN",  # book and section, paper and equation number, or README section
     "impact": "FILL IN",  # used, latent or unknown: do the repository's own scripts or defaults reach this code?
+    # optional: "scope": "real",  # real (own code path and inputs), extracted (own function, our inputs) or
+    #     synthetic (recorded numbers, a stub, a few lines re-implemented); printed, never changes the verdict
+    # optional: "convention": {"assumes": "y-up gravity", "repository": "unstated"},  # or "stated: README sec. 2";
+    #     with "unstated", a failing check gives "not decidable" instead of "confirmed"
 }
 
 
