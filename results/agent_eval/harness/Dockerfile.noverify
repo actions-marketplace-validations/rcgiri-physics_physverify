@@ -1,0 +1,7 @@
+# Arm S image (docs/plan_agent_eval.md, section 3): the sandbox image with physverify removed.
+# Arm C uses the same image and gets physverify only as a frozen copy in its /work folder,
+# so the two arms differ in nothing else.
+FROM physverify-sandbox:1
+USER root
+RUN pip uninstall -y physverify && ! python -c "import physverify"
+USER 10001
