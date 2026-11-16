@@ -623,10 +623,15 @@ def rosenbrock_residuals(alpha, gamma, b, max_order: int = 5, *, w_method: bool 
 
 def check_rosenbrock(alpha, gamma, b, *, claimed: int, label: str = "", w_method: bool = False,
                      claimed_embedded: int | None = None, embedded=None, tol: float = 1e-8,
-                     max_order: int | None = None) -> Result:
+                     max_order: int | None = None, c=None, d=None) -> Result:
     """PASS when the Rosenbrock method (alpha, Gamma, b) has the claimed order; with w_method=True, the order
     for any Jacobian approximation (W-method). Gamma is the full lower-triangular matrix with gamma_ii on the
-    diagonal. Also reports R(inf) and A-stability, from the RK method (alpha + Gamma, b)."""
+    diagonal. Also reports R(inf) and A-stability, from the RK method (alpha + Gamma, b).
+
+    `c` and `d`, when a code stores them: the stage times c_i (f is evaluated at t + c_i h) must be the row sums of
+    alpha, and the coefficients d_i of h df/dt (gamma_i in Hairer and Wanner) the row sums of Gamma. The order
+    conditions above are for autonomous problems and cannot see these; a wrong d_i drops a non-autonomous problem
+    to first order (Boost.odeint rosenbrock4 stores d4 = +0.0362 for RODAS's -0.0362, 2026)."""
     top = max(max_order or claimed + 1, claimed)
     kind = "W-method" if w_method else "Rosenbrock (exact Jacobian)"
     prefix = f"{label}: " if label else ""
@@ -642,8 +647,27 @@ def check_rosenbrock(alpha, gamma, b, *, claimed: int, label: str = "", w_method
         raise ValueError("embedded weights given without claimed_embedded: say which order they should have")
     G = np.asarray(gamma, dtype=float)
     fails, notes = [], []
-    if np.any(np.abs(np.triu(G, 1)) > 0) or np.any(np.abs(np.triu(np.asarray(alpha, dtype=float))) > 0):
+    # tables converted from Hairer's transformed form carry round-off above the diagonal
+    upper = tol * max(1.0, float(np.max(np.abs(G))), float(np.max(np.abs(np.asarray(alpha, dtype=float)))))
+    if np.any(np.abs(np.triu(G, 1)) > upper) or np.any(np.abs(np.triu(np.asarray(alpha, dtype=float))) > upper):
         fails.append("alpha must be strictly and Gamma lower triangular")
+    for name, given, sums, what in (("c", c, np.asarray(alpha, dtype=float).sum(axis=1), "row sums of alpha"),
+                                    ("d", d, G.sum(axis=1), "row sums of Gamma")):
+        if given is None:
+            continue
+        given = np.asarray(given, dtype=float).ravel()
+        n = min(given.size, sums.size)
+        diff = np.abs(given[:n] - sums[:n])
+        if given.size < sums.size and np.any(np.abs(sums[given.size:]) > tol):
+            fails.append(f"{name} has {given.size} entries for {sums.size} stages")
+        if n and diff.max() > tol:
+            i = int(np.argmax(diff))
+            fails.append(f"{name}[{i}] = {given[i]:.10g} but the {what} give {sums[i]:.10g}"
+                         + (" (sign flipped)" if abs(given[i] + sums[i]) <= tol else "")
+                         + ("; d multiplies h df/dt, so non-autonomous problems lose order" if name == "d" else
+                            "; f is evaluated at the wrong times, so non-autonomous problems lose order"))
+        elif n:
+            notes.append(f"{name} agrees with the {what}")
     p, shown = order_of(b)
     if p < claimed:
         fails.insert(0, f"claims order {claimed} as a {kind} but satisfies the conditions only up to {p} ({shown})")

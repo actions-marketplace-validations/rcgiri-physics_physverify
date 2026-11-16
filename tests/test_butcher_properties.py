@@ -216,3 +216,33 @@ def test_audit_fixes():
     assert check_tableau(bs["A"], bs["b"], claimed=3, embedded=bs["embedded"], error_weights=good).ok
     r = check_tableau(bs["A"], bs["b"], claimed=3, embedded=bs["embedded"], error_weights=good * 2)
     assert not r.ok and "not b - embedded" in r.message
+
+
+def test_rosenbrock_c_and_d_against_row_sums():
+    import numpy as np
+
+    from physverify.butcher import check_rosenbrock
+    # Hairer's RODAS (METH = 1) in transformed form, as stored in Boost.odeint rosenbrock4, converted back
+    g = 0.25
+    C = np.zeros((6, 6))
+    A = np.zeros((6, 6))
+    C[1, 0] = -5.6688
+    C[2, :2] = [-2.430093356833875, -0.2063599157091915]
+    C[3, :3] = [-0.1073529058151375, -9.594562251023355, -20.47028614809616]
+    C[4, :4] = [7.496443313967647, -10.24680431464352, -33.99990352819905, 11.70890893206160]
+    C[5, :5] = [8.083246795921522, -7.981132988064893, -31.52159432874371, 16.31930543123136, -6.058818238834054]
+    A[1, 0] = 1.544
+    A[2, :2] = [0.9466785280815826, 0.2557011698983284]
+    A[3, :3] = [3.314825187068521, 2.896124015972201, 0.9986419139977817]
+    A[4, :4] = [1.221224509226641, 6.019134481288629, 12.53708332932087, -0.6878860361058950]
+    A[5, :4], A[5, 4] = A[4, :4], 1.0
+    G = np.linalg.inv(np.diag(np.full(6, 1 / g)) - C)
+    alpha = A @ G
+    b = np.append(A[4, :4], [1.0, 1.0]) @ G
+    c = [0, 0.386, 0.21, 0.63, 1, 1]
+    good = [0.25, -0.1043, 0.1035, -0.0362, 0, 0]
+    r = check_rosenbrock(alpha, G, b, claimed=4, c=c, d=good, tol=1e-6)
+    assert r.ok and "d agrees" in r.message and "c agrees" in r.message, r.message
+    boost = [0.25, -0.1043, 0.1035, +0.0362, 0, 0]
+    r = check_rosenbrock(alpha, G, b, claimed=4, c=c, d=boost, tol=1e-6)
+    assert not r.ok and "d[3]" in r.message and "sign flipped" in r.message, r.message
