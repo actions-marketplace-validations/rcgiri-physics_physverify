@@ -382,6 +382,93 @@ def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1
     return Result(PASS, prefix + "; ".join(notes))
 
 
+# --- additive (IMEX, ARK) methods -------------------------------------------------------------------
+# y' = f1(y) + f2(y) + ..., each part with its own table (A^v, b^v) sharing the stages. The method has order
+# p exactly when b^{v(root)} . Phi(t) = 1/gamma(t) for every rooted tree of at most p vertices with every
+# colouring of its vertices by the parts; Phi uses A^{v(child root)} on each edge (Kennedy & Carpenter 2003,
+# Appl. Numer. Math. 44, sec. 2; Hairer, Norsett & Wanner I, sec. II.15, P-series). Checking each part alone
+# (one colour) misses the mixed conditions: a pair can have order 3 per part and order 2 together.
+
+def _colourings(t, n):
+    """All colourings of tree t by n colours, as (colour, (coloured children...))."""
+    import itertools
+    kids = [_colourings(s, n) for s in t]
+    return [(v, combo) for v in range(n) for combo in itertools.product(*kids)]
+
+
+def _phi_col(ct, As, e):
+    v = e.copy()
+    for s in ct[1]:
+        v = v * (As[s[0]] @ _phi_col(s, As, e))
+    return v
+
+
+def additive_order_residuals(As, bs, max_order: int = 4) -> dict:
+    """{order: (largest residual over all colourings, largest residual over single-colour trees)}."""
+    sq = [square_tableau(A, b) for A, b in zip(As, bs)]
+    n = max(A.shape[0] for A, _, _ in sq)
+    As_ = [np.pad(A, ((0, n - A.shape[0]), (0, n - A.shape[0]))) for A, _, _ in sq]
+    bs_ = [np.pad(b, (0, n - b.size)) for _, b, _ in sq]
+    e = np.ones(n)
+    out = {}
+    for p in range(1, max_order + 1):
+        allr = pure = 0.0
+        for t in trees(p):
+            g = 1.0 / _gamma(t)
+            for ct in _colourings(t, len(As_)):
+                r = abs(float(bs_[ct[0]] @ _phi_col(ct, As_, e)) - g)
+                allr = max(allr, r)
+                cols = set()
+                stack = [ct]
+                while stack:
+                    x = stack.pop()
+                    cols.add(x[0])
+                    stack.extend(x[1])
+                if len(cols) == 1:
+                    pure = max(pure, r)
+        out[p] = (allr, pure)
+    return out
+
+
+def check_additive(As, bs, cs=None, *, claimed: int, label: str = "", tol: float = 1e-8,
+                   max_order: int | None = None) -> Result:
+    """PASS when the additive (IMEX/ARK) method of the parts (A^v, b^v) has the claimed order as a pair,
+    coupling conditions included; FAIL otherwise, saying whether the parts alone or only the coupling fail.
+
+    If `cs` is given, each part's row sums must equal its c, and the parts' c must agree with each other
+    (the usual assumption of the coupling conditions; a pair with different nodes needs more conditions
+    than are checked here, so it is reported)."""
+    top = max_order or claimed + 1
+    res = additive_order_residuals(As, bs, top)
+    prefix = f"{label}: " if label else ""
+    p_all = p_pure = 0
+    for q, (ra, rp) in res.items():
+        if rp <= tol and p_pure == q - 1:
+            p_pure = q
+        if ra <= tol and p_all == q - 1:
+            p_all = q
+    shown = ", ".join(f"{q}: {ra:.1e}" for q, (ra, _rp) in res.items())
+    fails, notes = [], []
+    if cs is not None:
+        cs = [np.asarray(c, dtype=float) for c in cs]
+        for v, (A, c) in enumerate(zip(As, cs)):
+            A = np.asarray(A, dtype=float)
+            if np.max(np.abs(A.sum(axis=1)[: c.size] - c[: A.shape[0]])) > tol:
+                fails.append(f"row sums of part {v + 1} differ from its c")
+        if any(c.size != cs[0].size or np.max(np.abs(c - cs[0])) > tol for c in cs[1:]):
+            notes.append("the parts have different nodes c; coupling conditions for that case are not all checked")
+    if p_all < claimed:
+        if p_pure >= claimed:
+            fails.insert(0, f"each part has order {claimed} alone, but the coupling conditions hold only up to order"
+                            f" {p_all} (largest residual over all colourings: {shown})")
+        else:
+            fails.insert(0, f"claims order {claimed} but the parts alone satisfy the conditions only up to {p_pure}"
+                            f" and together up to {p_all} ({shown})")
+    else:
+        notes.insert(0, f"order {claimed} confirmed as a pair, coupling conditions included ({shown})")
+    return Result(FAIL if fails else PASS, prefix + "; ".join(fails + notes))
+
+
 # Published tables, for comparing a code's copy against them (exact rationals as floats).
 _S3 = np.sqrt(3.0)
 TABLES = {

@@ -92,7 +92,7 @@ See [Numerical controls, paths and Itô integrals](checks/numerical-controls.md)
 
 ## Runge-Kutta tables (`physverify.butcher`)
 
-`check_tableau` (with `embedded=`, `claimed_embedded=`, `symplectic=`), `square_tableau`, `symplectic_residual`, `TABLES`, `compare_tableau`, `tableau_order`, `order_residuals`, `linear_order`, `stage_order`, `stability_function`, `stability_polynomials`, `r_infinity`, `a_stability_margin`, `is_stiffly_accurate`. See [Runge-Kutta tables](checks/runge-kutta.md).
+`check_tableau` (with `embedded=`, `claimed_embedded=`, `error_weights=`, `symplectic=`), `check_additive` and `additive_order_residuals` (IMEX and ARK pairs, coupling conditions included), `square_tableau`, `symplectic_residual`, `TABLES`, `compare_tableau`, `tableau_order`, `order_residuals`, `linear_order`, `stage_order`, `stability_function`, `stability_polynomials`, `r_infinity`, `a_stability_margin`, `is_stiffly_accurate`. See [Runge-Kutta tables](checks/runge-kutta.md).
 
 ## Loading code (`physverify.loaders`)
 

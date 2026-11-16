@@ -105,3 +105,21 @@ def test_error_weights_must_sum_to_zero():
     assert bad.status == FAIL and "error weights sum to 1" in bad.message
     good = check_tableau(A, b, claimed=3, error_weights=[x - y for x, y in zip(b, bhat)], claimed_embedded=2)
     assert good.status == PASS and "embedded order 2 confirmed" in good.message
+
+
+def test_additive_pair_coupling():
+    from physverify.butcher import check_additive
+    # Ascher, Ruuth & Spiteri (1997) ARS(2,2,2), gamma = 1 - 1/sqrt(2), delta = 1 - 1/(2 gamma): order 2 as a pair
+    g = 1 - 1 / math.sqrt(2)
+    d = 1 - 1 / (2 * g)
+    AE, bE = [[0, 0, 0], [g, 0, 0], [d, 1 - d, 0]], [d, 1 - d, 0]
+    AI, bI = [[0, 0, 0], [0, g, 0], [0, 1 - g, g]], [0, 1 - g, g]
+    r = check_additive([AE, AI], [bE, bI], [[0, g, 1], [0, g, 1]], claimed=2)
+    assert r.status == PASS, r.message
+    # two different fourth-order methods on the same nodes: order 4 each, only 2 as a pair (mixed trees fail)
+    c = [0, 0.5, 0.5, 1]
+    E, bE = [[0, 0, 0, 0], [0.5, 0, 0, 0], [0, 0.5, 0, 0], [0, 0, 1, 0]], [1 / 6, 1 / 3, 1 / 3, 1 / 6]
+    I, bI = [[0, 0, 0, 0], [0.5, 0, 0, 0], [-0.5, 1, 0, 0], [0, 0.5, 0.5, 0]], [1 / 6, 1 / 2, 1 / 6, 1 / 6]
+    assert check_tableau(I, bI, c, claimed=4).status == PASS
+    r = check_additive([E, I], [bE, bI], [c, c], claimed=4)
+    assert r.status == FAIL and "coupling conditions hold only up to order 2" in r.message

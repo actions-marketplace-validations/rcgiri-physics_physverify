@@ -42,10 +42,16 @@ Codes store explicit tables in several shapes: SciPy's `RK45` keeps `A` as 6 x 5
 
 `physverify.butcher.TABLES` holds RK4, Bogacki-Shampine 3(2), Dormand-Prince 5(4), the implicit midpoint rule and 2-stage Gauss with their orders, and `compare_tableau(A, b, "dormand_prince_5_4")` points to the first coefficient of a code's copy that differs from the published one, with or without the FSAL stage.
 
+Some codes store the error weights b - embedded instead (the local error is h * sum e_i k_i). Pass those as `error_weights=`: they must sum to 0, and a set that sums to 1 means the embedded solution was stored where its difference from `b` was needed, so the "error" is a whole step and the step-size controller takes far too small steps (found in one library in 2026).
+
+## IMEX and additive (ARK) pairs
+
+`check_additive([A_E, A_I], [b_E, b_I], [c_E, c_I], claimed=p)` checks the order of the pair, coupling conditions included: b of the root's part times Phi(t) must equal 1/gamma(t) for every rooted tree up to order p with every colouring of its vertices by the parts (Kennedy and Carpenter 2003, Appl. Numer. Math. 44, sec. 2). Checking each part with `check_tableau` misses the mixed trees: two different fourth-order methods on the same nodes have order 4 each and only order 2 as a pair. The message says whether the parts alone or only the coupling fall short. Parts with different nodes c are reported, as the conditions checked assume shared nodes.
+
 ## Lower-level functions
 
 `tableau_order`, `linear_order`, `symplectic_residual`, `stage_order`, `stability_function`, `r_infinity`, `a_stability_margin` and `is_stiffly_accurate` in `physverify.butcher` return the numbers themselves.
 
 ## Not yet covered
 
-The extra conditions that link the explicit and implicit tables of an IMEX (additive) pair; see the [Roadmap](../roadmap.md).
+Stiff-order and stage-order conditions of IMEX pairs, Rosenbrock (W-) methods, and dense output; see the [Roadmap](../roadmap.md).
