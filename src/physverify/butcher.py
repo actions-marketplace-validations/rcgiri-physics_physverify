@@ -522,6 +522,90 @@ def check_additive(As, bs, cs=None, *, claimed: int, label: str = "", tol: float
     return Result(FAIL if fails else PASS, prefix + "; ".join(fails + notes))
 
 
+# Rosenbrock and W-methods: (I - h g_ii J) k_i = h f(y + sum_j a_ij k_j) + h J sum_{j<i} g_ij k_j, y1 = y + b . k.
+# With the exact Jacobian, order p holds when b . Phi(t) = 1/gamma(t) for every tree of at most p vertices,
+# where an edge from a vertex with exactly one child uses B = alpha + Gamma (diagonal included) and every other
+# edge uses alpha (Hairer & Wanner II, sec. IV.7, Thm 7.2). The stability function is that of the RK method
+# (B, b). A W-method (any matrix in place of J) needs each single-child edge split: all-alpha gives 1/gamma(t),
+# any marking with a Gamma edge must give 0 (Steihaug & Wolfbrandt 1979; Hairer & Wanner IV.7, W-methods).
+
+def _phi_ros(t, alpha, B, e):
+    v = e.copy()
+    M = B if len(t) == 1 else alpha
+    for s in t:
+        v = v * (M @ _phi_ros(s, alpha, B, e))
+    return v
+
+
+def _phi_w(t, alpha, G, e):
+    """All values of Phi over the alpha/Gamma markings of single-child edges, as (has_gamma, vector)."""
+    kids = [_phi_w(s, alpha, G, e) for s in t]
+    if len(t) == 1:
+        return [(g or mark, M @ v) for g, v in kids[0] for mark, M in ((False, alpha), (True, G))]
+    v = e.copy()
+    for k in kids:
+        (g, w), = [x for x in k if not x[0]]
+        v = v * (alpha @ w)
+    return [(False, v)]
+
+
+def rosenbrock_residuals(alpha, gamma, b, max_order: int = 5, *, w_method: bool = False) -> dict:
+    """{order: largest residual over the trees of that order}, exact-Jacobian or (w_method=True) W conditions."""
+    alpha = np.asarray(alpha, dtype=float)
+    G = np.asarray(gamma, dtype=float)
+    b = np.asarray(b, dtype=float)
+    e = np.ones(b.size)
+    out = {}
+    for p in range(1, max_order + 1):
+        r = 0.0
+        for t in trees(p):
+            if w_method:
+                for g, v in _phi_w(t, alpha, G, e):
+                    r = max(r, abs(float(b @ v) - (0.0 if g else 1.0 / _gamma(t))))
+            else:
+                r = max(r, abs(float(b @ _phi_ros(t, alpha, alpha + G, e)) - 1.0 / _gamma(t)))
+        out[p] = r
+    return out
+
+
+def check_rosenbrock(alpha, gamma, b, *, claimed: int, label: str = "", w_method: bool = False,
+                     claimed_embedded: int | None = None, embedded=None, tol: float = 1e-8,
+                     max_order: int | None = None) -> Result:
+    """PASS when the Rosenbrock method (alpha, Gamma, b) has the claimed order; with w_method=True, the order
+    for any Jacobian approximation (W-method). Gamma is the full lower-triangular matrix with gamma_ii on the
+    diagonal. Also reports R(inf) and A-stability, from the RK method (alpha + Gamma, b)."""
+    top = max_order or claimed + 1
+    kind = "W-method" if w_method else "Rosenbrock (exact Jacobian)"
+    prefix = f"{label}: " if label else ""
+
+    def order_of(bb):
+        res = rosenbrock_residuals(alpha, gamma, bb, top, w_method=w_method)
+        p = 0
+        while p < top and res[p + 1] <= tol:
+            p += 1
+        return p, ", ".join(f"{q}: {r:.1e}" for q, r in res.items())
+
+    G = np.asarray(gamma, dtype=float)
+    fails, notes = [], []
+    if np.any(np.abs(np.triu(G, 1)) > 0) or np.any(np.abs(np.triu(np.asarray(alpha, dtype=float))) > 0):
+        fails.append("alpha must be strictly and Gamma lower triangular")
+    p, shown = order_of(b)
+    if p < claimed:
+        fails.insert(0, f"claims order {claimed} as a {kind} but satisfies the conditions only up to {p} ({shown})")
+    else:
+        notes.append(f"order {claimed} confirmed as a {kind} (largest residuals by order: {shown})")
+    if embedded is not None and claimed_embedded is not None:
+        pe, she = order_of(embedded)
+        if pe < claimed_embedded:
+            fails.append(f"embedded weights claim order {claimed_embedded}, conditions hold only up to {pe} ({she})")
+        else:
+            notes.append(f"embedded order {claimed_embedded} confirmed")
+    B = np.asarray(alpha, dtype=float) + G
+    notes.append(f"R(inf) = {r_infinity(B, b):.3g}, A-stability margin {a_stability_margin(B, b):.2g}"
+                 " (stability of the linear test equation, same for W-methods)")
+    return Result(FAIL if fails else PASS, prefix + "; ".join(fails + notes))
+
+
 # Published tables, for comparing a code's copy against them (exact rationals as floats).
 _S3 = np.sqrt(3.0)
 TABLES = {

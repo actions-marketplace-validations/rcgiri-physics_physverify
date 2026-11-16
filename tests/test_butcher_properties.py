@@ -141,3 +141,18 @@ def test_dense_output_and_point_values():
         return w
     assert check_dense_output(A, herm, claimed=3).status == PASS
     assert check_dense_output(A, lambda th: th * b, claimed=2).status == FAIL  # linear interpolation: order 1
+
+
+def test_rosenbrock_and_w_order():
+    from physverify.butcher import check_rosenbrock
+    # Verwer et al. (1999) ROS2, gamma = 1 + 1/sqrt(2): order 2 for any Jacobian (W-method), L-stable
+    g = 1 + 1 / math.sqrt(2)
+    r = check_rosenbrock([[0, 0], [1, 0]], [[g, 0], [-2 * g, g]], [0.5, 0.5], claimed=2, w_method=True)
+    assert r.status == PASS and "R(inf) = 0" in r.message, r.message
+    # order 2 only with the exact Jacobian; a step-size study with a wrong Jacobian shows order 1
+    m = ([[0, 0], [1, 0]], [[0.5, 0], [-1, 0.5]], [0, 1])
+    assert check_rosenbrock(*m, claimed=2).status == PASS
+    r = check_rosenbrock(*m, claimed=2, w_method=True)
+    assert r.status == FAIL and "only up to 1" in r.message
+    # linearly implicit Euler: order 1, not 2
+    assert check_rosenbrock([[0]], [[1]], [1], claimed=2).status == FAIL
