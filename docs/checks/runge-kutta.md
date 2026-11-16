@@ -46,11 +46,15 @@ Some codes store the error weights b - embedded instead (the local error is h * 
 
 ## IMEX and additive (ARK) pairs
 
-`check_additive([A_E, A_I], [b_E, b_I], [c_E, c_I], claimed=p)` checks the order of the pair, coupling conditions included: b of the root's part times Phi(t) must equal 1/gamma(t) for every rooted tree up to order p with every colouring of its vertices by the parts (Kennedy and Carpenter 2003, Appl. Numer. Math. 44, sec. 2). Checking each part with `check_tableau` misses the mixed trees: two different fourth-order methods on the same nodes have order 4 each and only order 2 as a pair. The message says whether the parts alone or only the coupling fall short. Parts with different nodes c are reported, as the conditions checked assume shared nodes.
+`check_additive([A_E, A_I], [b_E, b_I], [c_E, c_I], claimed=p)` checks the order of the pair, coupling conditions included: b of the root's part times Phi(t) must equal 1/gamma(t) for every rooted tree up to order p with every colouring of its vertices by the parts (Kennedy and Carpenter 2003, Appl. Numer. Math. 44, sec. 2). Checking each part with `check_tableau` misses the mixed trees: two different fourth-order methods on the same nodes have order 4 each and only order 2 as a pair. The message says whether the parts alone or only the coupling fall short. Parts with different nodes c (from `cs`, or from the row sums when `cs` is not given) are reported: the conditions are complete for an autonomous problem, but when each part evaluates f at its own time t + c h further conditions apply, which are not checked.
 
 ## Dense output
 
-`check_dense_output(A, b_of_theta, claimed=q)` checks a continuous extension y0 + h sum b_i(theta) k_i: for every tree up to order q and theta in [0, 1], sum b_i(theta) Phi_i(t) = theta^|t| / gamma(t) (Hairer, Norsett and Wanner I, sec. II.6). `b_of_theta` is a function of theta; for one point value, such as the midpoint some codes feed into an interpolating polynomial, pass the weights and `thetas=[0.5]`. Values between steps are only as accurate as this order: a midpoint value of order 1 in a third-order solver made its outputs 4e4 times the tolerance. `dense_order` returns the number.
+`check_dense_output(A, b_of_theta, claimed=q)` checks a continuous extension y0 + h sum b_i(theta) k_i: for every tree up to order q and theta in [0, 1], sum b_i(theta) Phi_i(t) = theta^|t| / gamma(t) (Hairer, Norsett and Wanner I, sec. II.6). `b_of_theta` is a function of theta; for one point value, such as the midpoint some codes feed into an interpolating polynomial, pass the weights and `thetas=[0.5]`. Values between steps are only as accurate as this order: a midpoint value of order 1 in a third-order solver made its outputs 4e4 times the tolerance. `dense_order` returns the number. A fixed weight vector needs `thetas=[theta]`; weights over an extra FSAL stage, as SciPy stores `RK45.P`, need `b=`, the step's weights.
+
+## Rosenbrock and W-methods
+
+`check_rosenbrock(alpha, gamma, b, claimed=p)` checks a Rosenbrock method (I - h gamma_ii J) k_i = h f(y + sum alpha_ij k_j) + h J sum gamma_ij k_j, with `gamma` the full lower-triangular matrix including the diagonal. With the exact Jacobian the conditions are the Runge-Kutta ones with alpha + Gamma on the edge below a vertex with one child (Hairer and Wanner II, sec. IV.7). With `w_method=True` the order holds for any matrix in place of J: each single-child edge is marked alpha or Gamma, every marking of every subtree counts (1, 2, 5, 13, 37 conditions at orders 1-5, `w_condition_count`), the unmarked one must give 1/gamma(t) and every other 0. `embedded=` needs `claimed_embedded=`. R(inf) and the A-stability margin come from the Runge-Kutta method (alpha + Gamma, b). `rosenbrock_residuals` returns the residuals. Tables stored in Hairer's transformed form (A = alpha Gamma^-1, C = diag(1/gamma) - Gamma^-1, m = b Gamma^-1) convert back with Gamma = (diag(1/gamma) - C)^-1.
 
 ## Lower-level functions
 
@@ -58,4 +62,4 @@ Some codes store the error weights b - embedded instead (the local error is h * 
 
 ## Not yet covered
 
-Stiff-order and stage-order conditions of IMEX pairs, and Rosenbrock (W-) methods; see the [Roadmap](../roadmap.md).
+Stiff-order and stage-order conditions of IMEX pairs, the time conditions of pairs with different nodes, and stiff (B-convergence) conditions of Rosenbrock methods; see the [Roadmap](../roadmap.md).

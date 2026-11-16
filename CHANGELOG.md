@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+From the Runge-Kutta census (branch census-findings), with the fixes from an audit of it:
+- **New `butcher.check_additive`:** order of IMEX/ARK pairs, coupling conditions over every colouring of every tree (Kennedy and Carpenter 2003). Run on 39 IMEX pairs from ten libraries. Parts with different nodes are noted, from `cs` or the row sums.
+- **New `butcher.check_dense_output`, `dense_order`:** order of continuous extensions and point values. A fixed weight vector needs `thetas=[theta]`; FSAL dense weights (SciPy's `P`) need `b=`; s x (s-1) tables are padded.
+- **New `butcher.check_rosenbrock`, `rosenbrock_residuals`, `w_condition_count`:** Rosenbrock order conditions with the exact Jacobian, and W-method conditions with every marking of every subtree (1, 2, 5, 13, 37 at orders 1-5; an earlier version on the branch missed markings below a branch from order 4). Run on 33 OrdinaryDiffEq.jl tables, 3 in Hairer's RODAS and 16 fixed tables in PETSc: all reach their claimed order.
+- **`check_tableau`:** `error_weights=` for libraries that store b - embedded; when `embedded` is given too, the two must agree. A-stability judged by 1 - |R(iy)|^2 when the polynomial margin is round-off, so Gauss methods are no longer failed.
+- `max_order` below `claimed` no longer gives a false FAIL in `check_tableau`, `check_additive` and `check_rosenbrock`.
+
 From the agent evaluation of `confirm` (issue #31, `results/agent_eval/`):
 - **`confirm` convention key:** `"repository": "unstated"` now needs `"alternative"`, the other choice the code could validly make and why it would also be correct code; without it the claim file is a load error. In the evaluation an agent set `"unstated"` for a tool that never drives the flow it is meant to show, and a real defect became *not decidable*. The alternative is printed with the verdict and recorded in the ledger. **Claim files that set `"unstated"` without it must add the key.**
 - **`confirm` control:** a control that is not PASS because it raised an exception now says so, with the message, since in the evaluation most failed first runs were an import or call mistake in the claim file rather than a wrong reference.

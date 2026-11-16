@@ -167,3 +167,52 @@ def test_additive_different_nodes_note():
     r = check_additive([AE, AI], [bE, bI], [[0, 0.5], [0, 1]], claimed=2)
     assert r.status == FAIL and "coupling conditions hold only up to order 1" in r.message
     assert "complete for an autonomous problem" in r.message
+
+
+def test_audit_fixes():
+    import numpy as np
+    import pytest
+
+    from physverify.butcher import (
+        TABLES,
+        check_additive,
+        check_dense_output,
+        check_rosenbrock,
+        check_tableau,
+        rosenbrock_residuals,
+        w_condition_count,
+    )
+    # W-method conditions: markings below a branch count (published 1, 2, 5, 13, 37)
+    assert [w_condition_count(p) for p in range(1, 6)] == [1, 2, 5, 13, 37]
+    rng = np.random.default_rng(3)
+    al = np.tril(rng.uniform(-1, 1, (4, 4)), -1)
+    G = np.tril(rng.uniform(-1, 1, (4, 4)), -1) + 0.4 * np.eye(4)
+    b = rng.uniform(0, 1, 4)
+    e = np.ones(4)
+    marked = abs(float(b @ ((al @ G @ al @ e) * (al @ e))))  # the order-4 condition the old code skipped
+    assert rosenbrock_residuals(al, G, b, 4, w_method=True)[4] >= marked
+    rk4 = TABLES["rk4"]
+    with pytest.raises(ValueError):  # one fixed vector at ten thetas was a confident wrong FAIL
+        check_dense_output(rk4["A"], rk4["b"], claimed=4)
+    assert check_dense_output(rk4["A"], rk4["b"], claimed=4, thetas=[1.0]).ok
+    # FSAL dense weights (one more stage) need b; an s x (s-1) table is padded
+    dp = TABLES["dormand_prince_5_4"]
+    A6 = np.array(dp["A"])[:6, :6]
+    with pytest.raises(ValueError, match="FSAL"):
+        check_dense_output(A6, dp["b"], claimed=5, thetas=[1.0])
+    assert check_dense_output(A6, dp["b"][:6], claimed=5, thetas=[1.0], b=dp["b"][:6]).ok
+    assert check_dense_output(np.array(rk4["A"])[:, :3], rk4["b"], claimed=4, thetas=[1.0]).ok
+    # different nodes noticed without cs; max_order below claimed no longer a false FAIL
+    r = check_additive([[[0, 0], [0.5, 0]], [[0, 0], [1, 0]]], [[0, 1], [0.5, 0.5]], claimed=2)
+    assert "different nodes" in r.message
+    assert check_tableau(rk4["A"], rk4["b"], claimed=4, max_order=2).ok
+    g = 1 + 1 / np.sqrt(2)
+    assert check_rosenbrock([[0, 0], [1, 0]], [[g, 0], [-2 * g, g]], [0.5, 0.5], claimed=2, max_order=1).ok
+    with pytest.raises(ValueError):
+        check_rosenbrock([[0, 0], [1, 0]], [[g, 0], [-2 * g, g]], [0.5, 0.5], claimed=2, embedded=[1, 0])
+    # error weights that are not b - embedded
+    bs = TABLES["bogacki_shampine_3_2"]
+    good = np.array(bs["b"]) - np.array(bs["embedded"])
+    assert check_tableau(bs["A"], bs["b"], claimed=3, embedded=bs["embedded"], error_weights=good).ok
+    r = check_tableau(bs["A"], bs["b"], claimed=3, embedded=bs["embedded"], error_weights=good * 2)
+    assert not r.ok and "not b - embedded" in r.message

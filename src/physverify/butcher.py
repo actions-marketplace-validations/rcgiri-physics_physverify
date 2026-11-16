@@ -275,7 +275,7 @@ def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1
     A table stored as s x (s - 1), or with an FSAL stage of weight 0, is padded first (`square_tableau`).
     """
     A, b, c = square_tableau(A, b, c)
-    top = max_order or claimed + 1
+    top = max(max_order or claimed + 1, claimed)
     res = order_residuals(A, b, top)
     p = tableau_order(A, b, max_order=top, tol=tol)
     shown = ", ".join(f"{q}: {r:.1e}" for q, r in res.items())
@@ -348,7 +348,14 @@ def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1
             fails.append(f"error weights sum to {ew.sum():.10g}, not 0: the error estimate h*sum(e_i k_i) is then"
                          " a whole step (about h*f), not a difference of two formulas; were the embedded weights"
                          " stored in place of b - embedded?")
-        elif embedded is None:
+        elif embedded is not None:
+            emb = np.asarray(embedded, dtype=float)
+            n = max(b.size, ew.size, emb.size)
+            bb, ee, mm = (np.pad(x, (0, n - x.size)) for x in (b, ew, emb))
+            d = min(np.max(np.abs(bb - mm - ee)), np.max(np.abs(bb - mm + ee)))
+            if d > tol:
+                fails.append(f"the error weights are not b - embedded (nor its negative); they differ by {d:.1e}")
+        else:
             bb = np.zeros(max(b.size, ew.size))
             bb[:b.size] = b
             ee = np.zeros(bb.size)
@@ -389,13 +396,32 @@ def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1
 # at a single theta. A dense output of order q gives errors O(h^(q+1)) per step, so between steps the result is
 # only as good as min(p, q): the torchdiffeq bosh3 midpoint (order 1) made outputs 4e4 x the tolerance.
 
-def dense_residuals(A, b_of_theta, *, max_order: int = 5, thetas=None) -> dict:
+def _dense_table(A, n_weights, b=None):
+    """A made square, and extended by the FSAL stage (row b) when the weights have one more entry than A has
+    stages, as SciPy stores RK45.P. A table stored as s x (s - 1) is padded like `square_tableau`."""
+    A = square_tableau(A, np.zeros(1))[0]
+    s = A.shape[0]
+    if n_weights == s + 1:
+        if b is None:
+            raise ValueError(f"the dense weights have {n_weights} entries for a {s}-stage table: an FSAL stage;"
+                             " pass b= (the step's weights, which are that stage's row of A)")
+        A = np.vstack([np.hstack([A, np.zeros((s, 1))]), np.append(np.asarray(b, dtype=float), 0.0)])
+    elif n_weights > s:
+        raise ValueError(f"the dense weights have {n_weights} entries but the table has {s} stages")
+    return A
+
+
+def dense_residuals(A, b_of_theta, *, max_order: int = 5, thetas=None, b=None) -> dict:
     """{order: largest |b(theta) . Phi(t) - theta^|t|/gamma(t)|} over trees of that order and the thetas.
-    `b_of_theta` is a callable theta -> weights, or a fixed weight vector (then `thetas` must hold its one theta)."""
-    A = np.asarray(A, dtype=float)
+    `b_of_theta` is a callable theta -> weights, or a fixed weight vector (then `thetas` must hold its one theta).
+    Weights with one entry more than A has stages belong to an FSAL stage; pass `b`, the step's weights."""
     if thetas is None:
+        if not callable(b_of_theta):
+            raise ValueError("a fixed weight vector is the output at one theta: pass thetas=[theta]")
         thetas = np.linspace(0.1, 1.0, 10)
     get = b_of_theta if callable(b_of_theta) else (lambda th: b_of_theta)
+    sizes = {np.asarray(get(th), dtype=float).size for th in thetas}
+    A = _dense_table(A, max(sizes), b)
     n = A.shape[0]
     e = np.ones(n)
     out = {}
@@ -411,21 +437,23 @@ def dense_residuals(A, b_of_theta, *, max_order: int = 5, thetas=None) -> dict:
     return out
 
 
-def dense_order(A, b_of_theta, *, max_order: int = 5, thetas=None, tol: float = 1e-8) -> int:
+def dense_order(A, b_of_theta, *, max_order: int = 5, thetas=None, tol: float = 1e-8, b=None) -> int:
     """Highest q <= max_order whose dense-output conditions hold within tol (0 if not even consistent)."""
     q = 0
-    for p, r in dense_residuals(A, b_of_theta, max_order=max_order, thetas=thetas).items():
+    for p, r in dense_residuals(A, b_of_theta, max_order=max_order, thetas=thetas, b=b).items():
         if r > tol:
             break
         q = p
     return q
 
 
-def check_dense_output(A, b_of_theta, *, claimed: int, label: str = "", thetas=None, tol: float = 1e-8) -> Result:
+def check_dense_output(A, b_of_theta, *, claimed: int, label: str = "", thetas=None, tol: float = 1e-8,
+                       b=None) -> Result:
     """PASS when the continuous extension (or one point value, with `thetas=[theta]`) has at least the claimed
-    order on every theta given; FAIL with the residuals otherwise."""
-    res = dense_residuals(A, b_of_theta, max_order=claimed + 1, thetas=thetas)
-    q = dense_order(A, b_of_theta, max_order=claimed + 1, thetas=thetas, tol=tol)
+    order on every theta given; FAIL with the residuals otherwise. A fixed weight vector needs `thetas=[theta]`
+    (ValueError otherwise). Weights over an extra FSAL stage (SciPy's P) need `b`, the step's weights."""
+    res = dense_residuals(A, b_of_theta, max_order=claimed + 1, thetas=thetas, b=b)
+    q = max((p for p in range(claimed + 2) if all(res[k] <= tol for k in range(1, p + 1))), default=0)
     shown = ", ".join(f"{p}: {r:.1e}" for p, r in res.items())
     prefix = f"{label}: " if label else ""
     where = "the point value" if thetas is not None and len(thetas) == 1 else "the dense output"
@@ -491,7 +519,7 @@ def check_additive(As, bs, cs=None, *, claimed: int, label: str = "", tol: float
     If `cs` is given, each part's row sums must equal its c, and the parts' c must agree with each other
     (the usual assumption of the coupling conditions; a pair with different nodes needs more conditions
     than are checked here, so it is reported)."""
-    top = max_order or claimed + 1
+    top = max(max_order or claimed + 1, claimed)
     res = additive_order_residuals(As, bs, top)
     prefix = f"{label}: " if label else ""
     p_all = p_pure = 0
@@ -502,16 +530,21 @@ def check_additive(As, bs, cs=None, *, claimed: int, label: str = "", tol: float
             p_all = q
     shown = ", ".join(f"{q}: {ra:.1e}" for q, (ra, _rp) in res.items())
     fails, notes = [], []
+    rows = [square_tableau(A, b)[0].sum(axis=1) for A, b in zip(As, bs)]
+    n = max(r.size for r in rows)
+    rows = [np.pad(r, (0, n - r.size)) for r in rows]
+    nodes_differ = any(np.max(np.abs(r - rows[0])) > tol for r in rows[1:])
     if cs is not None:
         cs = [np.asarray(c, dtype=float) for c in cs]
         for v, (A, c) in enumerate(zip(As, cs)):
             A = np.asarray(A, dtype=float)
             if np.max(np.abs(A.sum(axis=1)[: c.size] - c[: A.shape[0]])) > tol:
                 fails.append(f"row sums of part {v + 1} differ from its c")
-        if any(c.size != cs[0].size or np.max(np.abs(c - cs[0])) > tol for c in cs[1:]):
-            notes.append("the parts have different nodes c: the conditions checked here are complete for an autonomous"
-                         " problem, but when each part evaluates f at its own time t + c h, time is not one shared variable"
-                         " and further conditions apply (not checked; to check them, write t as a state variable)")
+        nodes_differ = nodes_differ or any(c.size != cs[0].size or np.max(np.abs(c - cs[0])) > tol for c in cs[1:])
+    if nodes_differ:
+        notes.append("the parts have different nodes c: the conditions checked here are complete for an autonomous"
+                     " problem, but when each part evaluates f at its own time t + c h, time is not one shared variable"
+                     " and further conditions apply (not checked; to check them, write t as a state variable)")
     if p_all < claimed:
         if p_pure >= claimed:
             fails.insert(0, f"each part has order {claimed} alone, but the coupling conditions hold only up to order"
@@ -540,15 +573,33 @@ def _phi_ros(t, alpha, B, e):
 
 
 def _phi_w(t, alpha, G, e):
-    """All values of Phi over the alpha/Gamma markings of single-child edges, as (has_gamma, vector)."""
+    """Phi for every alpha/Gamma marking of the single-child edges of t, as {key: (has_gamma, vector)}.
+
+    Below a vertex with two or more children the edges use alpha, but each child subtree keeps all of its own
+    markings, so the markings of a tree are the products of its children's (a marked chain below a branch is a
+    condition too: b . ((alpha Gamma alpha e) * (alpha e)) = 0 at order 4). Keys are canonical, so markings that
+    differ only by the order of identical children are one condition."""
+    import itertools
     kids = [_phi_w(s, alpha, G, e) for s in t]
     if len(t) == 1:
-        return [(g or mark, M @ v) for g, v in kids[0] for mark, M in ((False, alpha), (True, G))]
-    v = e.copy()
-    for k in kids:
-        (g, w), = [x for x in k if not x[0]]
-        v = v * (alpha @ w)
-    return [(False, v)]
+        return {(mark, k): (g or mark == "G", M @ v) for k, (g, v) in kids[0].items()
+                for mark, M in (("a", alpha), ("G", G))}
+    out = {}
+    for combo in itertools.product(*(list(k.items()) for k in kids)):
+        key = ("*",) + tuple(sorted((kk for kk, _ in combo), key=repr))
+        if key in out:
+            continue
+        v = e.copy()
+        for _, (_, w) in combo:
+            v = v * (alpha @ w)
+        out[key] = (any(g for _, (g, _) in combo), v)
+    return out
+
+
+def w_condition_count(order: int) -> int:
+    """Number of distinct W-method order conditions with exactly `order` vertices (1, 2, 5, 13, 37, ...)."""
+    e = np.ones(1)
+    return sum(len(_phi_w(t, np.ones((1, 1)), np.ones((1, 1)), e)) for t in trees(order))
 
 
 def rosenbrock_residuals(alpha, gamma, b, max_order: int = 5, *, w_method: bool = False) -> dict:
@@ -562,7 +613,7 @@ def rosenbrock_residuals(alpha, gamma, b, max_order: int = 5, *, w_method: bool 
         r = 0.0
         for t in trees(p):
             if w_method:
-                for g, v in _phi_w(t, alpha, G, e):
+                for g, v in _phi_w(t, alpha, G, e).values():
                     r = max(r, abs(float(b @ v) - (0.0 if g else 1.0 / _gamma(t))))
             else:
                 r = max(r, abs(float(b @ _phi_ros(t, alpha, alpha + G, e)) - 1.0 / _gamma(t)))
@@ -576,7 +627,7 @@ def check_rosenbrock(alpha, gamma, b, *, claimed: int, label: str = "", w_method
     """PASS when the Rosenbrock method (alpha, Gamma, b) has the claimed order; with w_method=True, the order
     for any Jacobian approximation (W-method). Gamma is the full lower-triangular matrix with gamma_ii on the
     diagonal. Also reports R(inf) and A-stability, from the RK method (alpha + Gamma, b)."""
-    top = max_order or claimed + 1
+    top = max(max_order or claimed + 1, claimed)
     kind = "W-method" if w_method else "Rosenbrock (exact Jacobian)"
     prefix = f"{label}: " if label else ""
 
@@ -587,6 +638,8 @@ def check_rosenbrock(alpha, gamma, b, *, claimed: int, label: str = "", w_method
             p += 1
         return p, ", ".join(f"{q}: {r:.1e}" for q, r in res.items())
 
+    if embedded is not None and claimed_embedded is None:
+        raise ValueError("embedded weights given without claimed_embedded: say which order they should have")
     G = np.asarray(gamma, dtype=float)
     fails, notes = [], []
     if np.any(np.abs(np.triu(G, 1)) > 0) or np.any(np.abs(np.triu(np.asarray(alpha, dtype=float))) > 0):
