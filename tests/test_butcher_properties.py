@@ -123,3 +123,21 @@ def test_additive_pair_coupling():
     assert check_tableau(I, bI, c, claimed=4).status == PASS
     r = check_additive([E, I], [bE, bI], [c, c], claimed=4)
     assert r.status == FAIL and "coupling conditions hold only up to order 2" in r.message
+
+
+def test_dense_output_and_point_values():
+    from physverify.butcher import check_dense_output, dense_order
+    A = [[0, 0, 0, 0], [1 / 2, 0, 0, 0], [0, 3 / 4, 0, 0], [2 / 9, 1 / 3, 4 / 9, 0]]  # Bogacki-Shampine, FSAL row
+    # torchdiffeq 0.2.5 bosh3 midpoint y0 + h/2 k2: order 1 (outputs 4e4 x tol); the cubic Hermite value: order 3
+    assert dense_order(A, [0, 1 / 2, 0, 0], thetas=[0.5]) == 1
+    assert dense_order(A, [17 / 72, 1 / 6, 2 / 9, -1 / 8], thetas=[0.5]) == 3
+    # cubic Hermite interpolant over the whole step, as weights b_i(theta) (Hairer, Norsett & Wanner I, II.6)
+    b = np.array([2 / 9, 1 / 3, 4 / 9, 0])
+
+    def herm(th):
+        h01, h10, h11 = 3 * th ** 2 - 2 * th ** 3, th ** 3 - 2 * th ** 2 + th, th ** 3 - th ** 2
+        w = h01 * b + h11 * np.array([0, 0, 0, 1.0])
+        w[0] += h10
+        return w
+    assert check_dense_output(A, herm, claimed=3).status == PASS
+    assert check_dense_output(A, lambda th: th * b, claimed=2).status == FAIL  # linear interpolation: order 1

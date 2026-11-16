@@ -382,6 +382,59 @@ def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1
     return Result(PASS, prefix + "; ".join(notes))
 
 
+# --- dense output (continuous extensions) ---------------------------------------------------------------
+# A dense output y(t0 + theta h) = y0 + h sum_i b_i(theta) k_i has uniform order q when, for every tree t with
+# at most q vertices and every theta in [0, 1], sum_i b_i(theta) Phi_i(t) = theta^|t| / gamma(t)
+# (Hairer, Norsett & Wanner I, sec. II.6, eq. (6.14)). One point value (a "midpoint" y_mid) is the same test
+# at a single theta. A dense output of order q gives errors O(h^(q+1)) per step, so between steps the result is
+# only as good as min(p, q): the torchdiffeq bosh3 midpoint (order 1) made outputs 4e4 x the tolerance.
+
+def dense_residuals(A, b_of_theta, *, max_order: int = 5, thetas=None) -> dict:
+    """{order: largest |b(theta) . Phi(t) - theta^|t|/gamma(t)|} over trees of that order and the thetas.
+    `b_of_theta` is a callable theta -> weights, or a fixed weight vector (then `thetas` must hold its one theta)."""
+    A = np.asarray(A, dtype=float)
+    if thetas is None:
+        thetas = np.linspace(0.1, 1.0, 10)
+    get = b_of_theta if callable(b_of_theta) else (lambda th: b_of_theta)
+    n = A.shape[0]
+    e = np.ones(n)
+    out = {}
+    for q in range(1, max_order + 1):
+        r = 0.0
+        for th in thetas:
+            w = np.zeros(n)
+            bw = np.asarray(get(th), dtype=float)
+            w[:bw.size] = bw
+            for t in trees(q):
+                r = max(r, abs(float(w @ _phi(t, A, e)) - th ** q / _gamma(t)))
+        out[q] = r
+    return out
+
+
+def dense_order(A, b_of_theta, *, max_order: int = 5, thetas=None, tol: float = 1e-8) -> int:
+    """Highest q <= max_order whose dense-output conditions hold within tol (0 if not even consistent)."""
+    q = 0
+    for p, r in dense_residuals(A, b_of_theta, max_order=max_order, thetas=thetas).items():
+        if r > tol:
+            break
+        q = p
+    return q
+
+
+def check_dense_output(A, b_of_theta, *, claimed: int, label: str = "", thetas=None, tol: float = 1e-8) -> Result:
+    """PASS when the continuous extension (or one point value, with `thetas=[theta]`) has at least the claimed
+    order on every theta given; FAIL with the residuals otherwise."""
+    res = dense_residuals(A, b_of_theta, max_order=claimed + 1, thetas=thetas)
+    q = dense_order(A, b_of_theta, max_order=claimed + 1, thetas=thetas, tol=tol)
+    shown = ", ".join(f"{p}: {r:.1e}" for p, r in res.items())
+    prefix = f"{label}: " if label else ""
+    where = "the point value" if thetas is not None and len(thetas) == 1 else "the dense output"
+    if q < claimed:
+        return Result(FAIL, prefix + f"{where} should have order {claimed} but its conditions hold only up to {q}"
+                                     f" (largest residual per order: {shown})")
+    return Result(PASS, prefix + f"{where} has order {q if q <= claimed else f'at least {q}'} (claimed {claimed}; {shown})")
+
+
 # --- additive (IMEX, ARK) methods -------------------------------------------------------------------
 # y' = f1(y) + f2(y) + ..., each part with its own table (A^v, b^v) sharing the stages. The method has order
 # p exactly when b^{v(root)} . Phi(t) = 1/gamma(t) for every rooted tree of at most p vertices with every

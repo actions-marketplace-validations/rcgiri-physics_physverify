@@ -48,10 +48,14 @@ Some codes store the error weights b - embedded instead (the local error is h * 
 
 `check_additive([A_E, A_I], [b_E, b_I], [c_E, c_I], claimed=p)` checks the order of the pair, coupling conditions included: b of the root's part times Phi(t) must equal 1/gamma(t) for every rooted tree up to order p with every colouring of its vertices by the parts (Kennedy and Carpenter 2003, Appl. Numer. Math. 44, sec. 2). Checking each part with `check_tableau` misses the mixed trees: two different fourth-order methods on the same nodes have order 4 each and only order 2 as a pair. The message says whether the parts alone or only the coupling fall short. Parts with different nodes c are reported, as the conditions checked assume shared nodes.
 
+## Dense output
+
+`check_dense_output(A, b_of_theta, claimed=q)` checks a continuous extension y0 + h sum b_i(theta) k_i: for every tree up to order q and theta in [0, 1], sum b_i(theta) Phi_i(t) = theta^|t| / gamma(t) (Hairer, Norsett and Wanner I, sec. II.6). `b_of_theta` is a function of theta; for one point value, such as the midpoint some codes feed into an interpolating polynomial, pass the weights and `thetas=[0.5]`. Values between steps are only as accurate as this order: a midpoint value of order 1 in a third-order solver made its outputs 4e4 times the tolerance. `dense_order` returns the number.
+
 ## Lower-level functions
 
 `tableau_order`, `linear_order`, `symplectic_residual`, `stage_order`, `stability_function`, `r_infinity`, `a_stability_margin` and `is_stiffly_accurate` in `physverify.butcher` return the numbers themselves.
 
 ## Not yet covered
 
-Stiff-order and stage-order conditions of IMEX pairs, Rosenbrock (W-) methods, and dense output; see the [Roadmap](../roadmap.md).
+Stiff-order and stage-order conditions of IMEX pairs, and Rosenbrock (W-) methods; see the [Roadmap](../roadmap.md).
