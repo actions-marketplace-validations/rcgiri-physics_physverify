@@ -25,6 +25,8 @@ physverify is the step after the review: each claim becomes a check that runs th
 4. **Run it.** On code you do not trust, inside the [sandbox](https://github.com/rcgiri-physics/physverify/tree/main/sandbox). If only one function is needed, `physverify.loaders.extract_functions` loads it without importing the whole package.
 5. **Record the verdict:** confirmed (with the numbers), rejected (with the numbers), or open. A fix that removes the difference is good supporting evidence.
 
+`physverify confirm` does steps 4 and 5 with a fixed rule: a claim file holds the claim, a control that must pass and the checks, and each run's verdict is appended to a ledger. See [Confirming one suspected defect](confirm.md).
+
 ## Examples
 
 | claim | reference | result |

@@ -1,6 +1,6 @@
 # Roadmap
 
-What may come after 0.7.0. Release 0.5.0 (2026-10-24) added `physverify scan` with the Phase 1 static checks, 0.6.0 (2026-10-26) the Phase 2 probes, `scan --run`, and 0.7.0 (2026-10-31) the checks from the daily corpus sessions; see the changelog. Since November 2026 the work goes into confirming suspected defects; `scan` is kept working but gets no new rules (decided 2026-11-14). Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
+What may come after 0.8.0. Release 0.5.0 (2026-10-24) added `physverify scan` with the Phase 1 static checks, 0.6.0 (2026-10-26) the Phase 2 probes, `scan --run`, 0.7.0 (2026-10-31) the checks from the daily corpus sessions, and 0.8.0 (2026-11-15) `physverify confirm`, which turns one suspected defect into a run and a recorded verdict; see the changelog. Since November 2026 the work goes into confirming suspected defects; `scan` is kept working but gets no new rules (decided 2026-11-14). Nothing here is promised or scheduled; the order is a rough guess at what would help users most. Suggestions are welcome as GitHub issues.
 
 
 ## Principles

@@ -60,14 +60,60 @@ The checks run on every Python edit. For a slow suite, list only the fast specs 
 claude mcp add physverify -- physverify mcp
 ```
 
-The server speaks MCP over stdio and offers one tool, `run_checks`:
+### Other MCP clients
+
+The server is a local program that the client starts; it runs on your computer, in the folder the client starts it in. Install physverify first (`pip install physverify`, best in a virtual environment), then give the client the command `physverify` with the argument `mcp`. If the client cannot find `physverify`, give the full path, for example `C:\Users\you\.venv\Scripts\physverify.exe` or `/home/you/.venv/bin/physverify`. With [uv](https://docs.astral.sh/uv/) installed you can skip the install and use the command `uvx` with the arguments `physverify`, `mcp`.
+
+Most clients take the same `mcpServers` entry: Claude Desktop (`claude_desktop_config.json`), Cursor (`.cursor/mcp.json` or `~/.cursor/mcp.json`), Windsurf (`~/.codeium/windsurf/mcp_config.json`), Cline (MCP Servers, Configure, `cline_mcp_settings.json`) and Qoder (Qoder IDE Settings, MCP, My Servers, + Add):
+
+```json
+{
+  "mcpServers": {
+    "physverify": {
+      "command": "physverify",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+VS Code (`.vscode/mcp.json`) uses `servers`:
+
+```json
+{
+  "servers": {
+    "physverify": {
+      "type": "stdio",
+      "command": "physverify",
+      "args": ["mcp"]
+    }
+  }
+}
+```
+
+Codex CLI (`~/.codex/config.toml`):
+
+```toml
+[mcp_servers.physverify]
+command = "physverify"
+args = ["mcp"]
+```
+
+Give the tools full paths, or `project` as a full path: relative paths are taken from the folder the client started the server in. The server is also listed in the [official MCP registry](https://registry.modelcontextprotocol.io) as `io.github.rcgiri-physics/physverify`, for clients that install from it.
+
+### Tools
+
+The server speaks MCP over stdio and offers two tools. The first is `run_checks`:
 
 | Argument | Meaning |
 |---|---|
 | `specs` | List of spec paths |
 | `project` | Folder to search for `verify_*.py` when `specs` is not given |
+| `timeout` | Seconds for the whole run (default 600) |
 
-It returns the JSON report: status, message, observed and expected order, step sizes and errors for each check. Failures are summarised at the top.
+It returns the JSON report: status, message, observed and expected order, step sizes and errors for each check. Failures are summarised at the top. The checks run in a fresh Python process, so an edit to the solver between two calls is always seen; a run longer than `timeout` is stopped and reported as a load error.
+
+The second is `confirm_claim`, which judges one claim file exactly like `physverify confirm` (see [Confirming one suspected defect](confirm.md)). It needs `trusted: true`, or the sandbox.
 
 The server is written with the standard library only. It serves both protocol eras on the same process:
 - the older handshake (`initialize`, protocol versions 2025-11-25 and earlier);

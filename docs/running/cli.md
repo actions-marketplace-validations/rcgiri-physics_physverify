@@ -105,6 +105,15 @@ physverify smoke path/to/project --timeout 60
 
 Each script is compiled, then run in its own process with a time limit, stdin closed and plotting off. It reports scripts that do not parse, crash, wait for input or emit NaN/overflow warnings. It runs the code, so use it on trusted code or in the sandbox.
 
+## `physverify confirm`
+
+```bash
+physverify confirm init claim_k3.py --text "k3 uses k1" --file rk.py --line 42
+physverify confirm claim_k3.py --trusted --ledger confirm_ledger.jsonl --timeout 300
+```
+
+Judges one suspected defect: the claim file defines `CLAIM`, a `control()` check that must pass and the `checks()` of the correct behaviour, with a reference written from the physics. The verdict is confirmed (exit 1), rejected (exit 0) or not decidable (exit 2), and every run appends one line to the ledger. It runs the code, so it needs `--trusted` or the sandbox. See [Confirming one suspected defect](../confirm.md).
+
 ## pytest
 
 With physverify installed, `pytest my_spec.py` turns each check into a pytest test (SKIP becomes a pytest skip). See [Continuous integration](../ci.md).

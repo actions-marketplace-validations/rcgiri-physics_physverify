@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+From the agent evaluation of `confirm` (issue #31, `results/agent_eval/`):
+- **`confirm` convention key:** `"repository": "unstated"` now needs `"alternative"`, the other choice the code could validly make and why it would also be correct code; without it the claim file is a load error. In the evaluation an agent set `"unstated"` for a tool that never drives the flow it is meant to show, and a real defect became *not decidable*. The alternative is printed with the verdict and recorded in the ledger. **Claim files that set `"unstated"` without it must add the key.**
+- **`confirm` control:** a control that is not PASS because it raised an exception now says so, with the message, since in the evaluation most failed first runs were an import or call mistake in the claim file rather than a wrong reference.
+
+From running ten claims of the 100-repository study through `physverify confirm`:
+- **`confirm` rule 1:** a module counts as code under test only when it is found in the repository or next to the claim file. An installed library the repository uses (healpy, for a sky-map package) may be the reference for a claim that the repository calls it wrongly; such libraries are listed in the ledger (`reference_libraries`) and printed with the verdict. Before, the claim could only be decided with `--allow-dependent-reference`.
+- **`confirm` load errors:** a claim file that fails to load because a backslash in a string starts an escape (a Windows path in `CLAIM["text"]`) now says so in words and points to `confirm init --text`.
+- **`confirm` verdict:** a failing check whose message reports an exception is named as "the code raised an exception", so a crash is not read as a wrong value.
+- **Docs:** `docs/confirm.md` gives controls for defects with no effect-absent case (a wrong branch, a sign or convention, rounding, geometry).
+- **`confirm` keys `scope` and `convention`** (issue #71): `CLAIM["scope"]` (`real`, `extracted` or `synthetic`) says what part of the claim the run reaches; it is printed next to the verdict and never changes it. `CLAIM["convention"]` names the convention the reference assumes and whether the repository states it; when it does not, a failing check gives *not decidable* instead of *confirmed* (new rule 4a). Both go in the ledger, and `confirm init` lists them as comments. In the study's unsettled claims each problem was the reason in 6 of 58 rows.
+
+## 0.8.0 (2026-11-15)
+
+- **Docs:** PyAstronomy added to the README's table of maintainer-confirmed defects, and its row in `docs/confirmed.md` now gives the wider effect the maintainer found.
+- **MCP registry:** a new workflow, `.github/workflows/mcp-registry.yml`, publishes `packaging/mcp-registry/server.json` after each PyPI release (GitHub OIDC login, `mcp-publisher` pinned and its signature checked).
+- **New command `physverify confirm`** (issue #54; `physverify.confirm`, tests in `tests/test_confirm.py`, design in `docs/confirm.md`): a claim file with `CLAIM`, `control()` and `checks()` gets a verdict (confirmed, rejected or not decidable) by fixed rules, appended to a JSON-lines ledger with file hashes, the commit and the physverify version. It runs the code in a fresh process with a time limit and refuses without `--trusted` outside the sandbox. `physverify confirm init` writes a template. Three worked examples in `docs/examples/confirm/`. The MCP server gets a `confirm_claim` tool, and its `run_checks` tool now runs in a fresh process too (`physverify.isolate`), with a `timeout` argument.
 - **Docs rewrite around confirming claims:** README and home page lead with turning a suspected defect into a run and a verdict, and with the 100-repository study of AI review claims (counts within that sample); new figures `docs/images/claim-to-verdict.svg` and `claim-outcomes.svg`; the AI-review and results pages replace the 20-repository pilot with the study; ROADMAP records that `scan` keeps working but gets no new rules.
 - **Corpus ledger** (issue #29): `results/corpus/ledger.csv` has one row per reported defect of batches 1-8 (IDs only) and `funnel.csv` one row per batch; `scripts/corpus_ledger.py` (run by `reproduce_all.py`, checked by `tests/test_corpus_ledger.py`) generates `results/corpus/LEDGER.md`, so its totals cannot go stale.
 - `scripts/study100.py`: the paired comparison of every method on the same posted defects replaces the Claude-vs-Qwen kappa table.

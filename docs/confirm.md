@@ -1,0 +1,220 @@
+# Confirming one suspected defect
+
+This page is the design of `physverify confirm` (issue #54), kept as its specification.
+
+`physverify confirm` takes **one** suspected defect, runs checks against a reference written from the physics, and records a verdict: *confirmed*, *rejected* or *not decidable*. A suspicion can come from a person, from `physverify scan`, or from an AI code review ([Checking an AI code review](ai-review.md)).
+
+It does **not** find defects, and it does **not** write the reference. A person (or an assistant the person supervises) writes the claim file, and the reference in it must come from a book, a paper or the project's README, never from the code under test. The command only makes the run repeatable and the verdict rule fixed, and keeps a record of every run.
+
+`confirm` **runs the code**. Use it on code you trust, or inside the container described in [sandbox/README.md](https://github.com/rcgiri-physics/physverify/blob/main/sandbox/README.md).
+
+## 1. The claim file
+
+A claim file is a Python file, like a spec. Its folder is put on `sys.path`, so it can import the solver next to it. It defines three things at its top level. `CLAIM` may carry a type annotation (`CLAIM: dict = {...}`); `control` and `checks` may be defined there or imported (`from helpers import control, checks`). A name bound only inside an `if` block or a function is not seen, because the file is read before it runs.
+
+### `CLAIM`
+
+A literal dict (strings and numbers only, so it can be read without running the file) with these keys, all required:
+
+| Key | Meaning |
+|---|---|
+| `text` | the claim as it was stated, unedited ("the RK4 stage `k3` is evaluated at `t + h` instead of `t + h/2`") |
+| `source` | who made the claim: a person, `physverify scan`, or a model with its name |
+| `file` | the file the claim is about, relative to the repository root |
+| `line` | the line number in that file (an integer) |
+| `reference` | where the correct equation comes from: book and section, paper and equation number, or the README section |
+| `impact` | `used`, `latent` or `unknown`: whether the repository's own scripts or defaults reach the code path |
+
+`CLAIM` that is not a literal dict, a missing key, an empty or `"FILL IN"` string, a `line` that is not an integer, or an `impact` outside the three values is a load error (exit 2, nothing is run).
+
+`impact` is about reach, not size. `used`: a script or default setting in the repository runs the faulty path. `latent`: the path is reachable only by an option, argument or input that the repository itself never uses. `unknown`: not looked at. The person writing the claim decides it; `confirm` does not check it.
+
+Two optional keys say how far a verdict reaches (issue #71). In a reading of the study's unsettled claims, each problem below was the reason in 6 of 58 rows.
+
+| Key | Meaning |
+|---|---|
+| `scope` | `real` (the repository's own code path with its own inputs or defaults), `extracted` (the repository's function on inputs the claim file chooses) or `synthetic` (recorded numbers, a stub, or a few lines re-implemented). Printed next to the verdict like `impact`, and never changes it. A convergence-loop claim checked on recorded sweep energies, with the solver never run, is `synthetic`. |
+| `convention` | `{"assumes": "...", "repository": "unstated", "alternative": "..."}` or `"repository": "stated: <where>"`: the convention the reference assumes (a sign, y-up gravity, periodic walls), and whether the repository states the one it intends. With `"unstated"`, a failing check gives *not decidable* instead of *confirmed* (rule 4a), and `alternative` is required: the other choice the code could validly make, and why it would also be correct code. |
+
+A convention is a choice the code could validly make either way: a sign, an axis direction, a boundary rule, which preset is meant. A law of physics is not one (an additive constant in a potential does not change the dynamics), nor is the documented order of a library's return values, nor a tolerance you are unsure about. Setting `"unstated"` for those turns a real failure into *not decidable*, so give the key only when the opposite choice would also be correct code. In a second run of ten study claims, three convention cases were settled as intended, and two drafters set the key where it did not belong. In the agent evaluation (issue #31) an agent set `"unstated"` for a flow-past-a-cylinder tool that never drives any flow, and a real defect became *not decidable*; that is why `alternative` is required. If you cannot write down a second choice that would be correct code ("no flow at all" is not one for a tool meant to show flow), it is not a convention: leave the key out.
+
+A tolerance decides the verdict when an error sits near it, so say where it comes from: the error the method is known to leave (a linearised fit, a discretisation order), a stated requirement, or a margin over a measured noise floor. In the same run, one verdict changed from rejected to confirmed on an error of 0.058 against a tolerance of 0.05 that had no stated source.
+
+A `scope` outside the three values, a `convention` without both keys (`repository` must be `unstated` or begin with `stated`), or an `"unstated"` convention without a non-empty `alternative`, is a load error.
+
+### `control()`
+
+Returns one `physverify.Check` that must PASS. It shows two things: that the reference is right, and that the test can pass at all. Typical controls:
+- the same check on a case where the claimed effect is absent (the faulty term multiplies zero, the bad branch is not taken, a constant coefficient where the claim is about a variable one);
+- the same check with the reference on an independent solver (`scipy.integrate.solve_ivp` at tight tolerance) in place of the code under test.
+
+A control that fails means the test itself is not trusted, so the claim cannot be judged by it.
+
+Some defects have no case where the effect is absent and the faulty code still runs. In a re-test of ten claims from the study, choosing the control was the step the drafters found hardest in five of them. Controls that worked for such defects:
+- **A wrong branch** (a `lambda < 1` branch that double counts): run the same branch at the edge where its correction is zero (`lambda = 1`, no shortfall). This shows the reference and the bookkeeping are right, but it runs the same code, so say so in a comment.
+- **A wrong sign or a wrong convention** (a waveform whose sign is flipped): check the reference itself with an identity that does not use the code (switch-on plus switch-off responses add up to a constant). If the repository's own tests assert the sign, write that in the docstring: the run cannot tell a bug from a deliberate convention, and the verdict will still say confirmed.
+- **Rounding or precision** (a float32 counter that loses integers above 2**24): use an input below the threshold, where the number format is exact (index 1000), so the result is fixed by the format, not by the code.
+- **A geometric rule** (a pocket capture zone): use the simplest path where the geometry is unambiguous (a straight shot at the pocket centre).
+
+A control that runs the code under test on such a case is weaker than one on an independent solver; mark it `# REVIEW:` with the reason, so a reader knows.
+
+### `checks()`
+
+Returns a non-empty list of `physverify.Check` that state the correct behaviour on a case where the claimed effect is present. If the claim is right, at least one of them FAILs.
+
+### Example (shortened)
+
+```python
+"""Claim: the midpoint step uses a full step for the half step (docs/examples/confirm)."""
+import numpy as np
+from physverify import Check, ManufacturedODE, mms_order_study
+
+import solver  # the code under test
+
+CLAIM = {
+    "text": "integrate() advances the half step by h instead of h/2, so the method is first order",
+    "source": "reviewer: a person",
+    "file": "solver.py",
+    "line": 14,
+    "reference": "Hairer, Norsett and Wanner, Solving ODEs I, sec. II.1: the explicit midpoint rule is second order",
+    "impact": "used",
+}
+
+
+def reference_rhs(t, y):  # the harmonic oscillator, written again from the physics
+    return np.array([y[1], -4.0 * y[0]])
+
+
+def control():
+    # with a zero right-hand side the half step does not matter, so the check must pass
+    ...
+
+
+def checks():
+    return [Check("mms", "midpoint rule is second order", lambda: mms_order_study(...))]
+```
+
+Complete, runnable claim files are in [the worked examples](#8-worked-examples).
+
+## 2. Verdict rules
+
+The rules are applied in this order (the refusal in section 5 comes before all of them). The first that matches gives the verdict.
+
+| # | Situation | Verdict | Exit |
+|---|---|---|---|
+| 0 | the claim file cannot be loaded, `CLAIM` is incomplete, or `control()`/`checks()` is missing or returns something that is not a `Check` | load error | 2 |
+| 1 | `specscan.reference_notes` reports that a reference uses the code under test, and `--allow-dependent-reference` was not given | not decidable: the reference is not independent | 2 |
+| 2 | the run did not finish within `--timeout` | not decidable: timed out | 2 |
+| 3 | the control is not PASS or EXACT | not decidable: the control did not pass, so the test is not trusted | 2 |
+| 4a | the control passed, at least one check is FAIL, and `CLAIM["convention"]` says the repository does not state its convention | not decidable: the reference assumes a convention the repository does not state | 2 |
+| 4 | the control passed and at least one check is FAIL | confirmed | 1 |
+| 5 | the control passed, no check failed, and some check is INCONCLUSIVE, ERROR or SKIP | not decidable, naming each such check and its status | 2 |
+| 6 | the control passed and every check is PASS or EXACT | rejected | 0 |
+
+Notes on the rules:
+- Rule 1 is static (it reads the claim file and runs nothing), so it is applied before any code runs. `--allow-dependent-reference "REASON"` takes a reason in words; the reason and the notes it overrides are recorded in the ledger. `reference_notes` is a heuristic: it looks at functions whose names say they are references. No note does not prove the reference independent. A module counts as code under test only when it is found in the repository or next to the claim file (a `.py` file or a package folder up to four levels down); an installed library the repository uses, such as healpy for a sky-map package, may serve as the reference for a claim that the repository calls it wrongly. Such libraries are listed in the ledger (`reference_libraries`) and printed with the verdict.
+- Rule 3 counts EXACT as a pass for the control: EXACT means the error is at round-off at every resolution, which is a stronger pass.
+- Rule 4 puts a FAIL ahead of an INCONCLUSIVE or ERROR in another check: one failing check of the correct behaviour, with a passing control, is enough.
+- An ERROR in a check (the code under test raised an exception) is not counted as confirmation, because the exception may come from the adapter rather than from the claimed defect. The message says so, and the person can turn the crash into a check if the crash is the defect. A FAIL whose message reports an exception (an `...Error`, "raised", a traceback) is named in the reason as "the code raised an exception", since a crash and a wrong value are different defects.
+- `impact` is printed next to the verdict and **never changes it**. "Confirmed, latent" is how the study's "real but minor" is expressed: the defect is real, and the repository's own runs do not reach it. `scope` is printed the same way and never changes the verdict either: "confirmed (impact: used; scope: synthetic)" says the defect shows on recorded numbers or a stub, not yet in a run of the repository's own code.
+- Rule 4a is the one place a key of `CLAIM` changes the verdict. A check that fails against one convention, when the repository never says which it intends (its own test may even assert the other), is a question for the maintainers, not a confirmed defect. The reason names the convention and the checks that failed, so the evidence is kept.
+
+The printed verdict is one line, then one line for the control and one per check, each saying in plain words what was tested, then the claim and its reference. This is the output of the first worked example (section 8):
+
+```
+--8<-- "docs/examples/output/confirm_claim_damping_sign.txt"
+```
+
+## 3. The ledger
+
+Each run appends exactly one JSON line to the ledger file (`--ledger FILE`, default `confirm_ledger.jsonl` in the current directory). The file is opened in append mode and the line is written in one call; an existing line is never rewritten or removed. Running the same claim again adds a new line, so the history of a claim (before and after a fix, for example) stays readable.
+
+Fields of one line:
+
+| Field | Content |
+|---|---|
+| `ledger_version` | 1 |
+| `date` | UTC time of the run, ISO 8601 |
+| `physverify` | the physverify version |
+| `claim_file` | path of the claim file as given |
+| `claim_sha256` | SHA-256 of the claim file's bytes |
+| `text`, `source`, `file`, `line`, `reference`, `impact` | copied from `CLAIM` |
+| `file_sha256` | SHA-256 of the file the claim is about, when it can be found; otherwise null |
+| `repo_commit` | `git rev-parse HEAD` of the checkout that holds that file, with `-dirty` added when tracked files have uncommitted changes; `PHYSVERIFY_REPO_COMMIT` inside the sandbox; otherwise null |
+| `verdict` | `confirmed`, `rejected` or `not decidable` |
+| `reason` | one sentence in plain words (the reason in the table above, with the check names) |
+| `control` | `{label, family, status, message, seconds}` or null when it did not run |
+| `checks` | a list of `{label, family, status, message, seconds}` |
+| `allow_dependent_reference` | null, or `{reason, notes}` when the flag was given |
+| `scope`, `convention`, `repo` | copied from `CLAIM` when given |
+| `reference_libraries` | present when the claim file imports installed libraries that are not in the repository, which rule 1 does not count as code under test |
+| `timeout_s` | the time limit used |
+| `stderr_tail` | the last 2000 characters of the child's stderr, only after an error or a timeout |
+
+A load error is also written to the ledger, with `verdict` set to `not decidable` and the error as the reason, so every attempt is recorded. If the claim file cannot be read at all, the line has no `CLAIM` fields.
+
+The repository root for `file` is found from the claim file's folder (or from `$PHYSVERIFY_REPO` inside the sandbox): the git checkout that contains it, else that folder itself; if `file` is not found from the root, it is looked up next to the claim file. A claim file kept outside the repository (an adapter folder) may give `CLAIM["repo"]`, a path relative to the claim file. `repo`, `scope` and `convention` are the optional keys; each is copied to the ledger line when given.
+
+## 4. Isolation and time limit
+
+Each claim runs in a fresh Python subprocess (`physverify.isolate`), started in the claim's folder with that folder first on `sys.path`. The child writes no `.pyc` files, so a same-size edit made within one second is still seen, and nothing is added to the repository. The parent waits at most `--timeout` seconds (default 300) for the whole run, control and checks together, then kills the child and every process it started (`taskkill /T` on Windows, the child's own process group elsewhere; a process that detaches itself on purpose can escape). A non-numeric, zero or negative `--timeout` is refused. A timeout gives "not decidable: timed out after S s" and the checks that had finished are not reported, because the child is killed before it reports.
+
+The child writes its results as one JSON object on stdout after a marker line, and sends everything the code under test prints to stderr, so solver output cannot corrupt the result. Only the first JSON value after the marker is read, so text the code writes to the real stdout at exit (an `atexit` handler, a C or Fortran library flushing its buffer) is ignored. stderr is kept (the last 2000 characters) in the ledger line as `stderr_tail` when the run ends in an error or a timeout.
+
+Because each run starts a new interpreter, an edit to the solver between two runs is always seen. This also removes the stale-module problem of the long-running MCP server (`agent.py`), where `load_spec` has to clear `sys.modules` and `.pyc` files by hand. The MCP tool `run_checks` uses the same runner, with its own time limit (`timeout` argument, default 600 s); a run that is stopped is reported as a load error of each spec.
+
+The per-check budget (`Check.budget_s`) still applies inside the child; `--timeout` is the outer limit.
+
+## 5. Safety
+
+`confirm` runs the code under test. It refuses, with exit 2 and a message pointing to `sandbox/README.md`, unless either:
+- `--trusted` is given (the user says the code is theirs or reviewed), or
+- `PHYSVERIFY_REPO` is set, which the sandbox runner sets inside the container.
+
+Nothing is run and nothing is written to the ledger when it refuses. The MCP tool `confirm_claim` (step 5) takes the same rule: an argument `trusted: true`, or `PHYSVERIFY_REPO` set in the server's environment.
+
+## 6. Command line
+
+```
+physverify confirm CLAIM.py [--ledger FILE] [--timeout S] [--json -|FILE] [--trusted]
+                            [--allow-dependent-reference REASON]
+physverify confirm init CLAIM.py --text "..." --file F --line N
+```
+
+- `--json -` prints the ledger line (the same JSON object) to stdout instead of the text verdict; `--json FILE` writes it to a file. The ledger is written either way.
+- `confirm init` writes a template with `CLAIM` (the given `text`, `file` and `line`; `source`, `reference` and `impact` left as `"FILL IN"`, which fails the load check until filled in), and stubs of `control()` and `checks()`. A comment at the top says that the reference must come from the physics (book, paper, README), never from the code under test. It refuses to overwrite an existing file. Start a claim file with `init` rather than typing `CLAIM` by hand: claim texts often hold Windows paths (`C:\Users\...`), and in a plain Python string `\U` starts an escape, so the file does not load. `init` writes the text escaped; a file that fails this way gets a load error that says so.
+- Exit codes: 0 rejected, 1 confirmed, 2 not decidable, a load error or a refusal.
+
+`confirm init` is a subcommand name, so a claim file cannot be called `init`; a claim file must end in `.py`.
+
+## 7. MCP tool
+
+`physverify mcp` offers `confirm_claim` next to `run_checks`. Arguments: `claim` (required), `trusted`, `ledger`, `timeout`, `allow_dependent_reference`. It returns the text verdict followed by the ledger line as JSON, and appends to the ledger like the command. Without `trusted: true` and outside the sandbox it returns an error and runs nothing.
+
+## 8. Worked examples
+
+[`docs/examples/confirm/`](https://github.com/rcgiri-physics/physverify/tree/main/docs/examples/confirm) has three small solvers written for these docs and one claim file for each. The tests run them and compare the output shown here.
+
+**Confirmed.** `oscillator.py` adds `+gamma*v` where the damping term should be `-gamma*v`. The control turns damping off, where the sign does not matter; the check turns it on.
+
+```
+--8<-- "docs/examples/output/confirm_claim_damping_sign.txt"
+```
+
+**Rejected.** A review says velocity Verlet in `verlet.py` is only first order. The control is a free particle, where the claimed mistake would make no difference; the check measures the order on the harmonic oscillator.
+
+```
+--8<-- "docs/examples/output/confirm_claim_verlet_order.txt"
+```
+
+**Not decidable.** The claim file reads the `half_life` argument of `decay.py` as a decay rate, so its reference is for a different equation and the control fails. Nothing can be said about the claim until the reference is fixed (here: rate = ln 2 / half_life, as `decay.py` documents). A wrong convention in the reference is the most common way a check goes wrong; see [Troubleshooting](troubleshooting.md).
+
+```
+--8<-- "docs/examples/output/confirm_claim_rk4_stage.txt"
+```
+
+## 9. What is not in scope
+
+- Calling an AI model from the package, or generating references or claims.
+- Changes to `physverify scan`.
+- Statistical claims (a sampler's distribution): a single control/check pair has no measured false-alarm rate for them, so they are a later step (ROADMAP.md).

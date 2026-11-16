@@ -45,6 +45,7 @@ plugins:
 
 exclude_docs: |
   plan_ising.md
+  plan_agent_eval.md
   hooks.py
   examples/
 
@@ -91,6 +92,7 @@ nav:
       - Continuous integration: ci.md
       - AI coding assistants: agent.md
       - Checking an AI code review: ai-review.md
+      - Confirming one suspected defect: confirm.md
   - Reference:
       - API overview: api.md
       - API reference: reference/index.md
