@@ -509,7 +509,9 @@ def check_additive(As, bs, cs=None, *, claimed: int, label: str = "", tol: float
             if np.max(np.abs(A.sum(axis=1)[: c.size] - c[: A.shape[0]])) > tol:
                 fails.append(f"row sums of part {v + 1} differ from its c")
         if any(c.size != cs[0].size or np.max(np.abs(c - cs[0])) > tol for c in cs[1:]):
-            notes.append("the parts have different nodes c; coupling conditions for that case are not all checked")
+            notes.append("the parts have different nodes c: the conditions checked here are complete for an autonomous"
+                         " problem, but when each part evaluates f at its own time t + c h, time is not one shared variable"
+                         " and further conditions apply (not checked; to check them, write t as a state variable)")
     if p_all < claimed:
         if p_pure >= claimed:
             fails.insert(0, f"each part has order {claimed} alone, but the coupling conditions hold only up to order"

@@ -156,3 +156,14 @@ def test_rosenbrock_and_w_order():
     assert r.status == FAIL and "only up to 1" in r.message
     # linearly implicit Euler: order 1, not 2
     assert check_rosenbrock([[0]], [[1]], [1], claimed=2).status == FAIL
+
+
+def test_additive_different_nodes_note():
+    from physverify.butcher import check_additive
+    # explicit midpoint (c = 0, 1/2) with the trapezoidal rule (c = 0, 1): order 2 each, order 1 together
+    # (a step-size study on a split linear problem gives 1.07 at the finest pair)
+    AE, bE = [[0, 0], [0.5, 0]], [0, 1]
+    AI, bI = [[0, 0], [0.5, 0.5]], [0.5, 0.5]
+    r = check_additive([AE, AI], [bE, bI], [[0, 0.5], [0, 1]], claimed=2)
+    assert r.status == FAIL and "coupling conditions hold only up to order 1" in r.message
+    assert "complete for an autonomous problem" in r.message
