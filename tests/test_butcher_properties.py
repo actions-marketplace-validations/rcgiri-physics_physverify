@@ -75,3 +75,33 @@ def test_row_sums_that_differ_from_c_fail():
     r = check_tableau(A, b, [0, 1 / 7, 3 / 16, 1 / 3, 2 / 3], claimed=3)
     assert r.status == FAIL and "row sums" in r.message
     assert check_tableau(A, b, A.sum(axis=1), claimed=3).status == PASS
+
+
+def _gauss(s):
+    """Gauss-Legendre table with s stages, from the nodes (Hairer & Wanner II, IV.5): A = C V^-1-type solve."""
+    x, _w = np.polynomial.legendre.leggauss(s)
+    c = (x + 1) / 2
+    V = np.vander(c, s, increasing=True)
+    b = np.linalg.solve(V.T, 1 / np.arange(1, s + 1))
+    A = np.array([np.linalg.solve(V.T, ci ** np.arange(1, s + 1) / np.arange(1, s + 1)) for ci in c])
+    return A, b, c
+
+
+def test_gauss_methods_are_a_stable_despite_round_off():
+    # Irksome GaussLegendre(5) gave a margin of -9e-10 before the scale-free test (RK census 2026-11-16)
+    from physverify.butcher import a_stability_margin
+    for s in range(1, 7):
+        A, b, c = _gauss(s)
+        assert a_stability_margin(A, b) >= 0, s
+        assert check_tableau(A, b, c, claimed=min(2 * s, 8), a_stable=True).status == PASS, s
+    assert a_stability_margin([[0.45]], [1.0]) < 0  # theta method below 1/2 stays not A-stable
+
+
+def test_error_weights_must_sum_to_zero():
+    A = [[0, 0, 0, 0], [1 / 2, 0, 0, 0], [0, 3 / 4, 0, 0], [2 / 9, 1 / 3, 4 / 9, 0]]
+    b = [2 / 9, 1 / 3, 4 / 9, 0]
+    bhat = [7 / 24, 1 / 4, 1 / 3, 1 / 8]
+    bad = check_tableau(A, b, claimed=3, error_weights=bhat)  # the embedded solution stored as the error (probjax)
+    assert bad.status == FAIL and "error weights sum to 1" in bad.message
+    good = check_tableau(A, b, claimed=3, error_weights=[x - y for x, y in zip(b, bhat)], claimed_embedded=2)
+    assert good.status == PASS and "embedded order 2 confirmed" in good.message

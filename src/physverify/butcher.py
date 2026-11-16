@@ -198,7 +198,18 @@ def a_stability_margin(A, b) -> float:
     lead = E.coef[-1] if E.degree() >= 1 else 0.0
     if E.degree() >= 1 and lead < -1e-12 * scale:
         return float("-inf")
-    return float(min(E(y) for y in pts)) / scale
+    m = float(min(E(y) for y in pts)) / scale
+    if m < 0:
+        # Gauss methods have |R(iy)| = 1 exactly, so E is zero and its computed coefficients are round-off,
+        # which grows like y^(2s) at the critical points (Irksome GaussLegendre(5) gave -9e-10). Judge the sign
+        # by 1 - |R(iy)|^2 evaluated directly from R = 1 + z b^T (I - zA)^-1 1, which is scale-free; round-off
+        # there is about 1e-12 for 6 stages, while theta = 1/2 - 1e-9 gives -8e-9.
+        R = stability_function(A, b)
+        ys = [y for y in pts if np.isfinite(y)] + list(np.logspace(-2, 4, 61)) + list(-np.logspace(-2, 4, 61))
+        rel = min(1 - abs(R(1j * y)) ** 2 for y in ys)
+        if rel > -1e-10:
+            return 0.0
+    return m
 
 
 def is_stiffly_accurate(A, b, *, tol: float = 1e-12) -> bool:
@@ -238,7 +249,7 @@ def symplectic_residual(A, b) -> float:
 def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1e-8, max_order: int | None = None,
                   claimed_linear: int | None = None, claimed_stage: int | None = None, a_stable: bool | None = None,
                   l_stable: bool | None = None, stiffly_accurate: bool | None = None, embedded=None,
-                  claimed_embedded: int | None = None, symplectic: bool | None = None) -> Result:
+                  claimed_embedded: int | None = None, symplectic: bool | None = None, error_weights=None) -> Result:
     """PASS when the table has at least the claimed order and every other stated property; FAIL otherwise.
 
     The default tolerance 1e-8 accepts coefficients typed with 9 or 10 digits (a real package had
@@ -257,6 +268,10 @@ def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1
     True means "the method has it" and False means "the method does not"; a mismatch either way fails.
     embedded        the weights of the embedded (error-estimate) method; with `claimed_embedded`, its order
                     is checked too, and the error weights b - embedded must sum to 0.
+    error_weights   the weights e of the error estimate itself (local error = h * sum e_i k_i), for a library
+                    that stores b - embedded rather than the embedded weights; they must sum to 0, else the
+                    "error" is a whole step (probjax heun_euler and bogacki_shampine, 2026). Then checked as
+                    embedded = b - e.
     A table stored as s x (s - 1), or with an FSAL stage of weight 0, is padded first (`square_tableau`).
     """
     A, b, c = square_tableau(A, b, c)
@@ -327,6 +342,18 @@ def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1
         else:
             notes.append(f"{'' if has else 'not '}stiffly accurate as stated")
 
+    if error_weights is not None:
+        ew = np.asarray(error_weights, dtype=float)
+        if abs(ew.sum()) > tol:
+            fails.append(f"error weights sum to {ew.sum():.10g}, not 0: the error estimate h*sum(e_i k_i) is then"
+                         " a whole step (about h*f), not a difference of two formulas; were the embedded weights"
+                         " stored in place of b - embedded?")
+        elif embedded is None:
+            bb = np.zeros(max(b.size, ew.size))
+            bb[:b.size] = b
+            ee = np.zeros(bb.size)
+            ee[:ew.size] = ew
+            embedded = bb - ee
     if embedded is not None:
         Ae = A
         if np.size(embedded) > A.shape[0]:
