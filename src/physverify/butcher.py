@@ -80,6 +80,26 @@ def tableau_order(A, b, *, max_order: int = 6, tol: float = 1e-8) -> int:
     return p
 
 
+def _max_children(t) -> int:
+    return max([len(t)] + [_max_children(u) for u in t])
+
+
+def quadratic_order(A, b, *, max_order: int = 6, tol: float = 1e-8) -> int:
+    """Order on ODEs whose right side is at most quadratic in y (third derivative of f zero): only the trees
+    in which every vertex has at most 2 children carry a nonzero elementary differential, so only their
+    conditions count. SIR54 (Kovalnogov, Simos and Tsitouras 2021) is order 5 for quadratic ODEs only."""
+    A = np.asarray(A, float)
+    b = np.asarray(b, float)
+    e = np.ones(len(b))
+    p = 0
+    for q in range(1, max_order + 1):
+        ts = [t for t in trees(q) if _max_children(t) <= 2]
+        if max(abs(float(b @ _phi(t, A, e)) - 1.0 / _gamma(t)) for t in ts) > tol:
+            break
+        p = q
+    return p
+
+
 def linear_residuals(A, b, max_order: int = 8) -> dict:
     """{k: |b . A^(k-1) 1 - 1/k!|}: how far the stability function R(z) is from e^z at each power of z."""
     A = np.asarray(A, dtype=float)
@@ -295,6 +315,10 @@ def check_tableau(A, b, c=None, *, claimed: int, label: str = "", tol: float = 1
             msg += (f"; the conditions for order {claimed} hold to {missing:.1e}, which looks like coefficients typed"
                     f" with too few digits rather than a wrong method: retry with tol={10 * missing:.0e} and compare"
                     " with the published table")
+        pq = quadratic_order(A, b, max_order=claimed, tol=tol)
+        if pq > p:
+            msg += (f"; on ODEs with f at most quadratic in y (only trees with at most 2 children per vertex) it has"
+                    f" order {pq}, so a claim meant for quadratic problems only should say so")
         fails.insert(0, msg)
     elif p > claimed:
         notes.insert(0, f"claims order {claimed}; the conditions hold up to at least {p}, so the claim is conservative ({shown})")
@@ -602,8 +626,10 @@ def w_condition_count(order: int) -> int:
     return sum(len(_phi_w(t, np.ones((1, 1)), np.ones((1, 1)), e)) for t in trees(order))
 
 
-def rosenbrock_residuals(alpha, gamma, b, max_order: int = 5, *, w_method: bool = False) -> dict:
-    """{order: largest residual over the trees of that order}, exact-Jacobian or (w_method=True) W conditions."""
+def rosenbrock_residuals(alpha, gamma, b, max_order: int = 5, *, w_method: bool = False, theta: float = 1.0) -> dict:
+    """{order: largest residual over the trees of that order}, exact-Jacobian or (w_method=True) W conditions.
+    With theta, `b` are dense-output weights b(theta) and the targets are theta^|t|/gamma(t) (zero for marked W
+    trees): the continuous extension y0 + sum_i b_i(theta) k_i (Hairer & Wanner II, sec. IV.7, dense output)."""
     alpha = np.asarray(alpha, dtype=float)
     G = np.asarray(gamma, dtype=float)
     b = np.asarray(b, dtype=float)
@@ -612,18 +638,37 @@ def rosenbrock_residuals(alpha, gamma, b, max_order: int = 5, *, w_method: bool 
     for p in range(1, max_order + 1):
         r = 0.0
         for t in trees(p):
+            target = theta ** p / _gamma(t)
             if w_method:
                 for g, v in _phi_w(t, alpha, G, e).values():
-                    r = max(r, abs(float(b @ v) - (0.0 if g else 1.0 / _gamma(t))))
+                    r = max(r, abs(float(b @ v) - (0.0 if g else target)))
             else:
-                r = max(r, abs(float(b @ _phi_ros(t, alpha, alpha + G, e)) - 1.0 / _gamma(t)))
+                r = max(r, abs(float(b @ _phi_ros(t, alpha, alpha + G, e)) - target))
         out[p] = r
+    return out
+
+
+def rosenbrock_dense_residuals(alpha, gamma, b_of_theta, *, max_order: int = 5, thetas=None,
+                               w_method: bool = False) -> dict:
+    """{order: largest residual} of the dense output over the thetas (default 0.1, 0.2, ..., 1). `b_of_theta` is
+    a callable theta -> weights, or a fixed vector with `thetas=[theta]` (one point value)."""
+    if thetas is None:
+        if not callable(b_of_theta):
+            raise ValueError("a fixed weight vector is the output at one theta: pass thetas=[theta]")
+        thetas = np.linspace(0.1, 1.0, 10)
+    get = b_of_theta if callable(b_of_theta) else (lambda th: b_of_theta)
+    out = {p: 0.0 for p in range(1, max_order + 1)}
+    for th in thetas:
+        res = rosenbrock_residuals(alpha, gamma, get(th), max_order, w_method=w_method, theta=float(th))
+        for p, r in res.items():
+            out[p] = max(out[p], r)
     return out
 
 
 def check_rosenbrock(alpha, gamma, b, *, claimed: int, label: str = "", w_method: bool = False,
                      claimed_embedded: int | None = None, embedded=None, tol: float = 1e-8,
-                     max_order: int | None = None, c=None, d=None) -> Result:
+                     max_order: int | None = None, c=None, d=None, dense=None, claimed_dense: int | None = None,
+                     thetas=None) -> Result:
     """PASS when the Rosenbrock method (alpha, Gamma, b) has the claimed order; with w_method=True, the order
     for any Jacobian approximation (W-method). Gamma is the full lower-triangular matrix with gamma_ii on the
     diagonal. Also reports R(inf) and A-stability, from the RK method (alpha + Gamma, b).
@@ -631,7 +676,11 @@ def check_rosenbrock(alpha, gamma, b, *, claimed: int, label: str = "", w_method
     `c` and `d`, when a code stores them: the stage times c_i (f is evaluated at t + c_i h) must be the row sums of
     alpha, and the coefficients d_i of h df/dt (gamma_i in Hairer and Wanner) the row sums of Gamma. The order
     conditions above are for autonomous problems and cannot see these; a wrong d_i drops a non-autonomous problem
-    to first order (Boost.odeint rosenbrock4 stores d4 = +0.0362 for RODAS's -0.0362, 2026)."""
+    to first order (Boost.odeint rosenbrock4 stores d4 = +0.0362 for RODAS's -0.0362, 2026).
+
+    `dense` with `claimed_dense`: the dense-output weights b(theta) (a callable, or one vector with `thetas=[theta]`),
+    checked for that order at every theta (default 0.1, ..., 1). Codes that store the interpolant in transformed form
+    (Rodas: y0 + theta (y1 - y0) + theta (theta - 1)(...)) must be converted to weights on the k_i first."""
     top = max(max_order or claimed + 1, claimed)
     kind = "W-method" if w_method else "Rosenbrock (exact Jacobian)"
     prefix = f"{label}: " if label else ""
@@ -679,6 +728,23 @@ def check_rosenbrock(alpha, gamma, b, *, claimed: int, label: str = "", w_method
             fails.append(f"embedded weights claim order {claimed_embedded}, conditions hold only up to {pe} ({she})")
         else:
             notes.append(f"embedded order {claimed_embedded} confirmed")
+    if dense is not None:
+        if claimed_dense is None:
+            raise ValueError("dense weights given without claimed_dense: say which order they should have")
+        res = rosenbrock_dense_residuals(alpha, gamma, dense, max_order=claimed_dense + 1, thetas=thetas,
+                                         w_method=w_method)
+        qd = 0
+        while qd < claimed_dense + 1 and res[qd + 1] <= tol:
+            qd += 1
+        shd = ", ".join(f"{q}: {r:.1e}" for q, r in res.items())
+        where = "the point value" if thetas is not None and len(thetas) == 1 else "the dense output"
+        if qd < claimed_dense:
+            fails.append(f"{where} should have order {claimed_dense} but its conditions hold only up to {qd} ({shd})")
+        else:
+            notes.append(f"{where} has order {qd if qd <= claimed_dense else f'at least {qd}'}"
+                         f" (claimed {claimed_dense}; {shd})")
+    elif claimed_dense is not None:
+        raise ValueError("claimed_dense given without dense weights")
     B = np.asarray(alpha, dtype=float) + G
     notes.append(f"R(inf) = {r_infinity(B, b):.3g}, A-stability margin {a_stability_margin(B, b):.2g}"
                  " (stability of the linear test equation, same for W-methods)")

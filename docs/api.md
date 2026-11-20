@@ -92,7 +92,7 @@ See [Numerical controls, paths and Itô integrals](checks/numerical-controls.md)
 
 ## Runge-Kutta tables (`physverify.butcher`)
 
-`check_tableau` (with `embedded=`, `claimed_embedded=`, `error_weights=`, `symplectic=`), `check_additive` and `additive_order_residuals` (IMEX and ARK pairs, coupling conditions included), `check_dense_output`, `dense_order` and `dense_residuals` (continuous extensions and point values), `square_tableau`, `symplectic_residual`, `TABLES`, `compare_tableau`, `tableau_order`, `order_residuals`, `linear_order`, `stage_order`, `stability_function`, `stability_polynomials`, `r_infinity`, `a_stability_margin`, `is_stiffly_accurate`, `check_additive`, `additive_order_residuals`, `check_dense_output`, `dense_order`, `dense_residuals`, `check_rosenbrock`, `rosenbrock_residuals`, `w_condition_count`. See [Runge-Kutta tables](checks/runge-kutta.md).
+`check_tableau` (with `embedded=`, `claimed_embedded=`, `error_weights=`, `symplectic=`), `check_additive` and `additive_order_residuals` (IMEX and ARK pairs, coupling conditions included), `check_dense_output`, `dense_order` and `dense_residuals` (continuous extensions and point values), `square_tableau`, `symplectic_residual`, `TABLES`, `compare_tableau`, `tableau_order`, `order_residuals`, `linear_order`, `quadratic_order`, `stage_order`, `stability_function`, `stability_polynomials`, `r_infinity`, `a_stability_margin`, `is_stiffly_accurate`, `check_additive`, `additive_order_residuals`, `check_dense_output`, `dense_order`, `dense_residuals`, `check_rosenbrock`, `rosenbrock_residuals`, `w_condition_count`. See [Runge-Kutta tables](checks/runge-kutta.md).
 
 ## Loading code (`physverify.loaders`)
 

@@ -3,6 +3,7 @@
 import math
 
 import numpy as np
+from physverify import butcher
 
 from physverify.butcher import (
     a_stability_margin,
@@ -246,3 +247,44 @@ def test_rosenbrock_c_and_d_against_row_sums():
     boost = [0.25, -0.1043, 0.1035, +0.0362, 0, 0]
     r = check_rosenbrock(alpha, G, b, claimed=4, c=c, d=boost, tol=1e-6)
     assert not r.ok and "d[3]" in r.message and "sign flipped" in r.message, r.message
+
+
+def test_quadratic_order_reported_when_claim_fails():
+    # 4 stages solved for the order-4 conditions of trees with at most 2 children per vertex, not b.c^3 = 1/4
+    A = [[0, 0, 0, 0], [0.25, 0, 0, 0], [-0.2399999999999998, 0.8399999999999999, 0, 0],
+         [-10.406095819197485, 15.05167430991065, -4.645578490713166, 0]]
+    b = [0.43159889773048743, -0.38095238095238104, 0.992063492063492, -0.042710008841598354]
+    assert butcher.tableau_order(A, b) == 3
+    assert butcher.quadratic_order(A, b) == 4
+    r = butcher.check_tableau(A, b, claimed=4)
+    assert r.status == "FAIL" and "quadratic in y" in r.message and "order 4" in r.message
+    rk4 = butcher.TABLES["rk4"]
+    assert butcher.quadratic_order(rk4["A"], rk4["b"]) >= 4
+    assert "quadratic" not in butcher.check_tableau(rk4["A"], rk4["b"], claimed=5).message
+
+
+def test_rosenbrock_dense_output_rodas3p():
+    """Rodas3P and its embedded Rodas23W with their dense outputs (Steinebach, JuliaCon 2023, Table 1):
+    b_i(t) = t (b_i - c_i) + t^2 (c_i - d_i) + t^3 d_i, orders 3 and 2; a changed coefficient must fail."""
+    from physverify.butcher import check_rosenbrock
+    al = np.zeros((5, 5)); al[1, 0] = 4 / 9
+    al[3, :3] = al[4, :3] = [-217 / 384, 183 / 128, 13 / 96]
+    be = np.array([[1 / 3, 0, 0, 0, 0], [0, 1 / 3, 0, 0, 0], [-1 / 12, 3 / 4, 1 / 3, 0, 0],
+                   [3 / 8, 3 / 8, -1 / 12, 1 / 3, 0], [33 / 8, -27 / 8, -3 / 4, 2 / 3, 1 / 3]])
+    G = be - al
+    b, bh = be[4], np.r_[be[3, :4], 0]
+    c = np.array([51 / 4, -27 / 2, -9 / 4, 8 / 3, 1 / 3]); d = np.array([-135 / 8, 135 / 8, 3, -3, 0])
+    ch = np.array([-3 / 8, -3 / 8, 1 / 12, 19 / 30, 1 / 30])
+
+    def dense(bb, cc, dd):
+        return lambda t: t * (bb - cc) + t ** 2 * (cc - dd) + t ** 3 * dd
+
+    r = check_rosenbrock(al, G, b, claimed=3, dense=dense(b, c, d), claimed_dense=3)
+    assert r.status == PASS and "dense output has order 3" in r.message
+    r = check_rosenbrock(al, G, bh, claimed=2, w_method=True, dense=dense(bh, ch, 0 * d), claimed_dense=2)
+    assert r.status == PASS
+    assert check_rosenbrock(al, G, b, claimed=3, dense=dense(b, c, d), claimed_dense=4).status == FAIL
+    c2 = c.copy(); c2[1] += 1e-3
+    assert check_rosenbrock(al, G, b, claimed=3, dense=dense(b, c2, d), claimed_dense=3).status == FAIL
+    r = check_rosenbrock(al, G, b, claimed=3, dense=dense(b, c, d)(0.5), claimed_dense=3, thetas=[0.5])
+    assert r.status == PASS and "point value" in r.message
