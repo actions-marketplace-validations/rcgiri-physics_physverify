@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.9.0 (2026-11-21)
 
 Description: physverify now describes itself everywhere with one fixed wording, "code verification for numerical simulation: test whether simulation code behaves as the mathematics predicts" (README, docs home, PyPI summary, CITATION.cff, CLI help; recorded in CONTRIBUTING.md). The README leads with verifying simulation code and investigating a suspected defect; the studies follow as evidence. The GitHub Action and the MCP server have short descriptions of their own roles. New docs page on the Runge-Kutta table census; the maintainer confirmations are grouped by area. AGENTS.md and the assistant prompt now lead with writing checks from the physics instead of `scan`. No change to any check.
 

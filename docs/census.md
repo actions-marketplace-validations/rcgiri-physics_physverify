@@ -1,6 +1,6 @@
 # Runge–Kutta table census
 
-Runge–Kutta coefficients are copied by hand from papers into code. One wrong digit can lower a method's order without any visible sign: adaptive step control shrinks the step until the error looks fine, and a test on y′ = λy, where f does not depend on t, often cannot see a wrong node. In November 2026 the checks in `physverify.butcher` were run (`check_rosenbrock`, `check_additive` and `check_dense_output` are not released yet; they come in the next release) on the coefficient tables of open-source ODE libraries to see how many tables have the order their names claim.
+Runge–Kutta coefficients are copied by hand from papers into code. One wrong digit can lower a method's order without any visible sign: adaptive step control shrinks the step until the error looks fine, and a test on y′ = λy, where f does not depend on t, often cannot see a wrong node. In November 2026 the checks in `physverify.butcher` were run (`check_rosenbrock`, `check_additive` and `check_dense_output` were added for it in 0.9.0) on the coefficient tables of open-source ODE libraries to see how many tables have the order their names claim.
 
 ## What was checked
 

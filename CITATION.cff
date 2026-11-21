@@ -6,8 +6,8 @@ authors:
   - family-names: Giri
     given-names: Ram Chandra
     orcid: "https://orcid.org/0009-0008-7149-7938"
-version: 0.8.0
-date-released: 2026-11-15
+version: 0.9.0
+date-released: 2026-11-21
 license: MIT
 doi: 10.5281/zenodo.23534512
 identifiers:
@@ -21,7 +21,8 @@ abstract: >-
   whether simulation code behaves as the mathematics predicts. It checks
   convergence order, agreement with exact or manufactured solutions,
   conservation laws and budgets, and time-integration coefficients
-  (Runge-Kutta order conditions and stability). It reports PASS, FAIL,
+  (Runge-Kutta, IMEX and Rosenbrock order conditions, dense output and
+  stability). It reports PASS, FAIL,
   EXACT or INCONCLUSIVE with the numbers, and runs from Python, the command
   line, pytest or GitHub Actions.
 keywords:
