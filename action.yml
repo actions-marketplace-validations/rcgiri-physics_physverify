@@ -1,5 +1,5 @@
 name: physverify
-description: Check that physics simulation code solves the right equations at the order it claims.
+description: Run physverify code-verification specs in CI; a failed check fails the job.
 author: Ram Chandra Giri
 branding:
   icon: check-circle

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+Description: physverify now describes itself everywhere with one fixed wording, "code verification for numerical simulation: test whether simulation code behaves as the mathematics predicts" (README, docs home, PyPI summary, CITATION.cff, CLI help; recorded in CONTRIBUTING.md). The README leads with verifying simulation code and investigating a suspected defect; the studies follow as evidence. The GitHub Action and the MCP server have short descriptions of their own roles. New docs page on the Runge-Kutta table census; the maintainer confirmations are grouped by area. AGENTS.md and the assistant prompt now lead with writing checks from the physics instead of `scan`. No change to any check.
+
 From the Runge-Kutta census (branch census-findings), with the fixes from an audit of it:
 - **New `butcher.check_additive`:** order of IMEX/ARK pairs, coupling conditions over every colouring of every tree (Kennedy and Carpenter 2003). Run on 39 IMEX pairs from ten libraries. Parts with different nodes are noted, from `cs` or the row sums.
 - **New `butcher.check_dense_output`, `dense_order`:** order of continuous extensions and point values. A fixed weight vector needs `thetas=[theta]`; FSAL dense weights (SciPy's `P`) need `b=`; s x (s-1) tables are padded.

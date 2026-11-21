@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: If you use physverify in your work, please cite it as below.
-title: "physverify: verification checks for physics simulation code"
+title: "physverify: code verification for numerical simulation"
 type: software
 authors:
   - family-names: Giri
@@ -17,12 +17,13 @@ identifiers:
 repository-code: https://github.com/rcgiri-physics/physverify
 url: https://rcgiri-physics.github.io/physverify/
 abstract: >-
-  physverify checks whether a physics simulation solves the equations it is
-  meant to, at the order of accuracy it claims: the method of manufactured
-  solutions, observed order of convergence, conserved quantities and budgets,
-  exact patch solutions, and Butcher order conditions for Runge-Kutta tables.
-  It reports PASS, FAIL, EXACT or INCONCLUSIVE and runs from the command line,
-  pytest or GitHub Actions.
+  physverify is a tool for code verification of numerical simulation: it tests
+  whether simulation code behaves as the mathematics predicts. It checks
+  convergence order, agreement with exact or manufactured solutions,
+  conservation laws and budgets, and time-integration coefficients
+  (Runge-Kutta order conditions and stability). It reports PASS, FAIL,
+  EXACT or INCONCLUSIVE with the numbers, and runs from Python, the command
+  line, pytest or GitHub Actions.
 keywords:
   - verification
   - method of manufactured solutions

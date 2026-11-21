@@ -3,8 +3,8 @@
 import math
 
 import numpy as np
-from physverify import butcher
 
+from physverify import butcher
 from physverify.butcher import (
     a_stability_margin,
     check_tableau,

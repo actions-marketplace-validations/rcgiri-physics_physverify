@@ -10,7 +10,7 @@ Neither is switched on by installing the package. You add them to your own assis
 
 ## 0. A prompt you can paste
 
-[Start here](start-here.md#with-an-ai-assistant) has a prompt that asks an assistant to install physverify, run `physverify scan`, write a spec from the physics (not from the code) and explain the result. An assistant working on physverify itself should read [AGENTS.md](https://github.com/rcgiri-physics/physverify/blob/main/AGENTS.md) in the repository.
+[Start here](start-here.md#with-an-ai-assistant) has a prompt that asks an assistant to find what the code claims, write each reference from the physics (not from the code), test the claims as pytest tests and report what was and was not tested. An assistant working on physverify itself should read [AGENTS.md](https://github.com/rcgiri-physics/physverify/blob/main/AGENTS.md) in the repository.
 
 ## 1. Write a spec next to the solver
 
