@@ -1,4 +1,4 @@
-"""physverify: verification checks for physics simulation code."""
+"""physverify: code verification for numerical simulation."""
 
 from .checks import Check, OrderResult, Result, SkipCheck, requires
 from .mms import ManufacturedODE, mms_order_study, zero_source

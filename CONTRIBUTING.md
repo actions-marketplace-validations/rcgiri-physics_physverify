@@ -2,6 +2,19 @@
 
 Thanks for your interest. physverify is actively evolving, and contributions and test cases from the computational physics community are what make its results trustworthy. You do not need to be an expert programmer: several of the most useful contributions below need no change to physverify's code at all.
 
+## What physverify is
+
+This wording is fixed. Use it, unchanged, wherever the project describes itself: the README, the docs home page, the GitHub About box, the PyPI summary, `CITATION.cff`, the CLI help and any paper.
+
+> **physverify — code verification for numerical simulation**
+>
+> Test whether simulation code behaves as the mathematics predicts. Check convergence order, agreement with exact or manufactured solutions, conservation laws, and time-integration coefficients.
+
+- **Name:** `physverify`, all lower case, for the package, the import, the command, the repository and the GitHub Action.
+- **Scope:** code verification in the sense of Roache and of Oberkampf and Roy: does the code solve its equations correctly? Not validation against experiment, and not uncertainty quantification. The strongest coverage is ODE time integration; PDEs are covered in selected cases.
+- **The main way in** is verifying simulation code with reusable checks (Python, CLI, pytest, CI). `physverify confirm` (one suspected defect), `physverify scan` (reading without running) and the MCP server are helpers, documented on their own pages. In every case the reference comes from the physics, never from the code under test.
+- New studies and new kinds of checks fit under this description. They add examples and evidence; they do not change the description. The GitHub Action and the MCP server have their own short descriptions that say what each one does.
+
 ## Help wanted
 
 1. **A trial report on your own solver (most wanted).** Install physverify from PyPI, write a spec for a solver you know well, and tell us how it went: what was flagged, what was missed, and where you got stuck. Even "everything passed in 20 minutes" is useful. Use the [trial report template](https://github.com/rcgiri-physics/physverify/issues/new?template=trial_report.md).

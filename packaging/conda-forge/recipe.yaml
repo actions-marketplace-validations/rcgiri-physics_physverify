@@ -40,7 +40,7 @@ tests:
 
 about:
   homepage: https://github.com/rcgiri-physics/physverify
-  summary: Checks that a physics simulation solves the right equations at the right accuracy
+  summary: Code verification for numerical simulation
   license: MIT
   license_file: LICENSE
   documentation: https://rcgiri-physics.github.io/physverify/

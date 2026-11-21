@@ -244,7 +244,7 @@ def _cmd_references(args) -> int:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="physverify", description="Verification checks for physics simulation code.")
+    parser = argparse.ArgumentParser(prog="physverify", description="physverify: code verification for numerical simulation. Test whether simulation code behaves as the mathematics predicts.")
     parser.add_argument("--version", action="version", version=f"physverify {__version__}")
     sub = parser.add_subparsers(dest="command", required=True)
 
