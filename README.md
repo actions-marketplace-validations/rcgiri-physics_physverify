@@ -6,7 +6,7 @@
 
 A simulation can run, give plausible numbers and still be wrong: a sign slip, a missing factor of 2, one coefficient copied with a digit dropped. Comparing with one stored answer rarely shows it, because nobody knows the exact answer for a real simulation. The mathematics still predicts things you can test: the error must shrink at the method's order, a manufactured solution must come back, an insulated domain must keep its heat, a Runge–Kutta table must satisfy its order conditions. physverify runs those tests and says in plain words what was tested and what came out: PASS, FAIL, EXACT or INCONCLUSIVE, with the numbers.
 
-Its strongest coverage is ODE time integration; PDEs are covered in selected cases (1D heat and transport). It needs only NumPy and runs from Python, the command line, pytest or GitHub Actions. Current release: 0.8.0 (v0.8.0); actively developed, feedback welcome.
+Its strongest coverage is ODE time integration; PDEs are covered in selected cases (1D heat and transport). It needs only NumPy and runs from Python, the command line, pytest or GitHub Actions. Current release: 0.9.0 (v0.9.0); actively developed, feedback welcome.
 
 ## Try it
 
@@ -53,14 +53,14 @@ print(check_tableau(A, b=[1/6, 1/3, 1/3, 1/6], c=[0, 1/2, 1/2, 1], claimed=4))
 # PASS: order 4 confirmed by the order conditions
 ```
 
-Change the last row of `A` to `[0, 0, 0.9, 0]` and the verdict is FAIL: the table satisfies the order conditions only up to order 1. The same module checks embedded pairs and stability claims. Dense output (`check_dense_output`), IMEX order and coupling conditions (`check_additive`) and Rosenbrock and W-methods (`check_rosenbrock`) are not released yet; they come in the next release.
+Change the last row of `A` to `[0, 0, 0.9, 0]` and the verdict is FAIL: the table satisfies the order conditions only up to order 1. The same module checks embedded pairs, stability claims, dense output (`check_dense_output`), IMEX order and coupling conditions (`check_additive`) and Rosenbrock and W-methods (`check_rosenbrock`).
 
 **A whole solver, from a spec.** `physverify init verify_solver.py --solver mysolver --order 4` writes a starter spec for a fixed-step ODE solver. Fill in the right-hand side from the physics, then run `physverify run verify_solver.py` or `pytest verify_solver.py`. The starter spec runs manufactured-solution, reference-solution and exact-patch checks; add a `quantity` function (an energy, a mass) to check conservation as well.
 
 **On every push.** A failed check fails the job, like a broken unit test ([CI guide](https://rcgiri-physics.github.io/physverify/ci/)):
 
 ```yaml
-      - uses: rcgiri-physics/physverify@v0.8.0
+      - uses: rcgiri-physics/physverify@v0.9.0
         with:
           specs: tests/verify_*.py
 ```
@@ -74,7 +74,7 @@ Change the last row of `A` to `[0, 0, 0.9, 0]` and the verdict is FAIL: the tabl
 | [Reference and exact solutions](https://rcgiri-physics.github.io/physverify/checks/exact-references/) | Does it agree with a closed-form result or an independent, more accurate solution? |
 | [Conservation and budgets](https://rcgiri-physics.github.io/physverify/checks/conservation/) | Is energy kept? Does heat leak through an insulated wall? |
 | [Exact patch tests](https://rcgiri-physics.github.io/physverify/checks/patch/) | Does it reproduce a solution it should get to round-off? |
-| [Time-integration coefficients](https://rcgiri-physics.github.io/physverify/checks/runge-kutta/) | Do the Runge–Kutta coefficients have the order and stability their name says? (IMEX and Rosenbrock order: next release) |
+| [Time-integration coefficients](https://rcgiri-physics.github.io/physverify/checks/runge-kutta/) | Do the Runge–Kutta, IMEX or Rosenbrock coefficients have the order their name says? |
 | [Statistics](https://rcgiri-physics.github.io/physverify/checks/statistics/) | Do the error bars mean what they say? Is a Monte Carlo sampler correct? |
 
 Every example in the documentation is a small script in [`docs/examples/`](https://github.com/rcgiri-physics/physverify/tree/main/docs/examples), and the output shown is what it printed. [Recipes](https://rcgiri-physics.github.io/physverify/recipes/) · [What a PASS means](https://rcgiri-physics.github.io/physverify/assumptions/) · [Troubleshooting](https://rcgiri-physics.github.io/physverify/troubleshooting/) · [API](https://rcgiri-physics.github.io/physverify/api/)
@@ -114,7 +114,7 @@ The checks run your project's Python code on your computer, so use them on proje
 
 ## Runge–Kutta table census
 
-Coefficient tables are copied by hand from papers into code, and one wrong digit can lower a method's order with no visible sign: adaptive step control hides it, and a test on y′ = λy often cannot see it. In November 2026, `physverify.butcher` (including the unreleased Rosenbrock, IMEX and dense-output checks) was run on 847 Runge–Kutta tables (explicit, implicit, IMEX and low-storage) from 34 libraries, and then on the Rosenbrock and W-method tables of every Rosenbrock code a GitHub search found. NodePy agreed on all 680 passing tables it was run on, and 344 tables were compared with their first published source.
+Coefficient tables are copied by hand from papers into code, and one wrong digit can lower a method's order with no visible sign: adaptive step control hides it, and a test on y′ = λy often cannot see it. In November 2026, `physverify.butcher` (including the Rosenbrock, IMEX and dense-output checks added in 0.9.0) was run on 847 Runge–Kutta tables (explicit, implicit, IMEX and low-storage) from 34 libraries, and then on the Rosenbrock and W-method tables of every Rosenbrock code a GitHub search found. NodePy agreed on all 680 passing tables it was run on, and 344 tables were compared with their first published source.
 
 - 791 of the 847 tables pass and 39 fail; each failure was reviewed by hand, and more than half are defects (the others are by design, harmless or still open).
 - Most defects show only when f depends on t (a stage at the wrong time, a missing ∂f/∂t term) or only in the error estimate, so a test on y′ = λy passes. Test with a time-dependent problem too.
