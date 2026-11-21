@@ -1,21 +1,21 @@
-# physverify
+# physverify — code verification for numerical simulation
 
-**Confirm physics claims by running the code: a suspected bug becomes a run against a reference from the physics, and a verdict with the numbers.**
+**Test whether simulation code behaves as the mathematics predicts.** Check convergence order, agreement with exact or manufactured solutions, conservation laws, and time-integration coefficients.
 
-A simulation can run, draw nice plots and still be wrong: a minus sign in the wrong place, a factor of 2 missing, a time step that is off by one. Ordinary tests often miss these, because nobody knows the exact answer for a real simulation. physverify uses standard ideas from numerical analysis to check such code anyway, and explains each result in plain words.
+A simulation can run, draw nice plots and still be wrong: a minus sign in the wrong place, a factor of 2 missing, a time step that is off by one. Ordinary tests often miss these, because nobody knows the exact answer for a real simulation. The mathematics still predicts things you can test, and physverify runs those tests and explains each result in plain words. Its strongest coverage is ODE time integration; PDEs are covered in selected cases.
 
 ```bash
 pip install physverify
 physverify demo
 ```
 
-![A claim and a reference from the physics go into the smallest run that tells them apart; the run gives a verdict](images/claim-to-verdict.svg)
+![Error against step size: the correct solver follows the slope-2 line, the broken one levels off](images/convergence.svg)
 
 
 **Run it on every push:** add the [GitHub Action](ci.md) to your workflow; a failed check fails the job.
 
 ```yaml
-      - uses: rcgiri-physics/physverify@v0.8.0
+      - uses: rcgiri-physics/physverify@v0.9.0
         with:
           specs: tests/verify_*.py
 ```
@@ -52,6 +52,7 @@ Each check reports **PASS**, **FAIL**, **EXACT** (reproduced to round-off), **IN
 
 ## Does it work?
 
+- **Runge–Kutta table census (2026-11):** 847 tables from 34 libraries checked against their order conditions; 791 pass, 39 fail, and five reports have been confirmed by maintainers so far. See [the census](census.md); the tables are published as [runge-kutta-catalog](https://github.com/rcgiri-physics/runge-kutta-catalog) ([doi:10.5281/zenodo.24412889](https://doi.org/10.5281/zenodo.24412889)).
 - **Confirming review claims (100 repositories, 2026-11):** five AI reviewers reviewed 100 public physics repositories. On the 50 that earlier testing had found clean, 119 review claims were each checked by a run: 40 changed a result (33 distinct defects in 19 repositories), 51 were real but minor, 10 were wrong and 18 could not be settled. So review finds real defects that testing missed, and a run is what tells them from the wrong ones. Counts within this sample only; see [Checking an AI code review](ai-review.md).
 
 ![Of 119 claims checked on repositories tested clean: 40 changed a result, 51 were real but minor, 10 were wrong, 18 stayed open](images/claim-outcomes.svg)
@@ -63,11 +64,11 @@ Each check reports **PASS**, **FAIL**, **EXACT** (reproduced to round-off), **IN
 
 - New here: [Getting started](getting-started.md), then [How it works](how-it-works.md).
 - Have a solver to check: [Recipes](recipes.md).
-- Have a list of suspected bugs: [Checking an AI code review](ai-review.md).
+- Have a suspected bug to settle: [Confirming one suspected defect](confirm.md), or a whole list from a review: [Checking an AI code review](ai-review.md).
 - Want it on every push: [Continuous integration](ci.md).
 
 ## Citing
 
 If physverify helps your work, please cite it: [doi:10.5281/zenodo.23534512](https://doi.org/10.5281/zenodo.23534512) (all versions; each release also has its own DOI on Zenodo).
 
-physverify is actively evolving (version 0.8.0), welcoming contributions and test cases from the computational physics community. Status: under active development and maintenance, tested on a growing corpus of public physics codes; releases come at milestones. See [how to help](https://github.com/rcgiri-physics/physverify/blob/main/CONTRIBUTING.md) and [GitHub issues](https://github.com/rcgiri-physics/physverify/issues).
+physverify is actively evolving (version 0.9.0), welcoming contributions and test cases from the computational physics community. Status: under active development and maintenance, tested on a growing corpus of public physics codes; releases come at milestones. See [how to help](https://github.com/rcgiri-physics/physverify/blob/main/CONTRIBUTING.md) and [GitHub issues](https://github.com/rcgiri-physics/physverify/issues).

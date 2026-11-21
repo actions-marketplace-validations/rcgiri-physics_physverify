@@ -1,5 +1,5 @@
 site_name: physverify
-site_description: Check that physics simulation code solves the right equations at the order it claims.
+site_description: Code verification for numerical simulation. Test whether simulation code behaves as the mathematics predicts. Check convergence order, agreement with exact or manufactured solutions, conservation laws, and time-integration coefficients.
 site_author: Ram Chandra Giri
 site_url: https://rcgiri-physics.github.io/physverify/
 copyright: Copyright &copy; 2026 Ram Chandra Giri, MIT licence
@@ -101,6 +101,7 @@ nav:
       - Technical details: technical.md
   - Results on real code: results.md
   - Confirmed by maintainers: confirmed.md
+  - Runge–Kutta table census: census.md
   - Related work and credits: related-work.md
   - Roadmap: roadmap.md
   - Changelog: changelog.md

@@ -93,14 +93,20 @@ physverify run verify_solver.py
 If you use Claude Code, Cursor, Copilot or another assistant that can run commands, you can paste this prompt into it, in the folder of the project:
 
 ```text
-Install physverify (0.5.0 or newer) in a virtual environment and check this project with it.
-1. Run `physverify scan .` and explain each WARN and NOTE in plain words; say which you think are real.
-2. Find the main solver. Write a spec with `physverify init`, filling in the equations from the physics
-   (the README, the paper or the textbook), NOT from the solver's code. Tell me where you took them from.
-3. Run `physverify run` on the spec and explain the result. If a check fails, first check the spec
-   (units, sign conventions, the step counts) before blaming the solver, as docs/troubleshooting.md says.
-4. Do not change the solver. Do not run code from the internet outside the sandbox.
-Report what was tested and what was not.
+Verify the numerical code in this project with physverify (pip install physverify; rules in
+https://github.com/rcgiri-physics/physverify/blob/main/AGENTS.md).
+1. Find the solvers and integrators and what they claim: the equations, the order of accuracy,
+   what is conserved, the coefficient tables and where they come from.
+2. Write each reference from the physics (README, paper, textbook), never from the code under
+   test, and tell me where every equation came from.
+3. The tests run this project's code. Run it only if I trust the project; otherwise use the
+   physverify sandbox (sandbox/README.md in the physverify repository) and ask me first.
+4. Test each claim as a pytest test in tests/: check_order for convergence order, an exact or
+   manufactured solution for the answer itself, physverify.butcher for coefficient tables,
+   a conservation check for what must be kept.
+5. When a check fails, suspect the test first (units, signs, time origin, step counts; see
+   docs/troubleshooting.md). Call it a bug only when a check fails against an independent reference.
+6. Do not change the solver. Report what was tested, what was not, and what each PASS covers.
 ```
 
 [Using physverify with an AI assistant](agent.md) shows how to make the assistant re-run the checks after every edit, and the repository's [AGENTS.md](https://github.com/rcgiri-physics/physverify/blob/main/AGENTS.md) gives an assistant the rules it needs to work on physverify itself.
