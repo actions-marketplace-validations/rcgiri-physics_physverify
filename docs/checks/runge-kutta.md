@@ -14,6 +14,8 @@ Output:
 --8<-- "docs/examples/output/butcher_tables.txt"
 ```
 
+Looking for a method's coefficients? [runge-kutta-catalog](https://github.com/rcgiri-physics/runge-kutta-catalog) ([doi:10.5281/zenodo.24412889](https://doi.org/10.5281/zenodo.24412889)) lists 823 Runge-Kutta and 88 Rosenbrock tables from open-source libraries, each checked with these functions, with the method's first published source where it was compared.
+
 ## What each part checks
 
 | Argument | Property | How |
