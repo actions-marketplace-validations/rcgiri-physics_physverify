@@ -52,7 +52,7 @@ Each check reports **PASS**, **FAIL**, **EXACT** (reproduced to round-off), **IN
 
 ## Does it work?
 
-- **Runge–Kutta table census (2026-11):** 847 tables from 34 libraries checked against their order conditions; 791 pass, 39 fail, and five reports have been confirmed by maintainers so far. See [the census](census.md).
+- **Runge–Kutta table census (2026-11):** 847 tables from 34 libraries checked against their order conditions; 791 pass, 39 fail, and five reports have been confirmed by maintainers so far. See [the census](census.md); the tables are published as [runge-kutta-catalog](https://github.com/rcgiri-physics/runge-kutta-catalog) ([doi:10.5281/zenodo.24412889](https://doi.org/10.5281/zenodo.24412889)).
 - **Confirming review claims (100 repositories, 2026-11):** five AI reviewers reviewed 100 public physics repositories. On the 50 that earlier testing had found clean, 119 review claims were each checked by a run: 40 changed a result (33 distinct defects in 19 repositories), 51 were real but minor, 10 were wrong and 18 could not be settled. So review finds real defects that testing missed, and a run is what tells them from the wrong ones. Counts within this sample only; see [Checking an AI code review](ai-review.md).
 
 ![Of 119 claims checked on repositories tested clean: 40 changed a result, 51 were real but minor, 10 were wrong, 18 stayed open](images/claim-outcomes.svg)

@@ -120,7 +120,7 @@ Coefficient tables are copied by hand from papers into code, and one wrong digit
 - Most defects show only when f depends on t (a stage at the wrong time, a missing ∂f/∂t term) or only in the error estimate, so a test on y′ = λy passes. Test with a time-dependent problem too.
 - 23 defect reports were sent to the libraries: 5 confirmed by the maintainers, 2 with fixes in review, 16 waiting for a reply. A library is named here only after its maintainers confirm.
 
-[The census page](https://rcgiri-physics.github.io/physverify/census/) has the method, the outcomes and what was not covered. The counts hold for these libraries only; they are not an error rate for numerical software.
+[The census page](https://rcgiri-physics.github.io/physverify/census/) has the method, the outcomes and what was not covered. The tables themselves are published as a separate dataset, [runge-kutta-catalog](https://github.com/rcgiri-physics/runge-kutta-catalog) ([doi:10.5281/zenodo.24412889](https://doi.org/10.5281/zenodo.24412889)): every table with its library, version and source, the methods compared with their first published sources, 88 Rosenbrock tables, and scripts that re-check each one with physverify. The counts hold for these libraries only; they are not an error rate for numerical software.
 
 ## Confirmed by maintainers
 

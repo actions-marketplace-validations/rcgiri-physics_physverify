@@ -34,6 +34,6 @@ A library is named here only after its maintainers confirm; the list is updated 
 - The libraries were chosen by availability, not at random, so the counts are not an error rate for numerical software.
 - A few tables could not be compared with a first source because the paper was not available.
 
-The per-table results (one row per table, with its source, pinned commit, verdict and review) will be published as a dataset; they are not public yet, so the counts on this page cannot be checked table by table until then.
+The per-table results are published as a dataset: [runge-kutta-catalog](https://github.com/rcgiri-physics/runge-kutta-catalog), archived on Zenodo as [doi:10.5281/zenodo.24412889](https://doi.org/10.5281/zenodo.24412889). It has one row per table (library, pinned version, file, coefficients as printed, the library's claim, the verdict and the review), cards comparing 40 Runge-Kutta methods and 3 Rosenbrock methods with their first published sources, 88 Rosenbrock and W-method tables from 10 libraries, and scripts that re-check every table with physverify, so the counts on this page can be checked table by table. Tables with a reported but unconfirmed defect are held back there too, and only counted.
 
 To check a table yourself, see [Runge–Kutta tables](checks/runge-kutta.md).
